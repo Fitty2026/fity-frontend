@@ -1,0 +1,35 @@
+import type { Outfit } from '../../types';
+import { mockClosetItems } from './closet';
+
+export const mockOutfits: Outfit[] = [
+  {
+    id: 'outfit-001',
+    imageUrl: 'https://placehold.co/400x600/e5e5e5/999999?text=Outfit+1',
+    items: [mockClosetItems[0], mockClosetItems[1], mockClosetItems[3]],
+    styleTags: ['#미니멀', '#캐주얼', '#데일리'],
+    context: '학교',
+    memo: '깔끔하게 입기 좋은 데일리룩',
+    createdAt: '2025-04-20T10:00:00Z',
+    isSaved: true,
+  },
+  {
+    id: 'outfit-002',
+    imageUrl: 'https://placehold.co/400x600/1a1a1a/ffffff?text=Outfit+2',
+    items: [mockClosetItems[4], mockClosetItems[1], mockClosetItems[3]],
+    styleTags: ['#스트리트', '#캐주얼', '#꾸안꾸'],
+    context: '꾸안꾸',
+    memo: '',
+    createdAt: '2025-04-22T14:00:00Z',
+    isSaved: true,
+  },
+  {
+    id: 'outfit-003',
+    imageUrl: 'https://placehold.co/400x600/c8c8c8/333333?text=Outfit+3',
+    items: [mockClosetItems[0], mockClosetItems[1], mockClosetItems[2]],
+    styleTags: ['#포멀', '#미니멀', '#출근룩'],
+    context: '출근',
+    memo: '금요일 미팅',
+    createdAt: '2025-04-23T09:00:00Z',
+    isSaved: true,
+  },
+];
