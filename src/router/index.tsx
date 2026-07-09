@@ -83,6 +83,14 @@ const router = createBrowserRouter([
     element: <ProtectedRoute><ClosetRegisterPage /></ProtectedRoute>,
   },
   {
+    path: '/closet/register/platform',
+    element: <ProtectedRoute><div className="p-6 text-neutral-500">쇼핑몰 선택 (Platform Selection) — 준비 중</div></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/photo',
+    element: <ProtectedRoute><div className="p-6 text-neutral-500">사진 업로드 (Photo Upload) — 준비 중</div></ProtectedRoute>,
+  },
+  {
     path: '/closet/:itemId',
     element: <ProtectedRoute><ClosetItemDetailPage /></ProtectedRoute>,
   },

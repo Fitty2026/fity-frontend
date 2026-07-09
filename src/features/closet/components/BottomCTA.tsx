@@ -13,10 +13,11 @@ const BottomCTA = ({ children, className = '' }: BottomCTAProps) => {
   return (
     <div
       className={[
-        'sticky bottom-0 left-0 w-full bg-white',
-        'px-5 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]',
+        'w-full bg-white',
+        // Figma: Fixed Bottom Button Section — padding 20px, border-top 1px #F5F5F5
+        'px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]',
         'flex flex-col gap-2',
-        'border-t border-neutral-100',
+        'border-t border-[#F5F5F5]',
         className,
       ]
         .filter(Boolean)
