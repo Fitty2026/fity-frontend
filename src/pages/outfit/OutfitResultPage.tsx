@@ -1,15 +1,9 @@
+import { useState } from 'react';
+
 import PageLayout from '@/components/layout/PageeLayout';
 
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
-
-const pageCircle = (page: number, isActive: boolean) => {
-  return (
-    <div
-      className={`w-[8px] h-[8px] rounded-full ${isActive ? 'bg-[#000000]' : 'bg-[#E2E2E2]'}`}
-    ></div>
-  );
-};
 
 const mockProductList = [
   {
@@ -22,20 +16,23 @@ const mockProductList = [
   {
     id: 2,
     name: '하의',
-    description: '전체적인 톤을 맞춰줘요',
+    description: '힙한 무드를 연출할 수 있는 아이템이에요',
     url: '',
-    imgUrl: 'https://static.lookpin.co.kr/20250223125033-a52c/bb8a724e255a4399b2975545a33d16fa.jpg',
+    imgUrl: 'https://m.troubadour.kr/web/product/big/202505/bda60510d318641ada0b54ead25ec1ab.jpg',
   },
   {
     id: 3,
     name: '상의',
-    description: '전체적인 톤을 맞춰줘요',
+    description: '레이어드 기본적인 아이템이에요',
     url: '',
-    imgUrl: 'https://static.lookpin.co.kr/20250223125033-a52c/bb8a724e255a4399b2975545a33d16fa.jpg',
+    imgUrl:
+      'https://img.ssfshop.com/cmd/LB_750x1000/src/https://img.ssfshop.com/goods/8SBR/24/11/29/GM0024112978689_0_THNAIL_ORGINL_20241203174400242.jpg',
   },
 ];
 
 const OutfitResultPage = () => {
+  const [productIndex, setProductIndex] = useState(0);
+
   return (
     <PageLayout
       showBottomNav={true}
@@ -55,7 +52,11 @@ const OutfitResultPage = () => {
         </p>
       </div>
       <div className="RecomendProduct mx-[20px] text-center">
-        <Swiper className="border rounded-[12px] border-[#E8E8E8]">
+        <Swiper
+          className="border rounded-[12px] border-[#E8E8E8]"
+          onSlideNextTransitionStart={() => setProductIndex(productIndex + 1)}
+          onSlidePrevTransitionStart={() => setProductIndex(productIndex - 1)}
+        >
           {mockProductList.map((product) => (
             <SwiperSlide key={product.id}>
               <div className="flex flex-row items-center cursor-pointer">
@@ -85,9 +86,12 @@ const OutfitResultPage = () => {
           ))}
         </Swiper>
         <div className="Pagenation flex justify-center items-center my-[15px] gap-[4px]">
-          {pageCircle(1, false)}
-          {pageCircle(2, true)}
-          {pageCircle(3, false)}
+          {mockProductList.map((_, index) => (
+            <div
+              key={index}
+              className={`w-[8px] h-[8px] rounded-full ${index === productIndex ? 'bg-[#000000]' : 'bg-[#E2E2E2]'}`}
+            ></div>
+          ))}
         </div>
         <div className="text-[16px] text-[#4C4546] text-medium font-[500] underline decoration-[#D4D4D8] underline-offset-4 cursor-pointer">
           부족 아이템 전체 보기
