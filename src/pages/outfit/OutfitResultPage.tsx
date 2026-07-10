@@ -49,8 +49,7 @@ const OutfitResultPage = () => {
       <div className="RecomendProduct mx-[20px] text-center">
         <Swiper
           className="border rounded-[12px] border-[#E8E8E8]"
-          onSlideNextTransitionStart={() => setProductIndex(productIndex + 1)}
-          onSlidePrevTransitionStart={() => setProductIndex(productIndex - 1)}
+          onSlideChange={(swiper) => setProductIndex(swiper.realIndex)}
         >
           {mockProductList.map((product) => (
             <SwiperSlide key={product.id}>
