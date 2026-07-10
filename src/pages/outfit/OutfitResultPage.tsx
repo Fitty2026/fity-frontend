@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import PageLayout from '@/components/layout/PageeLayout';
 
@@ -34,13 +35,7 @@ const OutfitResultPage = () => {
   const [productIndex, setProductIndex] = useState(0);
 
   return (
-    <PageLayout
-      showBottomNav={true}
-      showHeader={true}
-      showBack={true}
-      title="코디 완성"
-      headerRight={<div></div>}
-    >
+    <PageLayout showBottomNav={true} showHeader={true} showBack={true} title="코디 완성">
       <div className="ResultImg mx-[20px] mt-[20px]  rounded-[12px] aspect-[3/4] flex flex-col items-center justify-center ">
         <img
           src="https://static.lookpin.co.kr/20250223125033-a52c/bb8a724e255a4399b2975545a33d16fa.jpg"
@@ -59,7 +54,10 @@ const OutfitResultPage = () => {
         >
           {mockProductList.map((product) => (
             <SwiperSlide key={product.id}>
-              <div className="flex flex-row items-center cursor-pointer">
+              <Link
+                to={`/commerce/:${product.id}`}
+                className="flex flex-row items-center cursor-pointer"
+              >
                 <img
                   src={product.imgUrl}
                   className="w-[96px] h-[96px] object-cover m-[16px] bg-[#eeeeee] rounded-[8px] "
@@ -81,7 +79,7 @@ const OutfitResultPage = () => {
                     fill="#1C1B1F"
                   />
                 </svg>
-              </div>
+              </Link>
             </SwiperSlide>
           ))}
         </Swiper>
@@ -93,15 +91,24 @@ const OutfitResultPage = () => {
             ></div>
           ))}
         </div>
-        <div className="text-[16px] text-[#4C4546] text-medium font-[500] underline decoration-[#D4D4D8] underline-offset-4 cursor-pointer">
+        <Link
+          to={`/commerce`}
+          className="text-[16px] text-[#4C4546] text-medium font-[500] underline decoration-[#D4D4D8] underline-offset-4 cursor-pointer"
+        >
           부족 아이템 전체 보기
-        </div>
-        <div className="mt-[40px] mx-[20px] border bg-[#000000] h-[48px] rounded-[8px]  text-[16px] text-[#FFFFFF] text-medium font-[500] text-center flex items-center justify-center cursor-pointer">
+        </Link>
+        <Link
+          to={'/outfit/save'}
+          className="mt-[40px] mx-[20px] border bg-[#000000] h-[48px] rounded-[8px]  text-[16px] text-[#FFFFFF] text-medium font-[500] text-center flex items-center justify-center cursor-pointer"
+        >
           저장하기
-        </div>
-        <div className="my-[15px] mx-[20px] border rounded-[8px] h-[48px] text-[16px] text-[#000000] text-medium font-[500] text-center flex items-center justify-center cursor-pointer">
+        </Link>
+        <Link
+          to={''}
+          className="my-[15px] mx-[20px] border rounded-[8px] h-[48px] text-[16px] text-[#000000] text-medium font-[500] text-center flex items-center justify-center cursor-pointer"
+        >
           다른 코디 하기
-        </div>
+        </Link>
       </div>
     </PageLayout>
   );
