@@ -35,7 +35,7 @@ const OutfitResultPage = () => {
   const [productIndex, setProductIndex] = useState(0);
 
   return (
-    <PageLayout showBottomNav={true} showHeader={true} showBack={true} title="코디 완성">
+    <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="코디 완성">
       <div className="ResultImg mx-[20px] mt-[20px]  rounded-[12px] aspect-[3/4] flex flex-col items-center justify-center ">
         <img
           src="https://static.lookpin.co.kr/20250223125033-a52c/bb8a724e255a4399b2975545a33d16fa.jpg"
