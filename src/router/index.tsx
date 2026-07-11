@@ -16,6 +16,7 @@ import AvatarGeneratePage from '../pages/onboarding/AvatarGeneratePage';
 import ClosetHomePage from '../pages/closet/ClosetHomePage';
 import ClosetRegisterPage from '../pages/closet/ClosetRegisterPage';
 import ClosetPlatformPage from '../pages/closet/ClosetPlatformPage';
+import ClosetPermissionPage from '../pages/closet/ClosetPermissionPage';
 import ClosetItemDetailPage from '../pages/closet/ClosetItemDetailPage';
 
 // 3. 홈
@@ -86,6 +87,10 @@ const router = createBrowserRouter([
   {
     path: '/closet/register/platform',
     element: <ProtectedRoute><ClosetPlatformPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/permission',
+    element: <ProtectedRoute><ClosetPermissionPage /></ProtectedRoute>,
   },
   {
     path: '/closet/register/photo',
