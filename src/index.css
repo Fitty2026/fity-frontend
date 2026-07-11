@@ -1,1 +1,13 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+/* 공통 폰트 - Tailwind 테마 변수로 지정하면 전체에 자동 적용 */
+@theme {
+  --font-sans:
+    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
+}
+
+/* iOS safe area 대응 - BottomNav에서 사용 중 */
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
