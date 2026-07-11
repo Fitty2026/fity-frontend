@@ -37,7 +37,7 @@ const OutfitSavePage = () => {
   const [tagInput, setTagInput] = useState('');
   const [clickTag, setClickTag] = useState<Number>(5);
 
-  const handleTagChange = (e) => {
+  const handleTagChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTagInput(e.target.value);
   };
 
