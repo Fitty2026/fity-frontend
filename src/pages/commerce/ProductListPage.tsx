@@ -50,7 +50,9 @@ const ProductListPage = () => {
               </div>
               <p className="text-[20px] text-[#1A1C1C] font-[500]">{product.name}</p>
               <p className="text-[14px] text-[#4C4546]">{product.description}</p>
-              <p className="text-[14px] text-[#4C4546] mt-[4px]">{product.price}원</p>
+              <p className="text-[14px] text-[#4C4546] mt-[4px]">
+                {`${Number(product.price).toLocaleString('ko-KR')}원`}
+              </p>
             </div>
             <svg
               xmlns="http://www.w3.org/2000/svg"
