@@ -25,3 +25,4 @@ dist-ssr
 *.sw?
 .superpowers/
 tsconfig.tsbuildinfo
+docs/entry-account-plan.md
