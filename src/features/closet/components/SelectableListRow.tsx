@@ -24,24 +24,29 @@ const SelectableListRow = ({
       type="button"
       onClick={onToggle}
       className={[
-        'w-full flex items-center gap-3 p-3.5 rounded-xl border transition-colors',
-        selected ? 'border-black bg-neutral-50' : 'border-neutral-200 bg-white hover:border-neutral-400',
+        // Figma: Fill350 / 높이 82 고정(Hug 결과값) / radius12 / padding16 / 콘텐츠 세로 중앙
+        'w-full h-[82px] flex items-center p-4! rounded-xl border! transition-colors',
+        selected ? 'border-neutral-200! bg-[#C7C6C6]!' : 'border-neutral-200! bg-white! hover:border-neutral-400!',
         className,
       ]
         .filter(Boolean)
         .join(' ')}
     >
       {leading && (
-        <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-neutral-100 shrink-0 overflow-hidden text-xs font-bold">
+        // Figma: 로고 박스 Fixed 48×48 / radius 8 / bg #E2E2E2
+        <span className="flex items-center justify-center w-12 h-12 rounded-lg bg-[#E2E2E2] shrink-0 overflow-hidden text-xs font-bold">
           {leading}
         </span>
       )}
-      <span className="flex-1 text-left text-sm font-medium text-black">{label}</span>
+      {/* 로고↔이름 gap 16 */}
+      <span className="flex-1 ml-4 text-left font-['Epilogue'] text-base font-normal leading-6 tracking-[-0.4px] text-black">
+        {label}
+      </span>
 
-      {/* 선택 인디케이터 */}
+      {/* 선택 인디케이터 — 이름↔체크 gap 30 */}
       <span
         className={[
-          'flex items-center justify-center w-5 h-5 rounded-full border shrink-0 transition-colors',
+          'flex items-center justify-center w-5 h-5 ml-[30px] rounded-full border shrink-0 transition-colors',
           selected ? 'bg-black border-black text-white' : 'border-neutral-300 text-transparent',
         ].join(' ')}
       >

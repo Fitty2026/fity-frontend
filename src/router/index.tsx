@@ -15,6 +15,7 @@ import AvatarGeneratePage from '../pages/onboarding/AvatarGeneratePage';
 // 2. 옷장
 import ClosetHomePage from '../pages/closet/ClosetHomePage';
 import ClosetRegisterPage from '../pages/closet/ClosetRegisterPage';
+import ClosetPlatformPage from '../pages/closet/ClosetPlatformPage';
 import ClosetItemDetailPage from '../pages/closet/ClosetItemDetailPage';
 
 // 3. 홈
@@ -84,7 +85,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/closet/register/platform',
-    element: <ProtectedRoute><div className="p-6 text-neutral-500">쇼핑몰 선택 (Platform Selection) — 준비 중</div></ProtectedRoute>,
+    element: <ProtectedRoute><ClosetPlatformPage /></ProtectedRoute>,
   },
   {
     path: '/closet/register/photo',
