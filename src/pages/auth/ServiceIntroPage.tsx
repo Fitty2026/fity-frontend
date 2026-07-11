@@ -1,5 +1,8 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import intro1 from '@/assets/images/intro-1.png';
+import intro2 from '@/assets/images/intro-2.png';
+import intro3 from '@/assets/images/intro-3.png';
 import PageLayout from '@/components/layout/PageeLayout';
 import Button from '@/components/ui/Button';
 import IntroSlide from '@/features/auth/components/IntroSlide';
@@ -7,15 +10,18 @@ import { INTRO_SEEN_KEY } from '@/features/auth/constants';
 
 const SLIDES = [
   {
+    imageSrc: intro1,
     title: '내 옷으로 코디를\n완성하세요',
     description: '이미 가지고 있는 옷만으로도 가장 잘 어울리는\n스타일을 추천해드려요',
   },
   {
+    imageSrc: intro2,
     title: '취향과 체형에\n맞는 코디 추천',
     description: '스타일 취향과 체형을 분석해 나에게 가장 잘\n어울리는 코디를 찾아드려요',
     badges: ['캐주얼', '미니멀', '스트릿'],
   },
   {
+    imageSrc: intro3,
     title: '아바타로 미리 입어보세요',
     description: '내 체형에 맞는 아바타에 코디를 적용해 실제\n착용 모습을 미리 확인할 수 있어요',
   },

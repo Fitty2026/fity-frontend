@@ -1,16 +1,20 @@
 import Badge from '@/components/ui/Badge';
 
 interface IntroSlideProps {
+  imageSrc: string;
   title: string;
   description: string;
   badges?: string[];
 }
 
-/** 서비스 인트로 슬라이드 1장. 이미지 영역은 에셋 확보 전까지 placeholder. */
-const IntroSlide = ({ title, description, badges }: IntroSlideProps) => (
+/** 서비스 인트로 슬라이드 1장 */
+const IntroSlide = ({ imageSrc, title, description, badges }: IntroSlideProps) => (
   <div className="flex w-full shrink-0 flex-col items-center px-6">
-    {/* 이미지 placeholder - 에셋 교체 시 <img>로 대체 */}
-    <div className="mt-12 aspect-[4/5] w-full max-w-[260px] rounded-2xl bg-neutral-200" />
+    <img
+      src={imageSrc}
+      alt=""
+      className="mt-12 w-full max-w-[260px] rounded-2xl"
+    />
     <h2 className="mt-10 whitespace-pre-line text-center text-2xl font-bold leading-snug">
       {title}
     </h2>
