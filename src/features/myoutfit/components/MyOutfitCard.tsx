@@ -8,7 +8,7 @@ interface cardProps {
   isSaved: boolean;
 }
 
-const MyOutfitCard = ({ context, createdAt, imageUrl, isSaved }: cardProps) => {
+const MyOutfitCard = ({ context, createdAt, imageUrl }: cardProps) => {
   const [openMenu, setOpenMenu] = useState(false);
   const navigate = useNavigate();
 
