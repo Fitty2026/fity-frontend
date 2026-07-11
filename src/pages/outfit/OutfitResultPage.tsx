@@ -40,7 +40,7 @@ const OutfitResultPage = () => {
         <img
           src="https://static.lookpin.co.kr/20250223125033-a52c/bb8a724e255a4399b2975545a33d16fa.jpg"
           alt="코디완성 이미지"
-          className="w-[100%] h-[100%] object-cover bg-[#F5F5F5] rounded-[12px] shadow-[0px_4px_4px_rgba(0,0,0,0.25)]"
+          className="w-[100%] h-[100%] object-cover bg-[#F5F5F5] rounded-[12px] shadow-[0px_4px_4px_rgba(0,0,0,0.05)]"
         />
         <p className="text-[14px] text-[#5E5E5E] my-[15px] text-medium font-[500]">
           아래 추천 제품으로 코디를 더 예쁘게 완성하세요!
