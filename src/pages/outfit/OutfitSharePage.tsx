@@ -35,7 +35,13 @@ const OutfitSharePage = () => {
   };
 
   return (
-    <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="코디 저장">
+    <PageLayout
+      className="pb-[250px]"
+      showBottomNav={false}
+      showHeader={true}
+      showBack={true}
+      title="코디 저장"
+    >
       <div className="ResultImg  mx-[20px] mt-[20px]  rounded-[12px] aspect-[3/4] flex flex-col  ">
         <img
           src="https://static.lookpin.co.kr/20250223125033-a52c/bb8a724e255a4399b2975545a33d16fa.jpg"
@@ -121,16 +127,16 @@ const OutfitSharePage = () => {
         </div>
       </div>
 
-      <div className="mt-[80px] mx-[20px]">
+      <div className="fixed backdrop-blur-[24px] max-w-[430px] pb-[20px] z-10 bg-[##FFFFFFE5] bottom-[0px] right-1/2 translate-x-1/2 w-full">
         <Link
-          to={'/'}
-          className="mt-[40px] border bg-[#000000] h-[48px] rounded-[8px]  text-[16px] text-[#FFFFFF] text-medium font-[500] text-center flex items-center justify-center cursor-pointer"
+          to={'/outfit/save'}
+          className="mt-[20px] mx-[20px] border bg-[#000000] h-[48px] rounded-[8px]  text-[16px] text-[#FFFFFF] text-medium font-[500] text-center flex items-center justify-center cursor-pointer"
         >
-          홈으로 돌아가기
+          저장하기
         </Link>
         <Link
-          to={'/'}
-          className="my-[15px] border rounded-[8px] h-[48px] text-[16px] text-[#000000] text-medium font-[500] text-center flex items-center justify-center cursor-pointer"
+          to={''}
+          className="my-[15px] mx-[20px] border rounded-[8px] h-[48px] text-[16px] text-[#000000] text-medium font-[500] text-center flex items-center justify-center cursor-pointer"
         >
           다른 코디 하기
         </Link>

@@ -62,7 +62,13 @@ const OutfitSavePage = () => {
   };
 
   return (
-    <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="코디 저장">
+    <PageLayout
+      className="mb-[180px]"
+      showBottomNav={false}
+      showHeader={true}
+      showBack={true}
+      title="코디 저장"
+    >
       <div className="ItemList p-[34px] rounded-[12px] borader border-[#CFC4C54D] bg-[#EEEEEE] mx-[20px] mt-[20px] grid grid-cols-2 gap-[4px]">
         {mockProductList.map((product) => (
           <img
@@ -150,13 +156,14 @@ const OutfitSavePage = () => {
           placeholder="스타일링 팁이나 구매 희망 사항을 적어주세요."
         />
       </div>
-
-      <Link
-        to={'/outfit/share'}
-        className="mt-[50px] mb-[50px] mx-[20px] border bg-[#000000] h-[48px] rounded-[8px]  text-[16px] text-[#FFFFFF] text-medium font-[500] text-center flex items-center justify-center cursor-pointer"
-      >
-        저장하기
-      </Link>
+      <div className="fixed backdrop-blur-[12px] max-w-[430px] pb-[20px] z-10 border-t border-[#F4F4F5] bg-[##FFFFFFCC] bottom-[0px] right-1/2 translate-x-1/2 w-full">
+        <Link
+          to={'/outfit/share'}
+          className="mt-[30px] mb-[40px] mx-[20px] border bg-[#000000] h-[48px] rounded-[8px]  text-[16px] text-[#FFFFFF] text-medium font-[500] text-center flex items-center justify-center cursor-pointer"
+        >
+          저장하기
+        </Link>
+      </div>
     </PageLayout>
   );
 };
