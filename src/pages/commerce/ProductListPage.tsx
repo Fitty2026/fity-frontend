@@ -1,4 +1,5 @@
 import PageLayout from '@/components/layout/PageeLayout';
+import { Link } from 'react-router-dom';
 
 const mockProductList = [
   {
@@ -36,7 +37,8 @@ const ProductListPage = () => {
     <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="추천 제품">
       <div className="flex flex-col mt-[30px] mx-[20px] gap-[16px]">
         {mockProductList.map((product) => (
-          <div
+          <Link
+            to={`/commerce/:${product.id}`}
             key={product.id}
             className="bg-[#FFFFFF] border rounded-[12px] border-[#E8E8E8] flex flex-row items-center cursor-pointer"
           >
@@ -67,7 +69,7 @@ const ProductListPage = () => {
                 fill="#1C1B1F"
               />
             </svg>
-          </div>
+          </Link>
         ))}
       </div>
     </PageLayout>
