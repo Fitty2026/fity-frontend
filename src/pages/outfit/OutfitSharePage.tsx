@@ -2,6 +2,38 @@ import PageLayout from '@/components/layout/PageeLayout';
 import { Link } from 'react-router-dom';
 
 const OutfitSharePage = () => {
+  const downloadImg = () => {
+    const imgUrl = 'image.jpg'; // 다운로드할 이미지 경로
+    const link = document.createElement('a');
+    link.href = imgUrl;
+    link.download = `${'코디 이름'}.jpg`; // 저장될 파일 이름
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const copyToClipboard = () => {
+    const url = 'https://example.com';
+    navigator.clipboard.writeText(url).then(() => {
+      alert('링크가 클립보드에 복사되었습니다.');
+    });
+  };
+
+  const shareSns = () => {
+    if (navigator.share) {
+      navigator
+        .share({
+          title: '공유할 제목',
+          text: '공유할 내용',
+          url: 'https://example.com',
+        })
+        .then(() => console.log('성공적으로 공유되었습니다.'))
+        .catch((error) => console.log('공유 실패:', error));
+    } else {
+      alert('이 브라우저는 공유 기능을 지원하지 않습니다.');
+    }
+  };
+
   return (
     <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="코디 저장">
       <div className="ResultImg  mx-[20px] mt-[20px]  rounded-[12px] aspect-[3/4] flex flex-col  ">
@@ -22,7 +54,9 @@ const OutfitSharePage = () => {
 
       <div className="mx-[20px] flex justify-between ">
         <div
-          onClick={() => {}}
+          onClick={() => {
+            downloadImg();
+          }}
           className="flex flex-col  items-center justify-center cursor-pointer gap-[8px] bg-[#FFFFFF] border-[#E4E4E7] border rounded-[8px] py-[16px]  w-[106px] h-[106px]"
         >
           <div className="bg-[#f4f4f5] w-[48px] h-[48px] shrink-0 items-center  rounded-full flex justify-center ">
@@ -42,7 +76,9 @@ const OutfitSharePage = () => {
           <p className="text-[12px] text-[#1A1C1C] text-center">이미지 저장</p>
         </div>
         <div
-          onClick={() => {}}
+          onClick={() => {
+            copyToClipboard();
+          }}
           className="flex flex-col  items-center justify-center cursor-pointer gap-[8px] bg-[#FFFFFF] border-[#E4E4E7] border rounded-[8px] py-[16px]  w-[106px] h-[106px]"
         >
           <div className="bg-[#f4f4f5] w-[48px] h-[48px] shrink-0 items-center  rounded-full flex justify-center ">
@@ -62,7 +98,9 @@ const OutfitSharePage = () => {
           <p className="text-[12px] text-[#1A1C1C] text-center">링크 공유</p>
         </div>
         <div
-          onClick={() => {}}
+          onClick={() => {
+            shareSns();
+          }}
           className="flex flex-col items-center justify-center cursor-pointer gap-[8px] bg-[#FFFFFF] border-[#E4E4E7] border rounded-[8px] py-[16px]  w-[106px] h-[106px]"
         >
           <div className="bg-[#f4f4f5] w-[48px] h-[48px] shrink-0 items-center  rounded-full flex justify-center ">
