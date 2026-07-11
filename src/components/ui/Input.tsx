@@ -6,6 +6,9 @@ interface InputProps {
   type?: 'text' | 'email' | 'password' | 'number' | 'tel';
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  name?: string;
+  autoComplete?: string;
   errorMessage?: string;
   disabled?: boolean;
   className?: string;
@@ -19,6 +22,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       type = 'text',
       value,
       onChange,
+      onBlur,
+      name,
+      autoComplete,
       errorMessage,
       disabled = false,
       className = '',
@@ -35,6 +41,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           type={type}
           value={value}
           onChange={onChange}
+          onBlur={onBlur}
+          name={name}
+          autoComplete={autoComplete}
           placeholder={placeholder}
           disabled={disabled}
           className={[
