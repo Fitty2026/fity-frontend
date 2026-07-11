@@ -152,7 +152,7 @@ const OutfitSavePage = () => {
       </div>
 
       <Link
-        to={'/outfit/save'}
+        to={'/outfit/share'}
         className="mt-[50px] mb-[50px] mx-[20px] border bg-[#000000] h-[48px] rounded-[8px]  text-[16px] text-[#FFFFFF] text-medium font-[500] text-center flex items-center justify-center cursor-pointer"
       >
         저장하기
