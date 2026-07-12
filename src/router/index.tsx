@@ -15,6 +15,12 @@ import AvatarGeneratePage from '../pages/onboarding/AvatarGeneratePage';
 // 2. 옷장
 import ClosetHomePage from '../pages/closet/ClosetHomePage';
 import ClosetRegisterPage from '../pages/closet/ClosetRegisterPage';
+import ClosetPlatformPage from '../pages/closet/ClosetPlatformPage';
+import ClosetPermissionPage from '../pages/closet/ClosetPermissionPage';
+import ClosetPhotoPage from '../pages/closet/ClosetPhotoPage';
+import ClosetLoadingPage from '../pages/closet/ClosetLoadingPage';
+import ClosetTagEditPage from '../pages/closet/ClosetTagEditPage';
+import ClosetCompletePage from '../pages/closet/ClosetCompletePage';
 import ClosetItemDetailPage from '../pages/closet/ClosetItemDetailPage';
 
 // 3. 홈
@@ -51,6 +57,7 @@ import NotFoundPage from '../pages/error/NotFoundPage';
 import DevPreviewPage from '../pages/dev/DevPreviewPage';
 
 const router = createBrowserRouter([
+
   {
     element: <Outlet />,
     errorElement: <RouteErrorPage />,
@@ -85,76 +92,104 @@ const router = createBrowserRouter([
     },
 
     // 옷장
-    {
-      path: '/closet',
-      element: <ProtectedRoute><ClosetHomePage /></ProtectedRoute>,
-    },
-    {
-      path: '/closet/register',
-      element: <ProtectedRoute><ClosetRegisterPage /></ProtectedRoute>,
-    },
-    {
-      path: '/closet/:itemId',
-      element: <ProtectedRoute><ClosetItemDetailPage /></ProtectedRoute>,
-    },
+  {
+    path: '/closet',
+    element: <ProtectedRoute><ClosetHomePage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register',
+    element: <ProtectedRoute><ClosetRegisterPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/platform',
+    element: <ProtectedRoute><ClosetPlatformPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/permission',
+    element: <ProtectedRoute><ClosetPermissionPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/photo',
+    element: <ProtectedRoute><ClosetPhotoPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/importing',
+    element: <ProtectedRoute><ClosetLoadingPage variant="import" /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/analyzing',
+    element: <ProtectedRoute><ClosetLoadingPage variant="analyze" /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/tags',
+    element: <ProtectedRoute><ClosetTagEditPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/complete',
+    element: <ProtectedRoute><ClosetCompletePage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/:itemId',
+    element: <ProtectedRoute><ClosetItemDetailPage /></ProtectedRoute>,
+  },
 
-    // 코디 생성
-    {
-      path: '/styling',
-      element: <ProtectedRoute><StylingStartPage /></ProtectedRoute>,
-    },
-    {
-      path: '/styling/date',
-      element: <ProtectedRoute><StylingDatePage /></ProtectedRoute>,
-    },
-    {
-      path: '/styling/mood',
-      element: <ProtectedRoute><StylingMoodPage /></ProtectedRoute>,
-    },
-    {
-      path: '/styling/items',
-      element: <ProtectedRoute><StylingItemSelectPage /></ProtectedRoute>,
-    },
-    {
-      path: '/styling/loading',
-      element: <ProtectedRoute><StylingLoadingPage /></ProtectedRoute>,
-    },
+  // 코디 생성
+  {
+    path: '/styling',
+    element: <ProtectedRoute><StylingStartPage /></ProtectedRoute>,
+  },
+  {
+    path: '/styling/date',
+    element: <ProtectedRoute><StylingDatePage /></ProtectedRoute>,
+  },
+  {
+    path: '/styling/mood',
+    element: <ProtectedRoute><StylingMoodPage /></ProtectedRoute>,
+  },
+  {
+    path: '/styling/items',
+    element: <ProtectedRoute><StylingItemSelectPage /></ProtectedRoute>,
+  },
+  {
+    path: '/styling/loading',
+    element: <ProtectedRoute><StylingLoadingPage /></ProtectedRoute>,
+  },
 
-    // 코디 결과
-    {
-      path: '/outfit/result',
-      element: <ProtectedRoute><OutfitResultPage /></ProtectedRoute>,
-    },
-    {
-      path: '/outfit/save',
-      element: <ProtectedRoute><OutfitSavePage /></ProtectedRoute>,
-    },
-    {
-      path: '/outfit/share',
-      element: <ProtectedRoute><OutfitSharePage /></ProtectedRoute>,
-    },
+  // 코디 결과
+  {
+    path: '/outfit/result',
+    element: <ProtectedRoute><OutfitResultPage /></ProtectedRoute>,
+  },
+  {
+    path: '/outfit/save',
+    element: <ProtectedRoute><OutfitSavePage /></ProtectedRoute>,
+  },
+  {
+    path: '/outfit/share',
+    element: <ProtectedRoute><OutfitSharePage /></ProtectedRoute>,
+  },
 
-    // 커머스
-    {
-      path: '/commerce',
-      element: <ProtectedRoute><ProductListPage /></ProtectedRoute>,
-    },
-    {
-      path: '/commerce/:productId',
-      element: <ProtectedRoute><ProductDetailPage /></ProtectedRoute>,
-    },
+  // 커머스
+  {
+    path: '/commerce',
+    element: <ProtectedRoute><ProductListPage /></ProtectedRoute>,
+  },
+  {
+    path: '/commerce/:productId',
+    element: <ProtectedRoute><ProductDetailPage /></ProtectedRoute>,
+  },
 
-    // 내 코디
-    {
-      path: '/myoutfit',
-      element: <ProtectedRoute><MyOutfitListPage /></ProtectedRoute>,
-    },
-    {
-      path: '/myoutfit/:outfitId',
-      element: <ProtectedRoute><MyOutfitDetailPage /></ProtectedRoute>,
-    },
+  // 내 코디
+  {
+    path: '/myoutfit',
+    element: <ProtectedRoute><MyOutfitListPage /></ProtectedRoute>,
+  },
+  {
+    path: '/myoutfit/:outfitId',
+    element: <ProtectedRoute><MyOutfitDetailPage /></ProtectedRoute>,
+  },
 
-    // 마이페이지
+  // 마이페이지
     {
       path: '/mypage',
       element: <ProtectedRoute><MyPage /></ProtectedRoute>,
