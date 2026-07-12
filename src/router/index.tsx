@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Outlet } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 
 // 0. 진입 / 계정
@@ -49,37 +49,49 @@ import MyOutfitDetailPage from '../pages/myoutfit/MyOutfitDetailPage';
 // 8. 마이페이지
 import MyPage from '../pages/mypage/MyPage';
 
+// 9. 에러
+import RouteErrorPage from '../pages/error/RouteErrorPage';
+import NotFoundPage from '../pages/error/NotFoundPage';
+
+// dev 전용
+import DevPreviewPage from '../pages/dev/DevPreviewPage';
+
 const router = createBrowserRouter([
-  // ── 인증 불필요 ──────────────────────────────
-  { path: '/', element: <SplashPage /> },
-  { path: '/intro', element: <ServiceIntroPage /> },
-  { path: '/login', element: <LoginPage /> },
 
-  // ── 온보딩 (로그인 후 최초 1회) ───────────────
   {
-    path: '/onboarding',
-    element: <ProtectedRoute><StylePreferencePage /></ProtectedRoute>,
-  },
-  {
-    path: '/onboarding/photo',
-    element: <ProtectedRoute><PhotoUploadPage /></ProtectedRoute>,
-  },
-  {
-    path: '/onboarding/analysis',
-    element: <ProtectedRoute><BodyAnalysisPage /></ProtectedRoute>,
-  },
-  {
-    path: '/onboarding/avatar',
-    element: <ProtectedRoute><AvatarGeneratePage /></ProtectedRoute>,
-  },
+    element: <Outlet />,
+    errorElement: <RouteErrorPage />,
+    children: [
+    // ── 인증 불필요 ──────────────────────────────
+    { path: '/', element: <SplashPage /> },
+    { path: '/intro', element: <ServiceIntroPage /> },
+    { path: '/login', element: <LoginPage /> },
 
-  // ── 메인 (로그인 필요) ────────────────────────
-  {
-    path: '/home',
-    element: <ProtectedRoute><HomePage /></ProtectedRoute>,
-  },
+    // ── 온보딩 (로그인 후 최초 1회) ───────────────
+    {
+      path: '/onboarding',
+      element: <ProtectedRoute><StylePreferencePage /></ProtectedRoute>,
+    },
+    {
+      path: '/onboarding/photo',
+      element: <ProtectedRoute><PhotoUploadPage /></ProtectedRoute>,
+    },
+    {
+      path: '/onboarding/analysis',
+      element: <ProtectedRoute><BodyAnalysisPage /></ProtectedRoute>,
+    },
+    {
+      path: '/onboarding/avatar',
+      element: <ProtectedRoute><AvatarGeneratePage /></ProtectedRoute>,
+    },
 
-  // 옷장
+    // ── 메인 (로그인 필요) ────────────────────────
+    {
+      path: '/home',
+      element: <ProtectedRoute><HomePage /></ProtectedRoute>,
+    },
+
+    // 옷장
   {
     path: '/closet',
     element: <ProtectedRoute><ClosetHomePage /></ProtectedRoute>,
@@ -178,13 +190,18 @@ const router = createBrowserRouter([
   },
 
   // 마이페이지
-  {
-    path: '/mypage',
-    element: <ProtectedRoute><MyPage /></ProtectedRoute>,
-  },
+    {
+      path: '/mypage',
+      element: <ProtectedRoute><MyPage /></ProtectedRoute>,
+    },
 
-  // 없는 경로 → 홈으로
-  { path: '*', element: <Navigate to="/" replace /> },
+    // dev 전용 미리보기 (프로덕션 빌드에서는 라우트 미등록)
+    ...(import.meta.env.DEV ? [{ path: '/dev', element: <DevPreviewPage /> }] : []),
+
+    // 없는 경로 → 404
+    { path: '*', element: <NotFoundPage /> },
+    ],
+  },
 ]);
 
 export default router;
