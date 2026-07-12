@@ -57,7 +57,7 @@ const ClosetPlatformPage = () => {
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
       <div className="flex flex-col h-[100dvh] min-h-0 bg-[#F9F9F9]">
-        {/* 헤더 (Figma: 높이 64) — 고정 */}
+        {/* 헤더 */}
         <header className="flex items-center h-16 px-4 bg-white">
           <button
             type="button"
@@ -69,7 +69,7 @@ const ClosetPlatformPage = () => {
           </button>
         </header>
 
-        {/* 스크롤 영역 (이 층만 스크롤) — Figma Main: padding T24 R20 B48 L20, gap 24 */}
+        {/* 스크롤 영역 (이 층만 스크롤) */}
         <div className="flex-1 overflow-y-auto min-h-0">
           <div className="flex flex-col gap-6 pt-6 px-5 pb-12">
             {/* 타이틀 영역 */}
@@ -83,7 +83,7 @@ const ClosetPlatformPage = () => {
               <p className="mt-1 text-xs font-medium leading-4 text-[#A3A3A3]">복수 선택 가능</p>
             </div>
 
-            {/* 쇼핑몰 리스트 (카드 간 gap 16) */}
+            {/* 쇼핑몰 리스트 */}
             <div className="flex flex-col gap-4">
               {PLATFORMS.map((p) => (
                 <SelectableListRow
@@ -104,7 +104,7 @@ const ClosetPlatformPage = () => {
           </div>
         </div>
 
-        {/* Figma: Fixed Bottom Button Section (390×97) */}
+        {/* 하단 CTA */}
         <BottomCTA className="shrink-0">
           <button
             type="button"

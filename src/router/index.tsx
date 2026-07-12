@@ -17,6 +17,7 @@ import ClosetHomePage from '../pages/closet/ClosetHomePage';
 import ClosetRegisterPage from '../pages/closet/ClosetRegisterPage';
 import ClosetPlatformPage from '../pages/closet/ClosetPlatformPage';
 import ClosetPermissionPage from '../pages/closet/ClosetPermissionPage';
+import ClosetPhotoPage from '../pages/closet/ClosetPhotoPage';
 import ClosetItemDetailPage from '../pages/closet/ClosetItemDetailPage';
 
 // 3. 홈
@@ -94,7 +95,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/closet/register/photo',
-    element: <ProtectedRoute><div className="p-6 text-neutral-500">사진 업로드 (Photo Upload) — 준비 중</div></ProtectedRoute>,
+    element: <ProtectedRoute><ClosetPhotoPage /></ProtectedRoute>,
   },
   {
     path: '/closet/:itemId',

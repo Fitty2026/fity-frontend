@@ -42,7 +42,7 @@ const ClosetPermissionPage = () => {
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
       <div className="flex flex-col h-[100dvh] min-h-0 bg-[#F9F9F9]">
-        {/* 헤더 (Figma: 390×64) — 고정 */}
+        {/* 헤더 */}
         <header className="flex items-center h-16 px-4 bg-white">
           <button
             type="button"
@@ -66,7 +66,7 @@ const ClosetPermissionPage = () => {
               필요해요
             </h1>
 
-            {/* 권한 항목 2개 (타이틀↔카드 24, 카드 간 gap 16) */}
+            {/* 권한 항목 2개 */}
             <div className="mt-6 flex flex-col gap-4">
               <PermissionItem
                 icon={<ReceiptIcon />}
@@ -80,7 +80,7 @@ const ClosetPermissionPage = () => {
               />
             </div>
 
-            {/* 안내 칩 (Figma: Hug×32, 가로 중앙, 카드↔칩 gap 41) */}
+            {/* 안내 칩 */}
             <div className="mt-[41px] flex justify-center">
               <span className="inline-flex items-center justify-center w-[248px] h-8 rounded-full bg-[#E8E8E8]/50 text-base font-medium leading-6 text-[#4C4546]">
                 언제든 연동을 해제할 수 있어요
@@ -89,8 +89,7 @@ const ClosetPermissionPage = () => {
           </div>
         </div>
 
-        {/* Figma: Bottom Section (390×180 Hug) — 동의 버튼 + 나중에 할게요.
-            페이지 배경(#F9F9F9)과 통일: BottomCTA 흰 배경/상단보더 override (공통 컴포넌트는 유지) */}
+        {/* 하단 CTA — 페이지 배경과 통일 위해 BottomCTA 흰 배경/상단보더 override */}
         <BottomCTA className="shrink-0 bg-transparent! border-transparent! gap-[19.5px]! pb-[60.5px]!">
           <button
             type="button"
