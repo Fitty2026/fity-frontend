@@ -14,15 +14,15 @@ interface SelectableImageCardProps {
   labelPosition?: LabelPosition;
   /** 그리드 셀 크기는 부모가 결정 (w-full 등) */
   className?: string;
+  /** 이미지 박스에 추가 클래스 (예: border) */
+  imageClassName?: string;
 }
 
-/** 선택 체크 — 검정 원 + 흰 체크 (Figma 에셋, ※ px 캡쳐로 확정 필요) */
+/** 선택 체크 — 흰색 체크-원 (30×30, Figma 에셋) */
 const CheckBadge = () => (
-  <div className="flex items-center justify-center w-7 h-7 rounded-full bg-black">
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M11.6668 3.5L5.25016 9.91667L2.3335 7" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  </div>
+  <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12.9 21.9L23.475 11.325L21.375 9.225L12.9 17.7L8.625 13.425L6.525 15.525L12.9 21.9ZM15 30C12.925 30 10.975 29.6063 9.15 28.8188C7.325 28.0312 5.7375 26.9625 4.3875 25.6125C3.0375 24.2625 1.96875 22.675 1.18125 20.85C0.39375 19.025 0 17.075 0 15C0 12.925 0.39375 10.975 1.18125 9.15C1.96875 7.325 3.0375 5.7375 4.3875 4.3875C5.7375 3.0375 7.325 1.96875 9.15 1.18125C10.975 0.39375 12.925 0 15 0C17.075 0 19.025 0.39375 20.85 1.18125C22.675 1.96875 24.2625 3.0375 25.6125 4.3875C26.9625 5.7375 28.0312 7.325 28.8188 9.15C29.6063 10.975 30 12.925 30 15C30 17.075 29.6063 19.025 28.8188 20.85C28.0312 22.675 26.9625 24.2625 25.6125 25.6125C24.2625 26.9625 22.675 28.0312 20.85 28.8188C19.025 29.6063 17.075 30 15 30Z" fill="white" />
+  </svg>
 );
 
 /**
@@ -40,6 +40,7 @@ const SelectableImageCard = ({
   aspectRatio = '1/1',
   labelPosition = 'below',
   className = '',
+  imageClassName = '',
 }: SelectableImageCardProps) => {
   return (
     <button
@@ -47,17 +48,24 @@ const SelectableImageCard = ({
       onClick={onClick}
       className={['w-full text-left bg-transparent! p-0!', className].filter(Boolean).join(' ')}
     >
-      {/* 이미지 영역 (radius 12, 선택 시 딤 + 중앙 체크) */}
+      {/* 이미지 영역 (radius 12, 선택 시 딤 + 중앙 체크 + 2px 검정 테두리 + 흰/검정 이중 링) */}
       <div
-        className="relative w-full overflow-hidden rounded-xl bg-[#EEEEEE]"
+        className={[
+          'relative w-full overflow-hidden rounded-xl bg-[#EEEEEE]',
+          selected
+            ? 'border-2 border-black shadow-[0_0_0_2px_#FFFFFF,0_0_0_4px_#000000]'
+            : imageClassName,
+        ]
+          .filter(Boolean)
+          .join(' ')}
         style={{ aspectRatio }}
       >
         <img src={src} alt={label ?? ''} className="w-full h-full object-cover" />
 
-        {/* 선택 오버레이 */}
+        {/* 선택 오버레이 — Figma: #000 40% + background blur 2 */}
         {selected && (
           <>
-            <div className="absolute inset-0 bg-black/30" />
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
             <div className="absolute inset-0 flex items-center justify-center">
               <CheckBadge />
             </div>
@@ -72,9 +80,9 @@ const SelectableImageCard = ({
         )}
       </div>
 
-      {/* 라벨 — 이미지 아래 중앙 (무드) */}
+      {/* 라벨 — 이미지 아래 중앙 (무드). Figma: Pretendard 500 / 12 / lh16 / tracking 1.2px / uppercase / #000 */}
       {label && labelPosition === 'below' && (
-        <p className="mt-2 text-center text-sm font-medium leading-5 text-[#1A1C1C]">{label}</p>
+        <p className="mt-2 text-center text-xs font-medium leading-4 tracking-[1.2px] uppercase text-black">{label}</p>
       )}
     </button>
   );
