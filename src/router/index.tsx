@@ -20,6 +20,7 @@ import ClosetPermissionPage from '../pages/closet/ClosetPermissionPage';
 import ClosetPhotoPage from '../pages/closet/ClosetPhotoPage';
 import ClosetLoadingPage from '../pages/closet/ClosetLoadingPage';
 import ClosetTagEditPage from '../pages/closet/ClosetTagEditPage';
+import ClosetCompletePage from '../pages/closet/ClosetCompletePage';
 import ClosetItemDetailPage from '../pages/closet/ClosetItemDetailPage';
 
 // 3. 홈
@@ -110,6 +111,10 @@ const router = createBrowserRouter([
   {
     path: '/closet/register/tags',
     element: <ProtectedRoute><ClosetTagEditPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/complete',
+    element: <ProtectedRoute><ClosetCompletePage /></ProtectedRoute>,
   },
   {
     path: '/closet/:itemId',

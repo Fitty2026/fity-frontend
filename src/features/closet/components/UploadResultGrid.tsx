@@ -33,7 +33,8 @@ const UploadResultGrid = ({
           <ClothingThumbnail
             key={i}
             src={src}
-            ratio="square"
+            ratio="auto"
+            className="aspect-[2/3] w-full"
             overlay={
               showOverflow ? (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white text-lg font-semibold">
