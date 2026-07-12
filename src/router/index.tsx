@@ -18,6 +18,7 @@ import ClosetRegisterPage from '../pages/closet/ClosetRegisterPage';
 import ClosetPlatformPage from '../pages/closet/ClosetPlatformPage';
 import ClosetPermissionPage from '../pages/closet/ClosetPermissionPage';
 import ClosetPhotoPage from '../pages/closet/ClosetPhotoPage';
+import ClosetLoadingPage from '../pages/closet/ClosetLoadingPage';
 import ClosetItemDetailPage from '../pages/closet/ClosetItemDetailPage';
 
 // 3. 홈
@@ -96,6 +97,14 @@ const router = createBrowserRouter([
   {
     path: '/closet/register/photo',
     element: <ProtectedRoute><ClosetPhotoPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/importing',
+    element: <ProtectedRoute><ClosetLoadingPage variant="import" /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/analyzing',
+    element: <ProtectedRoute><ClosetLoadingPage variant="analyze" /></ProtectedRoute>,
   },
   {
     path: '/closet/:itemId',

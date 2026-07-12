@@ -19,12 +19,16 @@ const ProgressBar = ({
   return (
     <div className={['w-full', className].filter(Boolean).join(' ')}>
       {(label || showPercent) && (
-        <div className="flex items-center justify-between mb-2 text-xs text-neutral-500">
-          <span>{label}</span>
-          {showPercent && <span className="font-semibold text-black">{clamped}%</span>}
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-bold leading-4 tracking-[1.2px] uppercase text-[#4C4546]">
+            {label}
+          </span>
+          {showPercent && (
+            <span className="text-base font-semibold leading-7 text-black">{clamped}%</span>
+          )}
         </div>
       )}
-      <div className="w-full h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-[#E2E2E2] rounded-full overflow-hidden">
         <div
           className="h-full bg-black rounded-full transition-all duration-300 ease-out"
           style={{ width: `${clamped}%` }}
