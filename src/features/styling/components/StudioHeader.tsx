@@ -5,10 +5,10 @@ const BackIcon = () => (
   </svg>
 );
 
-/** 별 아이콘 — 보유 스타 카운트 (※ px/컬러 캡쳐로 확정 필요) */
+/** 별 아이콘 — 보유 스타 카운트 (16×15, STY-01과 동일) */
 const StarIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M7 0.5L8.854 5.146L13.5 5.5L9.75 8.5L11 13L7 10.5L3 13L4.25 8.5L0.5 5.5L5.146 5.146L7 0.5Z" fill="black" />
+  <svg width="16" height="15" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M9.00003 1L11.472 5.93691L17 6.73344L13 10.5741L13.944 16L9.00003 13.4369L4.05603 16L5.00003 10.5741L1.00003 6.73344L6.52803 5.93691L9.00003 1Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
@@ -45,9 +45,10 @@ const StudioHeader = ({ title = '스튜디오', onBack, starCount, className = '
       <h1 className="text-base font-medium leading-5 text-black">{title}</h1>
 
       {typeof starCount === 'number' && (
-        <div className="absolute right-4 flex items-center gap-1">
+        <div className="absolute right-[22px] flex items-center gap-1">
           <StarIcon />
-          <span className="text-sm font-medium leading-5 text-black">{starCount}</span>
+          {/* Figma: Pretendard 500 / 14 / lh20 / #5E5E5E */}
+          <span className="text-[14px] font-medium leading-5 text-[#5E5E5E]">{starCount}</span>
         </div>
       )}
     </header>

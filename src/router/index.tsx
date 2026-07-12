@@ -28,6 +28,7 @@ import HomePage from '../pages/home/HomePage';
 
 // 4. 코디 생성
 import StylingStartPage from '../pages/styling/StylingStartPage';
+import StylingMethodPage from '../pages/styling/StylingMethodPage';
 import StylingDatePage from '../pages/styling/StylingDatePage';
 import StylingMoodPage from '../pages/styling/StylingMoodPage';
 import StylingItemSelectPage from '../pages/styling/StylingItemSelectPage';
@@ -137,6 +138,10 @@ const router = createBrowserRouter([
   {
     path: '/styling',
     element: <ProtectedRoute><StylingStartPage /></ProtectedRoute>,
+  },
+  {
+    path: '/styling/method',
+    element: <ProtectedRoute><StylingMethodPage /></ProtectedRoute>,
   },
   {
     path: '/styling/date',
