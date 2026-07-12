@@ -14,7 +14,7 @@ interface CategoryTabsProps {
 const CategoryTabs = ({ categories, active, onChange, className = '' }: CategoryTabsProps) => {
   return (
     <div
-      className={['flex gap-2 overflow-x-auto no-scrollbar px-1 py-1', className]
+      className={['flex gap-2 overflow-x-auto no-scrollbar', className]
         .filter(Boolean)
         .join(' ')}
     >
@@ -24,7 +24,11 @@ const CategoryTabs = ({ categories, active, onChange, className = '' }: Category
           label={cat}
           selected={cat === active}
           onClick={() => onChange(cat)}
-          className="shrink-0"
+          // Figma: padding 8/20 (Badge 기본 12/4 override). 비선택 = bg #E8E8E8 / border 없음 / text #1A1C1C
+          className={[
+            'shrink-0 px-5! py-2!',
+            cat === active ? '' : 'bg-[#E8E8E8]! border-transparent! text-[#1A1C1C]!',
+          ].join(' ')}
         />
       ))}
     </div>
