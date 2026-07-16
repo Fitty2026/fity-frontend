@@ -1,19 +1,41 @@
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
+import { mockOutfits } from '../../mocks/data/outfit';
+
+import type { Outfit } from '../../types';
 
 const OutfitResultPage = () => {
+  const [result, setResult] = useState<Outfit>();
+
+  const navigate = useNavigate();
+  useEffect(() => {
+    setResult(mockOutfits?.[0]);
+  }, []);
+
   return (
     <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="스튜디오">
       <h1 className=" w-full text-[#1F2124] text-[20px] text-center font-[600] leading-[150%] mt-[56px] tracking-[-2%]">
         코디를 저장할까요?
       </h1>
       <div className="mt-[40px] mx-[40px] aspect-[3/4]">
-        <img className=" w-full h-full rounded-[24px]" src={''} alt={''}></img>
+        <img className="rounded-[24px]" src={result?.imageUrl} alt={result?.createdAt}></img>
       </div>
       <div className="mt-[30px] mx-[24px] flex flex-col gap-[6px] ">
-        <button className="bg-[#F6F7F8] rounded-[32px] py-[16px] text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
+        <button
+          onClick={() => {
+            navigate('/outfit/save');
+          }}
+          className="bg-[#F6F7F8] rounded-[32px] py-[16px] text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
+        >
           수정하기
         </button>
-        <button className="bg-[#F6F7F8] rounded-[32px] py-[16px] text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
+        <button
+          onClick={() => {
+            navigate('/outfit/share');
+          }}
+          className="bg-[#F6F7F8] rounded-[32px] py-[16px] text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
+        >
           확인
         </button>
       </div>
