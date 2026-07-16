@@ -8,18 +8,23 @@ import type { Outfit } from '../../types';
 const OutfitResultPage = () => {
   const [result, setResult] = useState<Outfit>();
 
-  const navigate = useNavigate();
   useEffect(() => {
     setResult(mockOutfits?.[0]);
   }, []);
+
+  const navigate = useNavigate();
 
   return (
     <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="스튜디오">
       <h1 className=" w-full text-[#1F2124] text-[20px] text-center font-[600] leading-[150%] mt-[56px] tracking-[-2%]">
         코디를 저장할까요?
       </h1>
-      <div className="mt-[40px] mx-[40px] aspect-[3/4]">
-        <img className="rounded-[24px]" src={result?.imageUrl} alt={result?.createdAt}></img>
+      <div className="mt-[40px] mx-[40px]  object-cover">
+        <img
+          className="rounded-[24px] aspect-[0.754/1] object-cover"
+          src={result?.imageUrl}
+          alt={result?.createdAt}
+        ></img>
       </div>
       <div className="mt-[30px] mx-[24px] flex flex-col gap-[6px] ">
         <button
