@@ -22,6 +22,7 @@ import ClosetLoadingPage from '../pages/closet/ClosetLoadingPage';
 import ClosetTagEditPage from '../pages/closet/ClosetTagEditPage';
 import ClosetCompletePage from '../pages/closet/ClosetCompletePage';
 import ClosetItemDetailPage from '../pages/closet/ClosetItemDetailPage';
+import ClosetIntroPage from '../pages/closet/ClosetIntroPage';
 
 // 3. 홈
 import HomePage from '../pages/home/HomePage';
@@ -95,6 +96,10 @@ const router = createBrowserRouter([
   {
     path: '/closet',
     element: <ProtectedRoute><ClosetHomePage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/intro',
+    element: <ProtectedRoute><ClosetIntroPage /></ProtectedRoute>,
   },
   {
     path: '/closet/register',

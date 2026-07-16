@@ -7,14 +7,17 @@ interface OnboardingTopBarProps {
 }
 
 /**
- * 옷장 온보딩 상단 바 — 가운데 "Fitty" 로고, 우측 건너뛰기, 하단 진행 바.
- * 쇼핑몰 선택 / 권한 동의 등 온보딩 스텝 화면 공통.
+ * 옷장 온보딩 상단 바 — 가운데 "Fitty" 워드마크, 우측 건너뛰기, 하단 진행 바.
+ * Figma: Fitty = Instrument Sans 700 / 23px / #1F2124.
+ * 진행 바 = 375×4, 채움 #9D98F0 / 트랙 #E6E8EA.
  */
 const OnboardingTopBar = ({ progress, showSkip = false, onSkip }: OnboardingTopBarProps) => {
   return (
-    <div className="w-full bg-white">
-      <div className="relative flex items-center justify-center h-14 px-4">
-        <span className="text-lg font-bold text-black">Fitty</span>
+    <div className="w-full bg-white pt-[env(safe-area-inset-top,0px)]">
+      <div className="relative flex items-center justify-center h-[53px] px-4">
+        <span className="font-['Instrument_Sans'] font-bold text-[23px] leading-none text-[#1F2124]">
+          Fitty
+        </span>
         {showSkip && (
           <button
             type="button"
@@ -29,9 +32,9 @@ const OnboardingTopBar = ({ progress, showSkip = false, onSkip }: OnboardingTopB
         )}
       </div>
       {progress !== undefined && (
-        <div className="h-1 w-full bg-neutral-100">
+        <div className="h-1 w-full bg-[#E6E8EA]">
           <div
-            className="h-full bg-violet-400 transition-[width] duration-300"
+            className="h-full bg-[#9D98F0] transition-[width] duration-300"
             style={{ width: `${Math.min(Math.max(progress, 0), 1) * 100}%` }}
           />
         </div>
