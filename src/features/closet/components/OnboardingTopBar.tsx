@@ -22,11 +22,11 @@ const OnboardingTopBar = ({ progress, showSkip = false, onSkip }: OnboardingTopB
           <button
             type="button"
             onClick={onSkip}
-            className="absolute right-4 flex items-center gap-0.5 text-sm text-neutral-400 cursor-pointer"
+            className="absolute right-5 flex items-center gap-1 text-[14px] text-[#B2B8BD] cursor-pointer"
           >
             건너뛰기
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 18l6-6-6-6" />
+            <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0.600098 0.599609L5.6001 5.59961L0.600098 10.5996" stroke="#B2B8BD" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
         )}
