@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import PageLayout from '@/components/layout/PageeLayout';
-import { mockOutfits } from '../../mocks/data/outfit';
 
+import { useNavigate } from 'react-router-dom';
+
+import PageLayout from '@/components/layout/PageeLayout';
+
+import { mockOutfits } from '../../mocks/data/outfit';
 import type { Outfit } from '../../types';
 
 const OutfitResultPage = () => {

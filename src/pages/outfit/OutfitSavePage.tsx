@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import PageLayout from '@/components/layout/PageeLayout';
-import { mockOutfits } from '../../mocks/data/outfit';
 
-import type { Outfit } from '../../types';
+import { useNavigate } from 'react-router-dom';
+
+import PageLayout from '@/components/layout/PageeLayout';
 import Input from '@/components/ui/Input';
+
+import { mockOutfits } from '../../mocks/data/outfit';
+import type { Outfit } from '../../types';
 
 const Tag = ({ isSelected = false, tag = '', onclick = () => {} }) => {
   return (
