@@ -66,6 +66,8 @@ import NotFoundPage from '../pages/error/NotFoundPage';
 
 import CodyPlay from '@/pages/codyplay/CodyPlay';
 import CodyRetouch from '@/pages/codyplay/CodyRetouch';
+import MyOutfitEditPage from '@/pages/myoutfit/MyOutfitEditPage';
+import MyOutfitDeletePage from '@/pages/myoutfit/MyOutfitDeletePage';
 
 const router = createBrowserRouter([
 
@@ -239,13 +241,21 @@ const router = createBrowserRouter([
 
   // 내 코디
   {
+    path: '/myoutfit',
     element: <ProtectedRoute><MyOutfitListPage /></ProtectedRoute>,
   },
   {
     path: '/myoutfit/:outfitId',
     element: <ProtectedRoute><MyOutfitDetailPage /></ProtectedRoute>,
   },
-
+  {
+    path: '/myoutfit/edit/:outfitId',
+    element: <ProtectedRoute><MyOutfitEditPage /></ProtectedRoute>,
+  },
+   {
+    path: '/myoutfit/delete/:outfitId',
+    element: <ProtectedRoute><MyOutfitDeletePage /></ProtectedRoute>,
+  },
   // 마이페이지
     {
       path: '/mypage',
