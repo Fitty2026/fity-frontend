@@ -9,7 +9,7 @@ import OnboardingLayout from '@/features/onboarding/components/OnboardingLayout'
 import { STYLE_TILES } from '@/features/onboarding/constants';
 import useOnboardingStore from '@/store/onboardingStore';
 
-const INTRO_DURATION_MS = 2000;
+const INTRO_DURATION_MS = 2500;
 /** 아래로 이만큼(px) 이상 끌면 수집으로 판정 */
 const COLLECT_THRESHOLD_PX = 80;
 /** 수집 애니메이션(카드가 아래로 빠지는) 시간 */

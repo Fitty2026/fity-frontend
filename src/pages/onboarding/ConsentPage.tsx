@@ -6,7 +6,7 @@ import BlobIntro from '@/features/onboarding/components/BlobIntro';
 import OnboardingLayout from '@/features/onboarding/components/OnboardingLayout';
 import useOnboardingStore from '@/store/onboardingStore';
 
-const INTRO_DURATION_MS = 2000;
+const INTRO_DURATION_MS = 2500;
 
 const CONSENT_ITEMS = [
   { key: 'terms', label: '(필수) 이용 약관 동의', required: true },
