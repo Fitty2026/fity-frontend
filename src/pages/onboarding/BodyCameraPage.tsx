@@ -30,6 +30,7 @@ const CameraDots = () => (
 
 const BodyCameraPage = () => {
   const navigate = useNavigate();
+  const bodyPhotoUrls = useOnboardingStore((s) => s.bodyPhotoUrls);
   const setBodyPhotoUrls = useOnboardingStore((s) => s.setBodyPhotoUrls);
   const [phase, setPhase] = useState<Phase>('guide');
   const [cameraError, setCameraError] = useState(false);
@@ -73,10 +74,31 @@ const BodyCameraPage = () => {
   const handleCapture = () => {
     const video = videoRef.current;
     if (!video || video.videoWidth === 0) return;
+
+    // 프리뷰는 object-cover로 중앙 크롭되어 보이므로,
+    // 화면에 보이는 영역만 원본 프레임에서 잘라내 그대로 저장한다
+    const { videoWidth, videoHeight } = video;
+    const displayRatio = video.clientWidth / video.clientHeight;
+    const videoRatio = videoWidth / videoHeight;
+
+    let sx = 0;
+    let sy = 0;
+    let sw = videoWidth;
+    let sh = videoHeight;
+    if (videoRatio > displayRatio) {
+      // 원본이 더 넓음 → 좌우를 잘라냄
+      sw = Math.round(videoHeight * displayRatio);
+      sx = Math.round((videoWidth - sw) / 2);
+    } else {
+      // 원본이 더 높음 → 상하를 잘라냄
+      sh = Math.round(videoWidth / displayRatio);
+      sy = Math.round((videoHeight - sh) / 2);
+    }
+
     const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d')?.drawImage(video, 0, 0);
+    canvas.width = sw;
+    canvas.height = sh;
+    canvas.getContext('2d')?.drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
     canvas.toBlob(
       (blob) => {
         if (blob) finishWithUrls([URL.createObjectURL(blob)]);
@@ -164,14 +186,14 @@ const BodyCameraPage = () => {
     <OnboardingLayout progress={0.8}>
       <div className="flex flex-1 flex-col px-6 pb-8 pt-10">
         <h2 className="text-center text-lg font-semibold">
-          {phase === 'guide' ? '천천히 한 바퀴 돌아주세요' : '사진 촬영이 완료되었어요'}
+          {phase === 'guide' ? '천천히 한 바퀴 돌아주세요' : '사진이 업로드되었어요'}
         </h2>
 
         <div className="mt-8 flex flex-1 items-start justify-center">
           {phase === 'guide' ? (
-            <PhotoFrameCard imageSrc={mannequin} alt="한 바퀴 돌기 가이드" />
+            <PhotoFrameCard imageSrc={mannequin} variant="plain" alt="한 바퀴 돌기 가이드" />
           ) : (
-            <PhotoFrameCard showCheck />
+            <PhotoFrameCard imageSrc={bodyPhotoUrls[0]} alt="촬영된 체형 사진" fit="cover" showCheck />
           )}
         </div>
 

@@ -80,7 +80,7 @@ const BodyUploadPage = () => {
           )}
           {phase === 'done' && (
             <div className="flex w-full justify-center">
-              <PhotoFrameCard showCheck />
+              <PhotoFrameCard imageSrc={bodyPhotoUrls[0]} alt="업로드한 체형 사진" fit="cover" showCheck />
             </div>
           )}
           {phase === 'confirm' && <PhotoCarousel imageSrcs={bodyPhotoUrls} />}

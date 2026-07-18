@@ -34,7 +34,7 @@ const BodyPhotoGuidePage = () => {
         </h2>
 
         <div className="mt-8 flex flex-1 items-start justify-center">
-          <PhotoFrameCard imageSrc={mannequin} alt="전신 촬영 가이드" />
+          <PhotoFrameCard imageSrc={mannequin} variant="plain" alt="전신 촬영 가이드" />
         </div>
 
         {phase === 'fix' ? (
