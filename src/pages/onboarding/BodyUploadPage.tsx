@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
-import mannequin from '@/assets/images/body/mannequin.png';
+import mannequinBack from '@/assets/images/body/back.png';
+import mannequinFront from '@/assets/images/body/front.png';
+import mannequinSide from '@/assets/images/body/side.png';
 import Button from '@/components/ui/Button';
 import OnboardingLayout from '@/features/onboarding/components/OnboardingLayout';
 import PhotoFrameCard from '@/features/onboarding/components/PhotoFrameCard';
@@ -12,12 +14,24 @@ type Phase = 'select' | 'done' | 'confirm';
 
 const MAX_PHOTOS = 3;
 
-/** 정면/측면/후면 안내용 캐러셀 (업로드 전에는 마네킹 3장) */
-const PhotoCarousel = ({ imageSrcs }: { imageSrcs: string[] }) => (
-  <Swiper className="h-full w-full" slidesPerView="auto" centeredSlides spaceBetween={16}>
+/** 정면/측면/후면 안내용 캐러셀 */
+const PhotoCarousel = ({
+  imageSrcs,
+  initialSlide = 0,
+}: {
+  imageSrcs: string[];
+  initialSlide?: number;
+}) => (
+  <Swiper
+    className="h-full w-full"
+    slidesPerView="auto"
+    centeredSlides
+    spaceBetween={16}
+    initialSlide={initialSlide}
+  >
     {imageSrcs.map((src, i) => (
       <SwiperSlide key={`${src}-${i}`} className="!w-[62%]">
-        <div className="mx-auto flex h-full max-h-[380px] items-center justify-center overflow-hidden rounded-3xl border border-neutral-100 bg-neutral-50">
+        <div className="mx-auto flex h-full max-h-[380px] items-center justify-center overflow-hidden rounded-3xl border border-neutral-200 bg-white p-6">
           <img src={src} alt={`체형 사진 ${i + 1}`} className="h-full w-full object-contain" />
         </div>
       </SwiperSlide>
@@ -60,7 +74,10 @@ const BodyUploadPage = () => {
         </h2>
 
         <div className="mt-8 flex flex-1 items-center overflow-hidden">
-          {phase === 'select' && <PhotoCarousel imageSrcs={[mannequin, mannequin, mannequin]} />}
+          {phase === 'select' && (
+            // 측면·정면·후면 순서, 처음에 정면이 중앙에 오도록
+            <PhotoCarousel imageSrcs={[mannequinSide, mannequinFront, mannequinBack]} initialSlide={1} />
+          )}
           {phase === 'done' && (
             <div className="flex w-full justify-center">
               <PhotoFrameCard showCheck />
