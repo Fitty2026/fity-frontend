@@ -34,23 +34,32 @@ const BlobIntro = ({ message, size }: BlobIntroProps) => {
           transition: 'width 1.2s ease-out, height 1.2s ease-out',
         }}
       >
-        {/* 바깥 블롭 */}
+        {/* 바깥 블롭 - 가장 크게 일렁이는 테두리 */}
         <div
           className="absolute inset-0"
           style={{
-            animation: 'blob-wobble 6s ease-in-out infinite',
+            animation: 'blob-wobble 3.8s ease-in-out infinite',
             background:
               'linear-gradient(135deg, rgba(196, 181, 253, 0.55), rgba(221, 214, 254, 0.3) 45%, rgba(167, 139, 250, 0.45))',
             boxShadow: 'inset 0 0 24px rgba(255, 255, 255, 0.7), 0 8px 24px rgba(167, 139, 250, 0.25)',
           }}
         />
-        {/* 안쪽 블롭 - 반대 방향으로 느리게 꿀렁여 유기적인 느낌 */}
+        {/* 중간 블롭 - 위상이 어긋난 변형을 겹쳐 테두리가 여러 겹으로 일렁이게 */}
         <div
-          className="absolute inset-[8%]"
+          className="absolute inset-[5%]"
           style={{
-            animation: 'blob-wobble 7.5s ease-in-out infinite reverse',
+            animation: 'blob-wobble-alt 4.6s ease-in-out infinite',
             background:
               'linear-gradient(315deg, rgba(233, 213, 255, 0.5), rgba(255, 255, 255, 0.35) 55%, rgba(196, 181, 253, 0.4))',
+          }}
+        />
+        {/* 안쪽 블롭 - 반대 방향으로 느리게 꿀렁이는 심 */}
+        <div
+          className="absolute inset-[16%]"
+          style={{
+            animation: 'blob-wobble 5.6s ease-in-out infinite reverse',
+            background:
+              'linear-gradient(45deg, rgba(221, 214, 254, 0.45), rgba(255, 255, 255, 0.5) 60%, rgba(196, 181, 253, 0.35))',
           }}
         />
         {/* 광택 하이라이트 */}
