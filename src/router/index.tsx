@@ -8,10 +8,9 @@ import LoginPage from '../pages/auth/LoginPage';
 import SignupPage from '../pages/auth/SignupPage';
 
 // 1. 온보딩
-import StylePreferencePage from '../pages/onboarding/StylePreferencePage';
-import PhotoUploadPage from '../pages/onboarding/PhotoUploadPage';
-import BodyAnalysisPage from '../pages/onboarding/BodyAnalysisPage';
-import AvatarGeneratePage from '../pages/onboarding/AvatarGeneratePage';
+import ConsentPage from '../pages/onboarding/ConsentPage';
+import StyleSwipePage from '../pages/onboarding/StyleSwipePage';
+import StyleConfirmPage from '../pages/onboarding/StyleConfirmPage';
 
 // 2. 옷장
 import ClosetHomePage from '../pages/closet/ClosetHomePage';
@@ -73,19 +72,15 @@ const router = createBrowserRouter([
     // ── 온보딩 (로그인 후 최초 1회) ───────────────
     {
       path: '/onboarding',
-      element: <ProtectedRoute><StylePreferencePage /></ProtectedRoute>,
+      element: <ProtectedRoute><ConsentPage /></ProtectedRoute>,
     },
     {
-      path: '/onboarding/photo',
-      element: <ProtectedRoute><PhotoUploadPage /></ProtectedRoute>,
+      path: '/onboarding/style',
+      element: <ProtectedRoute><StyleSwipePage /></ProtectedRoute>,
     },
     {
-      path: '/onboarding/analysis',
-      element: <ProtectedRoute><BodyAnalysisPage /></ProtectedRoute>,
-    },
-    {
-      path: '/onboarding/avatar',
-      element: <ProtectedRoute><AvatarGeneratePage /></ProtectedRoute>,
+      path: '/onboarding/style/confirm',
+      element: <ProtectedRoute><StyleConfirmPage /></ProtectedRoute>,
     },
 
     // ── 메인 (로그인 필요) ────────────────────────
