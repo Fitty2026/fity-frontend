@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { StudioHeader, ScreenTitle, DateField, StudioCalendar, BottomCTA } from '@/features/styling/components';
+import { StudioHeader, ScreenTitle, DateField, StudioCalendar, WheelDatePicker, BottomCTA } from '@/features/styling/components';
 
 /**
  * 날짜 선택 (상황별 추천 플로우)
  * - 헤더(뒤로·스튜디오·건너뛰기) + 안내 + 날짜 필드 + 캘린더 + 다음 CTA
- * ※ 세부 px/타이포/색은 Figma 스펙으로 확정 예정 (스캐폴드)
+ * - 날짜 필드 탭 시 휠 데이트 피커 드롭다운
+ * ※ 세부 px/타이포/색은 Figma 스펙으로 확정 예정
  */
 const StylingDatePage = () => {
   const navigate = useNavigate();
   const [year, setYear] = useState(2026);
   const [month, setMonth] = useState(6);
   const [selectedDay, setSelectedDay] = useState(28);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const prevMonth = () => {
     if (month === 1) {
@@ -30,6 +32,12 @@ const StylingDatePage = () => {
     }
   };
 
+  const handlePick = (y: number, m: number, d: number) => {
+    setYear(y);
+    setMonth(m);
+    setSelectedDay(d);
+  };
+
   return (
     <div className="min-h-screen bg-neutral-100 flex justify-center">
       <div className="relative w-full max-w-[430px] min-h-screen bg-white flex flex-col">
@@ -42,19 +50,44 @@ const StylingDatePage = () => {
             subtitle="자동으로 날씨를 반영해줘요"
           />
 
-          {/* 서브타이틀↔날짜필드 48 */}
-          <DateField
-            className="mt-12"
-            label={`${year}년 ${month}월 ${selectedDay}일`}
-            onNext={() => navigate('/styling/mood')}
-          />
+          {/* 날짜 필드 + 휠 피커 드롭다운 (서브타이틀↔날짜필드 48) */}
+          <div className="relative mt-12">
+            <DateField
+              label={`${year}년 ${month}월 ${selectedDay}일`}
+              onClick={() => setPickerOpen((v) => !v)}
+              onNext={() => navigate('/styling/mood')}
+            />
+            {pickerOpen && (
+              <>
+                {/* 바깥 클릭 시 닫기 */}
+                <button
+                  type="button"
+                  aria-label="닫기"
+                  className="fixed inset-0 z-10 cursor-default"
+                  onClick={() => setPickerOpen(false)}
+                />
+                {/* Figma: 123×94, top298/left55 → 필드 텍스트 시작(좌 31)·필드 하단 살짝 겹침 */}
+                <WheelDatePicker
+                  className="absolute left-[31px] top-[calc(100%-3px)] z-20"
+                  year={year}
+                  month={month}
+                  day={selectedDay}
+                  onChange={handlePick}
+                />
+              </>
+            )}
+          </div>
 
           <StudioCalendar
             className="mt-6"
             year={year}
             month={month}
             selectedDay={selectedDay}
-            todayDay={19}
+            todayDay={
+              year === new Date().getFullYear() && month === new Date().getMonth() + 1
+                ? new Date().getDate()
+                : undefined
+            }
             onSelectDay={setSelectedDay}
             onPrevMonth={prevMonth}
             onNextMonth={nextMonth}

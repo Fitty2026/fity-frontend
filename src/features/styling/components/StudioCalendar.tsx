@@ -41,8 +41,8 @@ const StudioCalendar = ({
 
   return (
     <div className={className}>
-      {/* 월 네비 — 6월은 첫 열 중앙(반 셀 7.143%), < >(64×24)는 우측 inset 6 */}
-      <div className="flex items-center justify-between pl-[7.143%] pr-1.5">
+      {/* 월 네비 — 6월 그룹(54×30) 좌 20(화면 44), < >(64×24) 우측 inset 6 */}
+      <div className="flex items-center justify-between pl-5 pr-1.5">
         {/* 6월 라벨: Pretendard 700 / 20px / lh150% / -2% / #1F2124 + ">" #959BA7 */}
         <button type="button" onClick={onMonthClick} className="flex items-center text-[20px] font-bold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
           {month}월
