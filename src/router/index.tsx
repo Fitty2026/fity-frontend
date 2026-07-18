@@ -57,6 +57,8 @@ import NotFoundPage from '../pages/error/NotFoundPage';
 
 // dev 전용
 import DevPreviewPage from '../pages/dev/DevPreviewPage';
+import CodyPlay from '@/pages/codyplay/CodyPlay';
+import CodyRetouch from '@/pages/codyplay/CodyRetouch';
 
 const router = createBrowserRouter([
 
@@ -162,6 +164,16 @@ const router = createBrowserRouter([
     element: <ProtectedRoute><StylingLoadingPage /></ProtectedRoute>,
   },
 
+  //코디 플레이
+  {
+    path: '/codyplay',
+    element: <ProtectedRoute><CodyPlay /></ProtectedRoute>
+  },
+  {
+    path: '/codyplay/retouch',
+    element: <ProtectedRoute><CodyRetouch /></ProtectedRoute>
+  },
+
   // 코디 결과
   {
     path: '/outfit/result',
@@ -188,7 +200,6 @@ const router = createBrowserRouter([
 
   // 내 코디
   {
-    path: '/myoutfit',
     element: <ProtectedRoute><MyOutfitListPage /></ProtectedRoute>,
   },
   {
