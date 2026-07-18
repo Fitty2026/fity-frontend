@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { StudioHeader } from '@/features/styling/components';
 import rainBg from '@/assets/images/styling/weather-rain.png';
@@ -19,6 +20,12 @@ const StylingWeatherPage = () => {
   const navigate = useNavigate();
   const { state } = useLocation() as { state: WeatherLocationState | null };
   const { year = 2026, month = 6, day = 28 } = state ?? {};
+
+  // 1초 후 상황 선택으로 자동 이동 (탭하면 즉시 이동)
+  useEffect(() => {
+    const timer = setTimeout(() => navigate('/styling/mood'), 1000);
+    return () => clearTimeout(timer);
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-neutral-100 flex justify-center">

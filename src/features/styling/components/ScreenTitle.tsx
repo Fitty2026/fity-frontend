@@ -16,8 +16,8 @@ const ScreenTitle = ({ title, subtitle, align = 'center', className = '' }: Scre
       {/* Figma: Pretendard 600 / 20px / lh150% / -2% / #1F2124 */}
       <h1 className="text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124] whitespace-pre-line">{title}</h1>
       {subtitle && (
-        // Figma: Pretendard 500 / 14px / lh160% / -2% / center
-        <p className="mt-1.5 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#959BA7] whitespace-pre-line">{subtitle}</p>
+        // Figma: Pretendard 500 / 14px / lh160% / -2% / #5A6169 / center, 타이틀↔서브 2
+        <p className="mt-0.5 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#5A6169] whitespace-pre-line">{subtitle}</p>
       )}
     </div>
   );

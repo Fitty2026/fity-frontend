@@ -63,14 +63,15 @@ const StudioHeader = ({ title = '스튜디오', logo = false, onBack, count, onS
           <HangerCountBadge count={count} />
         </span>
       ) : onSkip ? (
+        /* Figma: Pretendard 500 / 14px / lh160% / -2% / #B2B8BD, 텍스트↔체브론 4, 우측 inset 26 */
         <button
           type="button"
           onClick={onSkip}
-          className="absolute right-5 flex items-center gap-0.5 text-[13px] font-medium text-[#959BA7]"
+          className="absolute right-[26px] flex items-center gap-1 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#B2B8BD]"
         >
           건너뛰기
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#959BA7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4.5 2.5 8 6l-3.5 3.5" />
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5.5 3L10.5 8L5.5 13" stroke="#B2B8BD" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
       ) : null}
