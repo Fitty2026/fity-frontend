@@ -12,7 +12,7 @@
 
 /onboarding/body           BodyTypePage     블롭 인트로3 "이번엔 체형을 알아볼게요"(lg) → 체형 타입 3택 + 설명 오버레이 → 확인
 /onboarding/body/photo     BodyPhotoGuidePage  안내 1("카메라를 고정하고 전신을 촬영해주세요") → 안내 2("밝은 배경에서 촬영해주세요", 사진 업로드/촬영하기 분기)
-/onboarding/body/camera    BodyCameraPage   "천천히 한 바퀴 돌아주세요" → 실제 카메라(getUserMedia) + 보라 점 원형 프로그레스 + 셔터 → "사진 촬영이 완료되었어요"
+/onboarding/body/camera    BodyCameraPage   "천천히 한 바퀴 돌아주세요" → 실제 카메라(getUserMedia) + 보라 점 원형 프로그레스 + 셔터 → "사진이 업로드되었어요"
 /onboarding/body/upload    BodyUploadPage   "정면, 측면, 후면 사진을 업로드 해주세요"(최대 3장) → "사진이 업로드되었어요" → "업로드한 사진이 다음과 같나요?" 확인 캐러셀
 /onboarding/body/analysis  BodyAnalysisPage "AI가 체형을 분석하고 있어요"(옷걸이 차오름) → "체형이 분석되었어요" → 자동 이동
 /onboarding/body/result    BodyResultPage   수치 결과(치수 7개) → 최종 결과(유형 카드 + 체형 특징 바) → 완료

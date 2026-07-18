@@ -120,7 +120,7 @@ const capture = () => {
 
 - [ ] 'guide': "천천히 한 바퀴 돌아주세요" + 마네킹 카드 + "촬영하기" → 'camera'
 - [ ] 'camera': 검은 배경 + `<video autoPlay playsInline muted>` + 좌상단 X(스트림 정리 후 'guide') + 보라 점 원형 프로그레스 오버레이(SVG 점 20개, 순차 밝아지는 stagger 애니메이션) + 좌하단 갤러리 버튼(파일 선택 → done) + 셔터. 권한 실패 시 안내 문구 + 파일 선택 버튼.
-- [ ] 'done': "사진 촬영이 완료되었어요" + 체크 카드 + "다음" → `/onboarding/body/analysis`
+- [ ] 'done': "사진이 업로드되었어요" + 체크 카드 + "다음" → `/onboarding/body/analysis`
 
 **BodyUploadPage (progress 0.8, onSkip):**
 - [ ] 'select': "체형이 잘 보이는\n정면, 측면, 후면 사진을 업로드 해주세요" + 마네킹 캐러셀(Swiper) + "사진 업로드"(input file accept="image/*" multiple, 최대 3장) → objectURL 배열 저장 → 'done'
