@@ -21,7 +21,7 @@ const BottomCTA = ({ label, onClick, disabled = false, className = '' }: BottomC
           // 텍스트: Pretendard 600 / 16px / lh160% / -2% / #F6F7F8
           'w-full h-[58px] rounded-[32px] text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] transition-colors',
           disabled
-            ? 'bg-[#E9EBEE] text-[#B2B8BD]'
+            ? 'bg-[#E6E8EA] text-[#B2B8BD]'
             : 'bg-[#1F2124] text-[#F6F7F8] active:bg-black',
         ].join(' ')}
       >
