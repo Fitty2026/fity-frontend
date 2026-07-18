@@ -46,7 +46,7 @@ import StylingLoadingPage from '../pages/styling/StylingLoadingPage';
 
 // 5. 코디 결과
 import OutfitResultPage from '../pages/outfit/OutfitResultPage';
-import OutfitSavePage from '../pages/outfit/OutfitEditPage';
+import OutfitEditPage from '../pages/outfit/OutfitEditPage';
 import OutfitSharePage from '../pages/outfit/OutfitSharePage';
 
 // 6. 커머스
@@ -221,8 +221,8 @@ const router = createBrowserRouter([
     element: <ProtectedRoute><OutfitResultPage /></ProtectedRoute>,
   },
   {
-    path: '/outfit/save',
-    element: <ProtectedRoute><OutfitSavePage /></ProtectedRoute>,
+    path: '/outfit/edit',
+    element: <ProtectedRoute><OutfitEditPage /></ProtectedRoute>,
   },
   {
     path: '/outfit/share',
