@@ -5,6 +5,7 @@ import ProtectedRoute from './ProtectedRoute';
 import SplashPage from '../pages/auth/SplashPage';
 import ServiceIntroPage from '../pages/auth/ServiceIntroPage';
 import LoginPage from '../pages/auth/LoginPage';
+import SignupPage from '../pages/auth/SignupPage';
 
 // 1. 온보딩
 import StylePreferencePage from '../pages/onboarding/StylePreferencePage';
@@ -67,6 +68,7 @@ const router = createBrowserRouter([
     { path: '/', element: <SplashPage /> },
     { path: '/intro', element: <ServiceIntroPage /> },
     { path: '/login', element: <LoginPage /> },
+    { path: '/signup', element: <SignupPage /> },
 
     // ── 온보딩 (로그인 후 최초 1회) ───────────────
     {
