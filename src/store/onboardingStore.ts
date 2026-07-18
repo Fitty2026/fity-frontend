@@ -1,18 +1,23 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { BodyAnalysisResult } from '../features/onboarding/api/bodyAnalysisApi';
 import type { StyleTag } from '../types';
+
+export type BodyType = 'straight' | 'wave' | 'natural';
 
 interface OnboardingState {
   selectedStyles: StyleTag[];
-  bodyImageFile: File | null;
-  bodyImageUrl: string | null;
-  avatarImageUrl: string | null;
+  bodyType: BodyType | null;
+  /** 촬영/업로드한 체형 사진 objectURL - 세션 한정이라 persist 제외 */
+  bodyPhotoUrls: string[];
+  analysisResult: BodyAnalysisResult | null;
   isOnboardingComplete: boolean;
   marketingAgreed: boolean;
 
   toggleStyle: (style: StyleTag) => void;
-  setBodyImage: (file: File, url: string) => void;
-  setAvatarImage: (url: string) => void;
+  setBodyType: (type: BodyType) => void;
+  setBodyPhotoUrls: (urls: string[]) => void;
+  setAnalysisResult: (result: BodyAnalysisResult) => void;
   setMarketingAgreed: (agreed: boolean) => void;
   completeOnboarding: () => void;
   reset: () => void;
@@ -22,9 +27,9 @@ const useOnboardingStore = create<OnboardingState>()(
   persist(
     (set) => ({
       selectedStyles: [],
-      bodyImageFile: null,
-      bodyImageUrl: null,
-      avatarImageUrl: null,
+      bodyType: null,
+      bodyPhotoUrls: [],
+      analysisResult: null,
       isOnboardingComplete: false,
       marketingAgreed: false,
 
@@ -36,24 +41,22 @@ const useOnboardingStore = create<OnboardingState>()(
             : [...state.selectedStyles, style],
         })),
 
-      setBodyImage: (file, url) =>
-        set({ bodyImageFile: file, bodyImageUrl: url }),
+      setBodyType: (type) => set({ bodyType: type }),
 
-      setAvatarImage: (url) =>
-        set({ avatarImageUrl: url }),
+      setBodyPhotoUrls: (urls) => set({ bodyPhotoUrls: urls }),
 
-      setMarketingAgreed: (agreed) =>
-        set({ marketingAgreed: agreed }),
+      setAnalysisResult: (result) => set({ analysisResult: result }),
 
-      completeOnboarding: () =>
-        set({ isOnboardingComplete: true }),
+      setMarketingAgreed: (agreed) => set({ marketingAgreed: agreed }),
+
+      completeOnboarding: () => set({ isOnboardingComplete: true }),
 
       reset: () =>
         set({
           selectedStyles: [],
-          bodyImageFile: null,
-          bodyImageUrl: null,
-          avatarImageUrl: null,
+          bodyType: null,
+          bodyPhotoUrls: [],
+          analysisResult: null,
           isOnboardingComplete: false,
           marketingAgreed: false,
         }),
@@ -61,8 +64,9 @@ const useOnboardingStore = create<OnboardingState>()(
     {
       name: 'fitty-onboarding', // localStorage key
       partialize: (state) => ({
-        // File/objectURL은 저장 불가·불필요하므로 제외
+        // objectURL/분석 결과는 세션 한정이므로 제외
         selectedStyles: state.selectedStyles,
+        bodyType: state.bodyType,
         isOnboardingComplete: state.isOnboardingComplete,
         marketingAgreed: state.marketingAgreed,
       }),
