@@ -157,9 +157,17 @@ const MyOutfitEditPage = () => {
       <div className="mt-[20px] mx-[24px]">
         <button
           onClick={() => {
+            navigate('/myoutfit/delete/:');
+          }}
+          className="w-full bg-[#F6F7F8] rounded-[32px] py-[16px] text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
+        >
+          삭제
+        </button>
+        <button
+          onClick={() => {
             navigate('/outfit/result');
           }}
-          className="w-full bg-[#1F2124] rounded-[32px] py-[16px] text-[#F6F7F8] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
+          className="w-full mt-[8px] bg-[#1F2124] rounded-[32px] py-[16px] text-[#F6F7F8] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
         >
           확인
         </button>
