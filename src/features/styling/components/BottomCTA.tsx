@@ -11,16 +11,18 @@ interface BottomCTAProps {
  */
 const BottomCTA = ({ label, onClick, disabled = false, className = '' }: BottomCTAProps) => {
   return (
-    <div className={['shrink-0 px-5 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]', className].filter(Boolean).join(' ')}>
+    <div className={['shrink-0 px-6 pt-3 pb-[calc(40px+env(safe-area-inset-bottom))]', className].filter(Boolean).join(' ')}>
+      {/* Figma: 327×58, radius32, bg #1F2124 (좌우 inset 24) */}
       <button
         type="button"
         onClick={onClick}
         disabled={disabled}
         className={[
-          'w-full h-14 rounded-full text-base font-semibold transition-colors',
+          // 텍스트: Pretendard 600 / 16px / lh160% / -2% / #F6F7F8
+          'w-full h-[58px] rounded-[32px] text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] transition-colors',
           disabled
             ? 'bg-[#E9EBEE] text-[#B2B8BD]'
-            : 'bg-[#1F2124] text-white active:bg-black',
+            : 'bg-[#1F2124] text-[#F6F7F8] active:bg-black',
         ].join(' ')}
       >
         {label}

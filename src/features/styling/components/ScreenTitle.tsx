@@ -13,9 +13,11 @@ interface ScreenTitleProps {
 const ScreenTitle = ({ title, subtitle, align = 'center', className = '' }: ScreenTitleProps) => {
   return (
     <div className={[align === 'center' ? 'text-center' : 'text-left', className].filter(Boolean).join(' ')}>
-      <h1 className="text-[20px] font-bold leading-[30px] text-[#1F2124] whitespace-pre-line">{title}</h1>
+      {/* Figma: Pretendard 600 / 20px / lh150% / -2% / #1F2124 */}
+      <h1 className="text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124] whitespace-pre-line">{title}</h1>
       {subtitle && (
-        <p className="mt-1.5 text-sm font-medium leading-5 text-[#959BA7] whitespace-pre-line">{subtitle}</p>
+        // Figma: Pretendard 500 / 14px / lh160% / -2% / center
+        <p className="mt-1.5 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#959BA7] whitespace-pre-line">{subtitle}</p>
       )}
     </div>
   );
