@@ -46,7 +46,7 @@ import StylingLoadingPage from '../pages/styling/StylingLoadingPage';
 
 // 5. 코디 결과
 import OutfitResultPage from '../pages/outfit/OutfitResultPage';
-import OutfitSavePage from '../pages/outfit/OutfitSavePage';
+import OutfitSavePage from '../pages/outfit/OutfitEditPage';
 import OutfitSharePage from '../pages/outfit/OutfitSharePage';
 
 // 6. 커머스
