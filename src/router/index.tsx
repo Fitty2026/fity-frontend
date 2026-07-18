@@ -57,8 +57,6 @@ import MyPage from '../pages/mypage/MyPage';
 import RouteErrorPage from '../pages/error/RouteErrorPage';
 import NotFoundPage from '../pages/error/NotFoundPage';
 
-// dev 전용
-import DevPreviewPage from '../pages/dev/DevPreviewPage';
 import CodyPlay from '@/pages/codyplay/CodyPlay';
 import CodyRetouch from '@/pages/codyplay/CodyRetouch';
 
@@ -218,9 +216,6 @@ const router = createBrowserRouter([
       path: '/mypage',
       element: <ProtectedRoute><MyPage /></ProtectedRoute>,
     },
-
-    // dev 전용 미리보기 (프로덕션 빌드에서는 라우트 미등록)
-    ...(import.meta.env.DEV ? [{ path: '/dev', element: <DevPreviewPage /> }] : []),
 
     // 없는 경로 → 404
     { path: '*', element: <NotFoundPage /> },
