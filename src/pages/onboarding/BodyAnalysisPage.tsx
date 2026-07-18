@@ -1,53 +1,47 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PageLayout from '@/components/layout/PageeLayout';
+import { analyzeBody } from '@/features/onboarding/api/bodyAnalysisApi';
+import HangerIcon from '@/features/onboarding/components/HangerIcon';
+import OnboardingLayout from '@/features/onboarding/components/OnboardingLayout';
 import useOnboardingStore from '@/store/onboardingStore';
 
-const ANALYSIS_DURATION_MS = 2500;
+/** 분석 완료 화면을 보여준 뒤 결과로 넘어가기까지의 시간 */
+const DONE_DISPLAY_MS = 1500;
 
 const BodyAnalysisPage = () => {
   const navigate = useNavigate();
-  const bodyImageUrl = useOnboardingStore((s) => s.bodyImageUrl);
-  const [started, setStarted] = useState(false);
+  const setAnalysisResult = useOnboardingStore((s) => s.setAnalysisResult);
+  const [done, setDone] = useState(false);
 
   useEffect(() => {
-    // 마운트 직후 진행 바 width 전환 트리거 (0% → 100%)
-    const raf = requestAnimationFrame(() => setStarted(true));
-    const timer = setTimeout(
-      () => navigate('/onboarding/avatar', { replace: true }),
-      ANALYSIS_DURATION_MS,
-    );
+    let cancelled = false;
+    let doneTimer: ReturnType<typeof setTimeout> | undefined;
+
+    analyzeBody().then((result) => {
+      if (cancelled) return;
+      setAnalysisResult(result);
+      setDone(true);
+      doneTimer = setTimeout(
+        () => navigate('/onboarding/body/result', { replace: true }),
+        DONE_DISPLAY_MS,
+      );
+    });
+
     return () => {
-      cancelAnimationFrame(raf);
-      clearTimeout(timer);
+      cancelled = true;
+      if (doneTimer) clearTimeout(doneTimer);
     };
-  }, [navigate]);
+  }, [navigate, setAnalysisResult]);
 
   return (
-    <PageLayout showHeader={false} showBottomNav={false}>
-      <div className="flex flex-col items-center px-6 py-10">
-        <div className="aspect-[3/4] w-full max-w-[300px] overflow-hidden rounded-2xl bg-neutral-200">
-          {bodyImageUrl && (
-            <img
-              src={bodyImageUrl}
-              alt=""
-              className="h-full w-full object-cover opacity-60 blur-md"
-            />
-          )}
-        </div>
-        <h1 className="mt-8 text-xl font-bold">체형을 분석하고 있어요</h1>
-        <p className="mt-2 text-sm text-neutral-500">비율을 계산하는 중이에요</p>
-        <div className="mt-6 h-1 w-48 overflow-hidden rounded-full bg-neutral-200">
-          <div
-            className="h-full bg-black transition-[width] duration-[2500ms] ease-linear"
-            style={{ width: started ? '100%' : '0%' }}
-          />
-        </div>
-        <p className="mt-8 text-sm text-neutral-400">
-          잠시만 기다려주세요, 곧 결과를 보여드릴게요
+    <OnboardingLayout progress={0.9}>
+      <div className="flex flex-1 flex-col items-center justify-center gap-10 pb-24">
+        <p className="text-base font-medium">
+          {done ? '체형이 분석되었어요' : 'AI가 체형을 분석하고 있어요'}
         </p>
+        <HangerIcon state={done ? 'done' : 'loading'} />
       </div>
-    </PageLayout>
+    </OnboardingLayout>
   );
 };
 
