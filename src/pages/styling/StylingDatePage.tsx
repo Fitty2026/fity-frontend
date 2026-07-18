@@ -55,7 +55,7 @@ const StylingDatePage = () => {
             <DateField
               label={`${year}년 ${month}월 ${selectedDay}일`}
               onClick={() => setPickerOpen((v) => !v)}
-              onNext={() => navigate('/styling/mood')}
+              onNext={() => navigate('/styling/weather', { state: { year, month, day: selectedDay } })}
             />
             {pickerOpen && (
               <>
@@ -94,7 +94,10 @@ const StylingDatePage = () => {
           />
         </div>
 
-        <BottomCTA label="다음" onClick={() => navigate('/styling/mood')} />
+        <BottomCTA
+          label="다음"
+          onClick={() => navigate('/styling/weather', { state: { year, month, day: selectedDay } })}
+        />
       </div>
     </div>
   );
