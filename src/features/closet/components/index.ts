@@ -13,3 +13,4 @@ export { default as ClosetSummary } from './ClosetSummary';
 export { default as CategoryFilterTabs } from './CategoryFilterTabs';
 export { default as ClothingThumbnail } from './ClothingThumbnail';
 export { default as ItemGrid } from './ItemGrid';
+export { default as ClosetBottomNav } from './ClosetBottomNav';
