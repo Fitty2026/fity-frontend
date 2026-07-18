@@ -11,7 +11,7 @@ const MyOutfitDetailPage = () => {
   const navigate = useNavigate();
 
   return (
-    <PageLayout showBottomNav={true} showHeader={true} showBack={true} title="옷장">
+    <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="옷장">
       <h1 className=" w-full text-[#1F2124] text-[20px] text-center font-[600] leading-[150%] mt-[56px] tracking-[-2%]">
         {outfit?.context}
       </h1>
