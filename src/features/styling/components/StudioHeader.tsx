@@ -54,7 +54,8 @@ const StudioHeader = ({ title = '스튜디오', logo = false, onBack, count, onS
           Fitty
         </span>
       ) : (
-        <span className="text-base font-semibold text-[#1F2124]">{title}</span>
+        /* Figma: Pretendard 600 / 20px / lh150% / -2% / #1F2124 */
+        <span className="text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">{title}</span>
       )}
 
       {count !== undefined ? (
