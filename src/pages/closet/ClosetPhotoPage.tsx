@@ -1,126 +1,118 @@
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
-import { PhotoUploadBox, BottomCTA } from '@/features/closet/components';
+import cameraMock from '@/assets/images/closet/camera-mock.png';
 
-/** 뒤로가기 아이콘 — Figma 에셋 */
-const BackIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M3.825 9L9.425 14.6L8 16L0 8L8 0L9.425 1.4L3.825 7H16V9H3.825Z" fill="black" />
+/** 닫기 X — 32×32, stroke #F6F7F8 */
+const CloseIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M8 24L24 8M8 8L24 24" stroke="#F6F7F8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
-/** 사진 촬영 아이콘 — Figma 에셋 (19×17) */
-const CameraIcon = () => (
-  <svg width="19" height="17" viewBox="0 0 19 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M1.66667 16.6667C1.20833 16.6667 0.815972 16.5035 0.489583 16.1771C0.163194 15.8507 0 15.4583 0 15V5C0 4.54167 0.163194 4.14931 0.489583 3.82292C0.815972 3.49653 1.20833 3.33333 1.66667 3.33333H4.29167L5.83333 1.66667H10.8333V3.33333H6.5625L5.04167 5H1.66667V15H15V7.5H16.6667V15C16.6667 15.4583 16.5035 15.8507 16.1771 16.1771C15.8507 16.5035 15.4583 16.6667 15 16.6667H1.66667ZM15 5V3.33333H13.3333V1.66667H15V0H16.6667V1.66667H18.3333V3.33333H16.6667V5H15ZM8.33333 13.75C9.375 13.75 10.2604 13.3854 10.9896 12.6562C11.7188 11.9271 12.0833 11.0417 12.0833 10C12.0833 8.95833 11.7188 8.07292 10.9896 7.34375C10.2604 6.61458 9.375 6.25 8.33333 6.25C7.29167 6.25 6.40625 6.61458 5.67708 7.34375C4.94792 8.07292 4.58333 8.95833 4.58333 10C4.58333 11.0417 4.94792 11.9271 5.67708 12.6562C6.40625 13.3854 7.29167 13.75 8.33333 13.75ZM8.33333 12.0833C7.75 12.0833 7.25694 11.8819 6.85417 11.4792C6.45139 11.0764 6.25 10.5833 6.25 10C6.25 9.41667 6.45139 8.92361 6.85417 8.52083C7.25694 8.11806 7.75 7.91667 8.33333 7.91667C8.91667 7.91667 9.40972 8.11806 9.8125 8.52083C10.2153 8.92361 10.4167 9.41667 10.4167 10C10.4167 10.5833 10.2153 11.0764 9.8125 11.4792C9.40972 11.8819 8.91667 12.0833 8.33333 12.0833Z" fill="black"/>
-  </svg>
-);
-
-/** 갤러리 아이콘 — Figma 에셋 (15×15) */
+/** 갤러리 — 48×48, stroke #F6F7F8 */
 const GalleryIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M1.66667 15C1.20833 15 0.815972 14.8368 0.489583 14.5104C0.163194 14.184 0 13.7917 0 13.3333V1.66667C0 1.20833 0.163194 0.815972 0.489583 0.489583C0.815972 0.163194 1.20833 0 1.66667 0H13.3333C13.7917 0 14.184 0.163194 14.5104 0.489583C14.8368 0.815972 15 1.20833 15 1.66667V13.3333C15 13.7917 14.8368 14.184 14.5104 14.5104C14.184 14.8368 13.7917 15 13.3333 15H1.66667ZM1.66667 13.3333H13.3333V1.66667H1.66667V13.3333ZM2.5 11.6667H12.5L9.375 7.5L6.875 10.8333L5 8.33333L2.5 11.6667ZM1.66667 13.3333V1.66667V13.3333Z" fill="black"/>
+  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4.5 31.5L14.818 21.182C15.2359 20.7641 15.7319 20.4327 16.2779 20.2065C16.8239 19.9804 17.409 19.864 18 19.864C18.591 19.864 19.1761 19.9804 19.7221 20.2065C20.2681 20.4327 20.7641 20.7641 21.182 21.182L31.5 31.5M28.5 28.5L31.318 25.682C31.7359 25.2641 32.2319 24.9327 32.7779 24.7065C33.3239 24.4804 33.909 24.364 34.5 24.364C35.091 24.364 35.6761 24.4804 36.2221 24.7065C36.7681 24.9327 37.2641 25.2641 37.682 25.682L43.5 31.5M7.5 39H40.5C41.2956 39 42.0587 38.6839 42.6213 38.1213C43.1839 37.5587 43.5 36.7956 43.5 36V12C43.5 11.2044 43.1839 10.4413 42.6213 9.87868C42.0587 9.31607 41.2956 9 40.5 9H7.5C6.70435 9 5.94129 9.31607 5.37868 9.87868C4.81607 10.4413 4.5 11.2044 4.5 12V36C4.5 36.7956 4.81607 37.5587 5.37868 38.1213C5.94129 38.6839 6.70435 39 7.5 39ZM28.5 16.5H28.516V16.516H28.5V16.5ZM29.25 16.5C29.25 16.6989 29.171 16.8897 29.0303 17.0303C28.8897 17.171 28.6989 17.25 28.5 17.25C28.3011 17.25 28.1103 17.171 27.9697 17.0303C27.829 16.8897 27.75 16.6989 27.75 16.5C27.75 16.3011 27.829 16.1103 27.9697 15.9697C28.1103 15.829 28.3011 15.75 28.5 15.75C28.6989 15.75 28.8897 15.829 29.0303 15.9697C29.171 16.1103 29.25 16.3011 29.25 16.5Z" stroke="#F6F7F8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
-/** 촬영 가이드 눈 아이콘 — Figma 에셋 (19×13, #848484) */
-const EyeIcon = () => (
-  <svg width="19" height="13" viewBox="0 0 19 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M9.16667 10C10.2083 10 11.0938 9.63542 11.8229 8.90625C12.5521 8.17708 12.9167 7.29167 12.9167 6.25C12.9167 5.20833 12.5521 4.32292 11.8229 3.59375C11.0938 2.86458 10.2083 2.5 9.16667 2.5C8.125 2.5 7.23958 2.86458 6.51042 3.59375C5.78125 4.32292 5.41667 5.20833 5.41667 6.25C5.41667 7.29167 5.78125 8.17708 6.51042 8.90625C7.23958 9.63542 8.125 10 9.16667 10ZM9.16667 8.5C8.54167 8.5 8.01042 8.28125 7.57292 7.84375C7.13542 7.40625 6.91667 6.875 6.91667 6.25C6.91667 5.625 7.13542 5.09375 7.57292 4.65625C8.01042 4.21875 8.54167 4 9.16667 4C9.79167 4 10.3229 4.21875 10.7604 4.65625C11.1979 5.09375 11.4167 5.625 11.4167 6.25C11.4167 6.875 11.1979 7.40625 10.7604 7.84375C10.3229 8.28125 9.79167 8.5 9.16667 8.5ZM9.16667 12.5C7.13889 12.5 5.29167 11.934 3.625 10.8021C1.95833 9.67014 0.75 8.15278 0 6.25C0.75 4.34722 1.95833 2.82986 3.625 1.69792C5.29167 0.565972 7.13889 0 9.16667 0C11.1944 0 13.0417 0.565972 14.7083 1.69792C16.375 2.82986 17.5833 4.34722 18.3333 6.25C17.5833 8.15278 16.375 9.67014 14.7083 10.8021C13.0417 11.934 11.1944 12.5 9.16667 12.5ZM9.16667 10.8333C10.7361 10.8333 12.1771 10.4201 13.4896 9.59375C14.8021 8.76736 15.8056 7.65278 16.5 6.25C15.8056 4.84722 14.8021 3.73264 13.4896 2.90625C12.1771 2.07986 10.7361 1.66667 9.16667 1.66667C7.59722 1.66667 6.15625 2.07986 4.84375 2.90625C3.53125 3.73264 2.52778 4.84722 1.83333 6.25C2.52778 7.65278 3.53125 8.76736 4.84375 9.59375C6.15625 10.4201 7.59722 10.8333 9.16667 10.8333Z" fill="#848484"/>
+/** 저장 — 48×48, stroke #F6F7F8 */
+const SaveIcon = () => (
+  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M18 7.5H13.824C12.8619 7.50017 11.9252 7.8087 11.1513 8.3803C10.3774 8.9519 9.80707 9.75648 9.524 10.676L4.7 26.354C4.56787 26.7822 4.50046 27.2278 4.5 27.676V36C4.5 37.1935 4.97411 38.3381 5.81802 39.182C6.66193 40.0259 7.80653 40.5 9 40.5H39C40.1935 40.5 41.3381 40.0259 42.182 39.182C43.0259 38.3381 43.5 37.1935 43.5 36V27.676C43.5 27.228 43.432 26.782 43.3 26.354L38.48 10.676C38.1969 9.75648 37.6266 8.9519 36.8527 8.3803C36.0788 7.8087 35.1421 7.50017 34.18 7.5H30M4.5 27H12.22C13.0556 27.0002 13.8746 27.2331 14.5853 27.6725C15.2961 28.1119 15.8704 28.7406 16.244 29.488L16.756 30.512C17.1298 31.2597 17.7044 31.8886 18.4155 32.328C19.1266 32.7675 19.9461 33.0002 20.782 33H27.218C28.0539 33.0002 28.8734 32.7675 29.5845 32.328C30.2956 31.8886 30.8702 31.2597 31.244 30.512L31.756 29.488C32.1298 28.7403 32.7044 28.1114 33.4155 27.672C34.1266 27.2325 34.9461 26.9998 35.782 27H43.5M24 6V22.5M30 16.5L24 22.5L18 16.5" stroke="#F6F7F8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+/** 셔터 — 72×72, white (링 + 안쪽 원) */
+const ShutterIcon = () => (
+  <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="35.9987" cy="35.9997" r="27.6667" fill="white" />
+    <path d="M72 36C72 55.8823 55.8823 72 36 72C16.1177 72 0 55.8823 0 36C0 16.1177 16.1177 0 36 0C55.8823 0 72 16.1177 72 36ZM4.48105 36C4.48105 53.4074 18.5926 67.519 36 67.519C53.4074 67.519 67.519 53.4074 67.519 36C67.519 18.5926 53.4074 4.48105 36 4.48105C18.5926 4.48105 4.48105 18.5926 4.48105 36Z" fill="white" />
+  </svg>
+);
+
+/** 플래시(off) — 32×32, stroke #F6F7F8 */
+const FlashIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clipPath="url(#clip0_1461_117649)">
+      <path d="M15.216 20.8733L13 29L17.9933 23.6507M12.3427 18H5L8.54533 14.2013M11.276 11.276L19 3L16 14H27L20.724 20.724M11.276 11.276L4 4M11.276 11.276L20.724 20.724M20.724 20.724L28 28" stroke="#F6F7F8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </g>
+    <defs>
+      <clipPath id="clip0_1461_117649">
+        <rect width="32" height="32" fill="white" />
+      </clipPath>
+    </defs>
   </svg>
 );
 
 /**
- * 사진으로 옷 등록하기 (Photo Upload Clothing Entry)
- * - 직접 등록 플로우. 사진 업로드 → 분석
+ * 옷 사진 직접 등록 — 카메라 촬영 화면.
+ * 상단 닫기/플래시, 중앙 프리뷰, 하단 갤러리/셔터/저장.
+ * (카메라 연동 전 — 프리뷰는 목업 이미지 전체 배경)
  */
 const ClosetPhotoPage = () => {
   const navigate = useNavigate();
 
-  const handleAnalyze = () => {
-    // TODO: 분석 중(ImportLoading) 화면 라우트 추가 예정
-    navigate('/closet/register/analyzing');
-  };
-
-  const handleLater = () => {
-    navigate('/closet');
-  };
-
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
-      <div className="flex flex-col h-[100dvh] min-h-0 bg-[#F9F9F9]">
-        {/* 헤더 (타이틀 중앙) */}
-        <header className="relative flex items-center justify-center h-16 px-4 bg-white">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="absolute left-4 flex items-center justify-center w-10 h-10 -ml-2"
-            aria-label="뒤로가기"
-          >
-            <BackIcon />
-          </button>
-          <h1 className="text-base font-medium leading-5 text-black">사진으로 옷 등록하기</h1>
-        </header>
+      <div className="relative flex flex-col flex-1 min-h-0 bg-[#4B4B4B]">
+        {/* 목업 프리뷰 — crop(cover) + opacity 20% */}
+        <div
+          className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-20"
+          style={{ backgroundImage: `url(${cameraMock})` }}
+        />
 
-        {/* 스크롤 영역 */}
-        <div className="flex-1 overflow-y-auto min-h-0">
-          <div className="flex flex-col gap-4 pt-6 px-5 pb-6">
-            {/* 사진 업로드 박스 */}
-            <PhotoUploadBox
-              title="옷 사진을 업로드해주세요"
-              description={'AI가 사진을 분석해 색상, 카테고리, 계절\n정보를 자동으로 정리해드려요'}
-            />
+        {/* 닫기 X — 상태바 아래 14px, 좌 24px */}
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="absolute left-6 cursor-pointer"
+          style={{ top: 'calc(env(safe-area-inset-top, 0px) + 14px)' }}
+          aria-label="닫기"
+        >
+          <CloseIcon />
+        </button>
 
-            {/* 촬영 / 갤러리 버튼 */}
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                type="button"
-                className="flex items-center justify-center gap-2 h-12 rounded-xl border! border-[#7E7576]! bg-white! text-xs font-medium leading-4 text-black"
-              >
-                <CameraIcon />
-                사진 촬영하기
-              </button>
-              <button
-                type="button"
-                className="flex items-center justify-center gap-2 h-12 rounded-xl border! border-[#7E7576]! bg-white! text-xs font-medium leading-4 text-black"
-              >
-                <GalleryIcon />
-                갤러리에서 선택
-              </button>
-            </div>
+        {/* 플래시 — 상태바 아래 14px, 우 24px */}
+        <button
+          type="button"
+          className="absolute right-6 cursor-pointer"
+          style={{ top: 'calc(env(safe-area-inset-top, 0px) + 14px)' }}
+          aria-label="플래시"
+        >
+          <FlashIcon />
+        </button>
 
-            {/* 촬영 가이드 (버튼↔가이드 gap 32 = gap-4 16 + mt-4 16) */}
-            <div className="mt-4 flex flex-col gap-4 p-6 rounded-xl bg-[#F3F3F4]">
-              <p className="text-xs font-medium leading-4 tracking-[0.6px] uppercase text-[#5E5E5E]">
-                촬영 가이드
-              </p>
-              <div className="flex items-center gap-2">
-                <EyeIcon />
-                <span className="text-sm font-medium leading-5 text-[#1A1C1C]">
-                  옷이 잘 보이도록 촬영해주세요
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* 셔터 — 하단 40px, 가로 중앙 */}
+        <button
+          type="button"
+          onClick={() => navigate('/closet/register/tags')}
+          className="absolute left-1/2 -translate-x-1/2 cursor-pointer"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 40px)' }}
+          aria-label="촬영"
+        >
+          <ShutterIcon />
+        </button>
 
-        {/* 하단 CTA */}
-        <BottomCTA className="shrink-0">
-          <button
-            type="button"
-            onClick={handleAnalyze}
-            className="w-full h-14 rounded-lg bg-neutral-300! text-[#848484] text-base font-medium leading-6"
-          >
-            분석 시작하기
-          </button>
-          <button
-            type="button"
-            onClick={handleLater}
-            className="w-full text-center text-sm font-medium leading-6 text-neutral-500"
-          >
-            나중에 하기
-          </button>
-        </BottomCTA>
+        {/* 갤러리 — 좌 24, 하단 40 */}
+        <button
+          type="button"
+          className="absolute left-6 cursor-pointer"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 40px)' }}
+          aria-label="갤러리"
+        >
+          <GalleryIcon />
+        </button>
+
+        {/* 저장 — 우 24, 하단 40 (갤러리와 대칭) */}
+        <button
+          type="button"
+          className="absolute right-6 cursor-pointer"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 40px)' }}
+          aria-label="저장"
+        >
+          <SaveIcon />
+        </button>
       </div>
     </PageLayout>
   );

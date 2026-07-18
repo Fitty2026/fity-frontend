@@ -38,8 +38,8 @@ export type StyleTag =
 
 export interface OnboardingState {
   selectedStyles: StyleTag[];
-  bodyImageUrl?: string;
-  avatarImageUrl?: string;
+  bodyType?: 'straight' | 'wave' | 'natural';
+  bodyPhotoUrls?: string[];
 }
 
 // ============================================================

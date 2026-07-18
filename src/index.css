@@ -59,6 +59,29 @@
   }
 }
 
+/* 체형 촬영 - 보라 점 원형 프로그레스가 순차적으로 밝아지는 펄스 */
+@keyframes camera-dot {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+/* 체형 분석 - 옷걸이 보라 stroke가 차오르는 대시 애니메이션 */
+@keyframes hanger-fill {
+  0% {
+    stroke-dashoffset: 240;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
 /* 스플래시 - 글자 낙하 (위에서 떨어져 바운스로 착지)
    회전은 CSS rotate 속성(개별 transform)이 담당하므로 여기서는 translateY만 다룬다 */
 @keyframes splash-letter-drop {
