@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar, TransitionBlobScreen } from '@/features/closet/components';
@@ -11,12 +12,11 @@ import closetIntroBlob from '@/assets/images/closet-intro-blob.png';
 const ClosetIntroPage = () => {
   const navigate = useNavigate();
 
-  // 작업 편의 위해 자동 이동 임시 비활성화 (백엔드 연결 시 복구)
-  void navigate;
-  // useEffect(() => {
-  //   const timer = setTimeout(() => navigate('/closet/register'), 2000);
-  //   return () => clearTimeout(timer);
-  // }, [navigate]);
+  // 2초 후 옷장 등록 방식 선택으로 자동 이동 (임시: 추후 백엔드 준비 완료 응답으로 대체)
+  useEffect(() => {
+    const timer = setTimeout(() => navigate('/closet/register'), 2000);
+    return () => clearTimeout(timer);
+  }, [navigate]);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
