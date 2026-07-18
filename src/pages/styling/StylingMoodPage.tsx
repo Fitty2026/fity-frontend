@@ -59,12 +59,15 @@ const StylingMoodPage = () => {
           />
 
           {confirming ? (
-            /* 2단계 — 확정 뷰: 카드 1장 + 라벨 */
-            <div className="mt-16 flex flex-col items-center gap-6">
-              <div className="w-[148px] overflow-hidden rounded-xl">
-                <img src={selected.image} alt={selected.label} className="w-full aspect-[155/200] object-cover" />
+            /* 2단계 — 확정 뷰: 카드 155×200 (서브↔카드 107, 캐러셀 중앙과 동일 위치) + 라벨 (카드↔라벨 31) */
+            <div className="mt-[107px] flex flex-col items-center gap-[31px]">
+              <div className="w-[155px] h-[200px] overflow-hidden rounded-2xl">
+                <img src={selected.image} alt={selected.label} className="w-full h-full object-cover" />
               </div>
-              <p className="text-[20px] font-bold tracking-[-0.02em] text-[#1F2124]">{selected.label}</p>
+              {/* Pretendard 600 / 24px / lh150% / -2% / #1F2124 */}
+              <p className="text-[24px] font-semibold leading-[1.5] tracking-[-0.02em] text-center text-[#1F2124]">
+                {selected.label}
+              </p>
             </div>
           ) : (
             /* 1단계 — 캐러셀: 중앙 155×200 (헤더↔카드 217 → 서브 아래 107) + 좌우 기울어진 카드 */
