@@ -34,7 +34,7 @@ const OnboardingTopBar = ({ progress, showSkip = false, onSkip }: OnboardingTopB
       {progress !== undefined && (
         <div className="h-1 w-full bg-[#E6E8EA]">
           <div
-            className="h-full bg-[#9D98F0] transition-[width] duration-300"
+            className="h-full rounded-r-[4px] bg-[#9D98F0] transition-[width] duration-300"
             style={{ width: `${Math.min(Math.max(progress, 0), 1) * 100}%` }}
           />
         </div>
