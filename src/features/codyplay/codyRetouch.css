@@ -1,0 +1,72 @@
+/*
+ * CodyPlay의 중앙 이미지(약 295×391, x: 40)에서
+ * CodyRetouch의 왼쪽 이미지(163×439, x: 0)로 이동한다.
+ */
+@keyframes retouch-image-enter {
+  from {
+    flex-basis: calc(100% - 56px);
+    width: calc(100% - 56px);
+    margin-left: 40px;
+    aspect-ratio: 0.754 / 1;
+    border-radius: 24px;
+  }
+  to {
+    flex-basis: calc(48.6567% - 7.785px);
+    width: calc(48.6567% - 7.785px);
+    margin-left: 0;
+    aspect-ratio: 163 / 439;
+    border-radius: 0 24px 24px 0;
+  }
+}
+
+.retouch-image-enter {
+  position: relative;
+  z-index: 1;
+  flex-grow: 0;
+  flex-shrink: 0;
+  animation: retouch-image-enter 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: width, flex-basis, margin-left;
+}
+
+/* 첫 진입 시 아이템이 왼쪽 이미지에서 순차적으로 등장 */
+@keyframes retouch-item-enter {
+  from {
+    transform: translateX(-40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.retouch-item-enter {
+  opacity: 0;
+  animation: retouch-item-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* 추천 아이템이 위에서 아래로 순차적으로 펼쳐짐 */
+@keyframes retouch-recommend-drop {
+  from {
+    transform: translateY(-24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.retouch-recommend-drop {
+  opacity: 0;
+  animation: retouch-recommend-drop 400ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .retouch-image-enter,
+  .retouch-item-enter,
+  .retouch-recommend-drop {
+    animation: none;
+    opacity: 1;
+  }
+}
