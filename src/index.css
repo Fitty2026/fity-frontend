@@ -11,3 +11,70 @@
 @utility pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+
+/* 온보딩 블롭 - 해파리처럼 테두리가 크게 일렁이는 border-radius 변형.
+   가로/세로 비대칭 scale로 눌렸다 펴지는 젤리 느낌을 더한다 */
+@keyframes blob-wobble {
+  0%,
+  100% {
+    border-radius: 64% 36% 60% 40% / 46% 66% 34% 54%;
+    transform: rotate(0deg) scale(1, 1);
+  }
+  20% {
+    border-radius: 36% 64% 44% 56% / 64% 36% 64% 36%;
+    transform: rotate(5deg) scale(1.08, 0.92);
+  }
+  40% {
+    border-radius: 56% 44% 68% 32% / 38% 62% 38% 62%;
+    transform: rotate(-4deg) scale(0.92, 1.09);
+  }
+  60% {
+    border-radius: 40% 60% 34% 66% / 60% 40% 60% 40%;
+    transform: rotate(4deg) scale(1.07, 0.94);
+  }
+  80% {
+    border-radius: 62% 38% 52% 48% / 42% 60% 40% 58%;
+    transform: rotate(-5deg) scale(0.94, 1.06);
+  }
+}
+
+/* 안쪽 레이어용 - 위상이 어긋난 변형을 겹쳐 유기적인 일렁임을 만든다 */
+@keyframes blob-wobble-alt {
+  0%,
+  100% {
+    border-radius: 42% 58% 36% 64% / 62% 38% 60% 40%;
+    transform: rotate(0deg) scale(1, 1);
+  }
+  25% {
+    border-radius: 66% 34% 58% 42% / 40% 64% 36% 60%;
+    transform: rotate(-6deg) scale(0.93, 1.08);
+  }
+  50% {
+    border-radius: 38% 62% 46% 54% / 58% 42% 66% 34%;
+    transform: rotate(4deg) scale(1.08, 0.93);
+  }
+  75% {
+    border-radius: 58% 42% 64% 36% / 44% 58% 38% 62%;
+    transform: rotate(-3deg) scale(0.95, 1.07);
+  }
+}
+
+/* 스플래시 - 글자 낙하 (위에서 떨어져 바운스로 착지)
+   회전은 CSS rotate 속성(개별 transform)이 담당하므로 여기서는 translateY만 다룬다 */
+@keyframes splash-letter-drop {
+  0% {
+    transform: translateY(-120vh);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  75% {
+    transform: translateY(-6px);
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

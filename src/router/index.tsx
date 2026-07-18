@@ -5,12 +5,12 @@ import ProtectedRoute from './ProtectedRoute';
 import SplashPage from '../pages/auth/SplashPage';
 import ServiceIntroPage from '../pages/auth/ServiceIntroPage';
 import LoginPage from '../pages/auth/LoginPage';
+import SignupPage from '../pages/auth/SignupPage';
 
 // 1. 온보딩
-import StylePreferencePage from '../pages/onboarding/StylePreferencePage';
-import PhotoUploadPage from '../pages/onboarding/PhotoUploadPage';
-import BodyAnalysisPage from '../pages/onboarding/BodyAnalysisPage';
-import AvatarGeneratePage from '../pages/onboarding/AvatarGeneratePage';
+import ConsentPage from '../pages/onboarding/ConsentPage';
+import StyleSwipePage from '../pages/onboarding/StyleSwipePage';
+import StyleConfirmPage from '../pages/onboarding/StyleConfirmPage';
 
 // 2. 옷장
 import ClosetHomePage from '../pages/closet/ClosetHomePage';
@@ -31,6 +31,7 @@ import HomePage from '../pages/home/HomePage';
 
 // 4. 코디 생성
 import StylingStartPage from '../pages/styling/StylingStartPage';
+import StylingMethodPage from '../pages/styling/StylingMethodPage';
 import StylingDatePage from '../pages/styling/StylingDatePage';
 import StylingMoodPage from '../pages/styling/StylingMoodPage';
 import StylingItemSelectPage from '../pages/styling/StylingItemSelectPage';
@@ -58,6 +59,8 @@ import NotFoundPage from '../pages/error/NotFoundPage';
 
 // dev 전용
 import DevPreviewPage from '../pages/dev/DevPreviewPage';
+import CodyPlay from '@/pages/codyplay/CodyPlay';
+import CodyRetouch from '@/pages/codyplay/CodyRetouch';
 
 const router = createBrowserRouter([
 
@@ -69,23 +72,20 @@ const router = createBrowserRouter([
     { path: '/', element: <SplashPage /> },
     { path: '/intro', element: <ServiceIntroPage /> },
     { path: '/login', element: <LoginPage /> },
+    { path: '/signup', element: <SignupPage /> },
 
     // ── 온보딩 (로그인 후 최초 1회) ───────────────
     {
       path: '/onboarding',
-      element: <ProtectedRoute><StylePreferencePage /></ProtectedRoute>,
+      element: <ProtectedRoute><ConsentPage /></ProtectedRoute>,
     },
     {
-      path: '/onboarding/photo',
-      element: <ProtectedRoute><PhotoUploadPage /></ProtectedRoute>,
+      path: '/onboarding/style',
+      element: <ProtectedRoute><StyleSwipePage /></ProtectedRoute>,
     },
     {
-      path: '/onboarding/analysis',
-      element: <ProtectedRoute><BodyAnalysisPage /></ProtectedRoute>,
-    },
-    {
-      path: '/onboarding/avatar',
-      element: <ProtectedRoute><AvatarGeneratePage /></ProtectedRoute>,
+      path: '/onboarding/style/confirm',
+      element: <ProtectedRoute><StyleConfirmPage /></ProtectedRoute>,
     },
 
     // ── 메인 (로그인 필요) ────────────────────────
@@ -150,6 +150,10 @@ const router = createBrowserRouter([
     element: <ProtectedRoute><StylingStartPage /></ProtectedRoute>,
   },
   {
+    path: '/styling/method',
+    element: <ProtectedRoute><StylingMethodPage /></ProtectedRoute>,
+  },
+  {
     path: '/styling/date',
     element: <ProtectedRoute><StylingDatePage /></ProtectedRoute>,
   },
@@ -164,6 +168,16 @@ const router = createBrowserRouter([
   {
     path: '/styling/loading',
     element: <ProtectedRoute><StylingLoadingPage /></ProtectedRoute>,
+  },
+
+  //코디 플레이
+  {
+    path: '/codyplay',
+    element: <ProtectedRoute><CodyPlay /></ProtectedRoute>
+  },
+  {
+    path: '/codyplay/retouch',
+    element: <ProtectedRoute><CodyRetouch /></ProtectedRoute>
   },
 
   // 코디 결과
@@ -192,7 +206,6 @@ const router = createBrowserRouter([
 
   // 내 코디
   {
-    path: '/myoutfit',
     element: <ProtectedRoute><MyOutfitListPage /></ProtectedRoute>,
   },
   {

@@ -31,3 +31,19 @@ export const login = async ({ provider, email }: LoginParams): Promise<LoginResp
 
   return { user, accessToken: `mock-token-${provider}` };
 };
+
+export interface SignupParams {
+  name: string;
+  username: string;
+  email: string;
+  password: string;
+}
+
+/**
+ * mock 회원가입 - 백엔드 연동 시 이 함수 내부만 실제 API 호출로 교체한다.
+ * 입력 형식 검증은 폼(zod)에서 끝나므로 실패 케이스가 없다.
+ */
+export const signup = async (params: SignupParams): Promise<void> => {
+  void params; // mock에서는 입력값을 사용하지 않는다
+  await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
+};

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '@/store/authStore';
+import useOnboardingStore from '@/store/onboardingStore';
 import type { SocialProvider } from '@/types';
 import { login } from '../api/authApi';
 
@@ -17,7 +18,8 @@ const useLogin = () => {
       const { user, accessToken } = await login({ provider, email, password });
       setUser(user);
       setToken(accessToken);
-      navigate('/home', { replace: true });
+      const { isOnboardingComplete } = useOnboardingStore.getState();
+      navigate(isOnboardingComplete ? '/home' : '/onboarding', { replace: true });
     } finally {
       setIsLoading(false);
     }
