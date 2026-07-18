@@ -12,7 +12,6 @@ const StyleConfirmPage = () => {
   const navigate = useNavigate();
   const nickname = useAuthStore((s) => s.user?.nickname) ?? '회원';
   const selectedStyles = useOnboardingStore((s) => s.selectedStyles);
-  const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
 
   const collected = STYLE_TILES.filter((tile) => selectedStyles.includes(tile.tag));
 
@@ -21,11 +20,7 @@ const StyleConfirmPage = () => {
     if (collected.length === 0) navigate('/onboarding/style', { replace: true });
   }, [collected.length, navigate]);
 
-  const handleNext = () => {
-    // TODO: 체형 입력 단계 구현 시 완료 처리 대신 체형 인트로로 이동
-    completeOnboarding();
-    navigate('/home', { replace: true });
-  };
+  const handleNext = () => navigate('/onboarding/body');
 
   return (
     <OnboardingLayout progress={0.55}>

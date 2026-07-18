@@ -11,6 +11,12 @@ import SignupPage from '../pages/auth/SignupPage';
 import ConsentPage from '../pages/onboarding/ConsentPage';
 import StyleSwipePage from '../pages/onboarding/StyleSwipePage';
 import StyleConfirmPage from '../pages/onboarding/StyleConfirmPage';
+import BodyTypePage from '../pages/onboarding/BodyTypePage';
+import BodyPhotoGuidePage from '../pages/onboarding/BodyPhotoGuidePage';
+import BodyCameraPage from '../pages/onboarding/BodyCameraPage';
+import BodyUploadPage from '../pages/onboarding/BodyUploadPage';
+import BodyAnalysisPage from '../pages/onboarding/BodyAnalysisPage';
+import BodyResultPage from '../pages/onboarding/BodyResultPage';
 
 // 2. 옷장
 import ClosetHomePage from '../pages/closet/ClosetHomePage';
@@ -83,6 +89,30 @@ const router = createBrowserRouter([
     {
       path: '/onboarding/style/confirm',
       element: <ProtectedRoute><StyleConfirmPage /></ProtectedRoute>,
+    },
+    {
+      path: '/onboarding/body',
+      element: <ProtectedRoute><BodyTypePage /></ProtectedRoute>,
+    },
+    {
+      path: '/onboarding/body/photo',
+      element: <ProtectedRoute><BodyPhotoGuidePage /></ProtectedRoute>,
+    },
+    {
+      path: '/onboarding/body/camera',
+      element: <ProtectedRoute><BodyCameraPage /></ProtectedRoute>,
+    },
+    {
+      path: '/onboarding/body/upload',
+      element: <ProtectedRoute><BodyUploadPage /></ProtectedRoute>,
+    },
+    {
+      path: '/onboarding/body/analysis',
+      element: <ProtectedRoute><BodyAnalysisPage /></ProtectedRoute>,
+    },
+    {
+      path: '/onboarding/body/result',
+      element: <ProtectedRoute><BodyResultPage /></ProtectedRoute>,
     },
 
     // ── 메인 (로그인 필요) ────────────────────────
