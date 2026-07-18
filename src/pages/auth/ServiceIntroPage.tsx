@@ -1,96 +1,84 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import intro1 from '@/assets/images/intro-1.png';
-import intro2 from '@/assets/images/intro-2.png';
-import intro3 from '@/assets/images/intro-3.png';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import type { Swiper as SwiperType } from 'swiper';
+import 'swiper/css';
 import PageLayout from '@/components/layout/PageeLayout';
 import Button from '@/components/ui/Button';
-import IntroSlide from '@/features/auth/components/IntroSlide';
 import { INTRO_SEEN_KEY } from '@/features/auth/constants';
 
 const SLIDES = [
   {
-    imageSrc: intro1,
-    title: '내 옷으로 코디를\n완성하세요',
-    description: '이미 가지고 있는 옷만으로도 가장 잘 어울리는\n스타일을 추천해드려요',
+    number: '1',
+    title: '내 옷으로\n완성하는\n코디',
+    description: '이미 가지고 있는 옷만으로도\n가장 잘 어울리는 스타일을 추천해드려요',
   },
   {
-    imageSrc: intro2,
-    title: '취향과 체형에\n맞는 코디 추천',
-    description: '스타일 취향과 체형을 분석해 나에게 가장 잘\n어울리는 코디를 찾아드려요',
-    badges: ['캐주얼', '미니멀', '스트릿'],
+    number: '2',
+    title: '체형과\n취향에 맞는\n코디 추천',
+    description: '스타일 취향과 체형을 분석해\n나에게 가장 잘 어울리는 코디를 찾아드려요',
   },
   {
-    imageSrc: intro3,
-    title: '아바타로 미리 입어보세요',
-    description: '내 체형에 맞는 아바타에 코디를 적용해 실제\n착용 모습을 미리 확인할 수 있어요',
+    number: '3',
+    title: '사진으로\n미리 보는\n실사 코디',
+    description: '사진을 합성해\n실제처럼 미리 확인할 수 있어요',
   },
 ];
 
-const SWIPE_THRESHOLD_PX = 50;
-
 const ServiceIntroPage = () => {
   const [index, setIndex] = useState(0);
-  const touchStartX = useRef<number | null>(null);
+  const swiperRef = useRef<SwiperType | null>(null);
   const navigate = useNavigate();
+
+  const isLast = index === SLIDES.length - 1;
 
   const goToLogin = () => {
     localStorage.setItem(INTRO_SEEN_KEY, 'true');
     navigate('/login');
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null) return;
-    const diff = e.changedTouches[0].clientX - touchStartX.current;
-    if (diff < -SWIPE_THRESHOLD_PX) {
-      setIndex((i) => Math.min(i + 1, SLIDES.length - 1));
-    } else if (diff > SWIPE_THRESHOLD_PX) {
-      setIndex((i) => Math.max(i - 1, 0));
+  const handleNext = () => {
+    if (isLast) {
+      goToLogin();
+    } else {
+      swiperRef.current?.slideNext();
     }
-    touchStartX.current = null;
   };
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col">
-      {/* 건너뛰기 */}
-      <div className="flex justify-end p-4">
-        <button
-          type="button"
-          onClick={goToLogin}
-          className="text-sm text-neutral-400 hover:text-neutral-600"
-        >
-          건너뛰기
-        </button>
-      </div>
-
       {/* 슬라이드 영역 */}
-      <div
-        className="flex-1 overflow-hidden"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
+      <Swiper
+        className="w-full flex-1"
+        slidesPerView={1}
+        onSwiper={(swiper) => {
+          swiperRef.current = swiper;
+        }}
+        onSlideChange={(swiper) => setIndex(swiper.activeIndex)}
       >
-        <div
-          className="flex h-full transition-transform duration-300 ease-out"
-          style={{ transform: `translateX(-${index * 100}%)` }}
-        >
-          {SLIDES.map((slide) => (
-            <IntroSlide key={slide.title} {...slide} />
-          ))}
-        </div>
-      </div>
+        {SLIDES.map((slide) => (
+          <SwiperSlide key={slide.number}>
+            <div className="flex h-full flex-col px-6 pt-16">
+              <span className="text-7xl font-extrabold">{slide.number}</span>
+              <h2 className="mt-10 whitespace-pre-line text-4xl font-extrabold leading-snug">
+                {slide.title}
+              </h2>
+              <p className="mt-6 whitespace-pre-line text-sm leading-relaxed text-neutral-400">
+                {slide.description}
+              </p>
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
 
       {/* dots 인디케이터 */}
       <div className="mb-5 flex justify-center gap-2">
         {SLIDES.map((slide, i) => (
           <button
-            key={slide.title}
+            key={slide.number}
             type="button"
             aria-label={`${i + 1}번째 슬라이드로 이동`}
-            onClick={() => setIndex(i)}
+            onClick={() => swiperRef.current?.slideTo(i)}
             className={`h-2 w-2 rounded-full transition-colors ${
               i === index ? 'bg-black' : 'bg-neutral-300'
             }`}
@@ -98,9 +86,14 @@ const ServiceIntroPage = () => {
         ))}
       </div>
 
-      {/* 시작하기 */}
+      {/* 다음 / 시작하기 */}
       <div className="px-6 pb-8">
-        <Button label="시작하기" fullWidth onClick={goToLogin} />
+        <Button
+          label={isLast ? '시작하기' : '다음'}
+          shape="pill"
+          fullWidth
+          onClick={handleNext}
+        />
       </div>
     </PageLayout>
   );
