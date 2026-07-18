@@ -24,6 +24,3 @@ export interface StylingItemThumb {
   image: string;
   category: string;
 }
-
-/** 코디 생성 로딩 단계: 회색 → 고리 액센트 → 완성(체크) */
-export type HangerStage = 'start' | 'progress' | 'done';
