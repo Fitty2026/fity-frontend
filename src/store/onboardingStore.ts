@@ -8,10 +8,12 @@ interface OnboardingState {
   bodyImageUrl: string | null;
   avatarImageUrl: string | null;
   isOnboardingComplete: boolean;
+  marketingAgreed: boolean;
 
   toggleStyle: (style: StyleTag) => void;
   setBodyImage: (file: File, url: string) => void;
   setAvatarImage: (url: string) => void;
+  setMarketingAgreed: (agreed: boolean) => void;
   completeOnboarding: () => void;
   reset: () => void;
 }
@@ -24,6 +26,7 @@ const useOnboardingStore = create<OnboardingState>()(
       bodyImageUrl: null,
       avatarImageUrl: null,
       isOnboardingComplete: false,
+      marketingAgreed: false,
 
       // 스타일 태그 토글 (다중 선택)
       toggleStyle: (style) =>
@@ -39,6 +42,9 @@ const useOnboardingStore = create<OnboardingState>()(
       setAvatarImage: (url) =>
         set({ avatarImageUrl: url }),
 
+      setMarketingAgreed: (agreed) =>
+        set({ marketingAgreed: agreed }),
+
       completeOnboarding: () =>
         set({ isOnboardingComplete: true }),
 
@@ -49,6 +55,7 @@ const useOnboardingStore = create<OnboardingState>()(
           bodyImageUrl: null,
           avatarImageUrl: null,
           isOnboardingComplete: false,
+          marketingAgreed: false,
         }),
     }),
     {
@@ -57,6 +64,7 @@ const useOnboardingStore = create<OnboardingState>()(
         // File/objectURL은 저장 불가·불필요하므로 제외
         selectedStyles: state.selectedStyles,
         isOnboardingComplete: state.isOnboardingComplete,
+        marketingAgreed: state.marketingAgreed,
       }),
     },
   ),

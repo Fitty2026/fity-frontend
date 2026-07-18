@@ -12,6 +12,27 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* 온보딩 블롭 - 유기적으로 꿀렁이는 border-radius 변형 */
+@keyframes blob-wobble {
+  0%,
+  100% {
+    border-radius: 58% 42% 55% 45% / 52% 58% 42% 48%;
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    border-radius: 45% 55% 48% 52% / 60% 44% 56% 40%;
+    transform: rotate(3deg) scale(1.03);
+  }
+  50% {
+    border-radius: 52% 48% 60% 40% / 45% 55% 48% 52%;
+    transform: rotate(-2deg) scale(0.97);
+  }
+  75% {
+    border-radius: 48% 52% 42% 58% / 55% 45% 60% 40%;
+    transform: rotate(2deg) scale(1.02);
+  }
+}
+
 /* 스플래시 - 글자 낙하 (위에서 떨어져 바운스로 착지)
    회전은 CSS rotate 속성(개별 transform)이 담당하므로 여기서는 translateY만 다룬다 */
 @keyframes splash-letter-drop {
