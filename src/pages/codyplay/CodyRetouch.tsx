@@ -1,7 +1,5 @@
 import { useState } from 'react';
 
-import { useNavigate } from 'react-router-dom';
-
 import PageLayout from '@/components/layout/PageeLayout';
 
 import { mockOutfits } from '../../mocks/data/outfit';
@@ -47,8 +45,7 @@ const CodyRetouch = () => {
   const [result, setResult] = useState<Outfit | undefined>(() => mockOutfits[0]);
   const [selectItem, setSelectItem] = useState<ClothingItem | null>();
   const [changeItem, setChangeItem] = useState<ClothingItem | null>(null);
-
-  const navigate = useNavigate();
+  const [showRecommendItems, setShowRecommendItems] = useState(false);
 
   const handleChangeItem = () => {
     if (!selectItem || !changeItem) return;
@@ -63,6 +60,7 @@ const CodyRetouch = () => {
     });
     setSelectItem(null);
     setChangeItem(null);
+    setShowRecommendItems(false);
   };
 
   return (
@@ -79,7 +77,7 @@ const CodyRetouch = () => {
           ></img>
         </div>
 
-        {selectItem ? (
+        {showRecommendItems && selectItem ? (
           <div className="flex-172 aspect-[172/439]  relative">
             <div className="bg-[#F6F7F8] rounded-[4px] h-[68px] shrink-0 flex items-center pl-[12px]">
               <div className="h-[48px] w-[48px] object-cover">
@@ -98,6 +96,7 @@ const CodyRetouch = () => {
               onClick={() => {
                 setSelectItem(null);
                 setChangeItem(null);
+                setShowRecommendItems(false);
               }}
               className="mt-[4px] flex justify-end items-center gap-[4px] text-[#5A6169] text-[10px] font-[500] leading-[165%] tracking-[-2%]"
             >
@@ -127,7 +126,7 @@ const CodyRetouch = () => {
                   <div
                     key={item.id}
                     onClick={() => setChangeItem(item)}
-                    className="bg-[#F6F7F8] rounded-[4px] h-[68px] shrink-0 flex items-center pl-[12px]"
+                    className={`${changeItem?.id === item.id ? 'bg-[#E6E8EA]' : 'bg-[#F6F7F8]'} rounded-[4px] h-[68px] shrink-0 flex items-center pl-[12px]`}
                   >
                     <div className="h-[48px] w-[48px] object-cover">
                       <img className="object-cover h-full" src={item.imageUrl}></img>
@@ -165,8 +164,11 @@ const CodyRetouch = () => {
             {result?.items.map((item) => (
               <div
                 key={item.id}
-                onClick={() => setSelectItem(item)}
-                className="bg-[#F6F7F8] rounded-[4px] h-[68px] shrink-0 flex items-center pl-[12px]"
+                onClick={() => {
+                  setSelectItem(item);
+                  setChangeItem(null);
+                }}
+                className={`${selectItem?.id === item.id ? 'bg-[#E6E8EA]' : 'bg-[#F6F7F8]'} rounded-[4px] h-[68px] shrink-0 flex items-center pl-[12px]`}
               >
                 <div className="h-[48px] w-[48px] object-cover">
                   <img className="object-cover h-full" src={item.imageUrl}></img>
@@ -186,7 +188,7 @@ const CodyRetouch = () => {
       </div>
 
       <div className="mt-[48px] mx-[24px]">
-        {selectItem ? (
+        {showRecommendItems && selectItem ? (
           <div>
             <button className="w-full bg-[#E6E8EA] rounded-[32px] py-[16px] text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
               추가 아이템 보러가기
@@ -201,11 +203,9 @@ const CodyRetouch = () => {
           </div>
         ) : (
           <button
-            onClick={() => {
-              navigate('/codyplay');
-            }}
-            disabled={true}
-            className="w-full bg-[#E6E8EA] rounded-[32px] py-[16px] text-[#959BA7] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
+            onClick={() => setShowRecommendItems(true)}
+            disabled={!selectItem}
+            className="w-full bg-[#1F2124] disabled:bg-[#E6E8EA] rounded-[32px] py-[16px] text-[#F6F7F8] disabled:text-[#959BA7] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
           >
             수정하기
           </button>
