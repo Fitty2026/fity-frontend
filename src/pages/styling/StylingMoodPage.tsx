@@ -1,97 +1,119 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PageLayout from '@/components/layout/PageeLayout';
-import { StudioHeader, StudioBottomCTA, SelectableImageCard } from '@/features/styling/components';
-import dateImg from '@/assets/images/moods/date.jpg';
-import workoutImg from '@/assets/images/moods/workout.jpg';
-import workImg from '@/assets/images/moods/work.jpg';
-import partyImg from '@/assets/images/moods/party.jpg';
-import travelImg from '@/assets/images/moods/travel.jpg';
-import homeImg from '@/assets/images/moods/home.jpg';
+import { StudioHeader, ScreenTitle, BottomCTA } from '@/features/styling/components';
+import type { SituationOption } from '@/features/styling/types';
+import dateImg from '@/assets/images/styling/situation-date.png';
+import workImg from '@/assets/images/styling/situation-work.png';
+import travelImg from '@/assets/images/styling/situation-travel.png';
 
-const MOODS = [
-  { label: '데이트', img: dateImg },
-  { label: '운동', img: workoutImg },
-  { label: '출근', img: workImg },
-  { label: '파티', img: partyImg },
-  { label: '여행', img: travelImg },
-  { label: '집 앞', img: homeImg },
+/** 상황 목록 — 목 이미지 3종. 와이어프레임 순서: 좌 여행 / 중앙 출근 / 우 데이트 */
+const SITUATIONS: SituationOption[] = [
+  { id: 'travel', label: '여행', image: travelImg },
+  { id: 'work', label: '출근', image: workImg },
+  { id: 'date', label: '데이트', image: dateImg },
 ];
 
-/** 텍스트 입력 + 아이콘 (14×14, #565657) */
-const PlusIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M6 8H0V6H6V0H8V6H14V8H8V14H6V8Z" fill="#565657" />
-  </svg>
-);
+const SWIPE_THRESHOLD = 50;
 
 /**
- * 무드 선택 (Mood Selection, MOOD-01)
- * - 코디가 필요한 상황(장소 분위기) 선택 → 자동 반영
- * ※ 정확한 px(카드 비율·간격·폰트·입력창)는 Figma 속성 패널 캡쳐로 확정 예정
+ * 상황 선택 (데이트/출근/학교/여행)
+ * - 1단계: 카드 캐러셀(중앙 155×200, 좌우 기울어져 잘림) + 다음
+ * - 2단계(확정): 카드 1장 + 라벨 + 확인 → 기준 아이템 선택
+ * - 스와이프(드래그)·좌우 카드 탭으로 전환
+ * ※ 세부 px/타이포는 Figma 스펙으로 확정 예정 (스캐폴드)
  */
 const StylingMoodPage = () => {
   const navigate = useNavigate();
-  const [selected, setSelected] = useState<number>(0);
-  const [place, setPlace] = useState('');
+  const [active, setActive] = useState(1);
+  const [confirming, setConfirming] = useState(false);
+  const dragStartX = useRef<number | null>(null);
+
+  const clamp = (i: number) => Math.max(0, Math.min(SITUATIONS.length - 1, i));
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    dragStartX.current = e.clientX;
+  };
+  const onPointerUp = (e: React.PointerEvent) => {
+    if (dragStartX.current === null) return;
+    const delta = e.clientX - dragStartX.current;
+    dragStartX.current = null;
+    if (delta < -SWIPE_THRESHOLD) setActive((i) => clamp(i + 1));
+    else if (delta > SWIPE_THRESHOLD) setActive((i) => clamp(i - 1));
+  };
+
+  const selected = SITUATIONS[active];
 
   return (
-    <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
-      <div className="flex flex-col h-[100dvh] min-h-0 bg-[#F9F9F9]">
-        <StudioHeader title="스튜디오" starCount={100} onBack={() => navigate(-1)} />
+    <div className="min-h-screen bg-neutral-100 flex justify-center">
+      <div className="relative w-full max-w-[430px] min-h-screen bg-white flex flex-col overflow-hidden">
+        <StudioHeader
+          onBack={() => (confirming ? setConfirming(false) : navigate(-1))}
+          onSkip={() => navigate('/styling/items')}
+        />
 
-        {/* 스크롤 영역 */}
-        {/* 좌우 20, 헤더→타이틀 갭 32, 검색창→CTA 52(pb32 + CTA pt20) */}
-        <div className="flex-1 overflow-y-auto min-h-0 px-5 pt-8 pb-8">
-          {/* 타이틀 + 서브 */}
-          <h1 className="text-2xl font-medium leading-8 tracking-[-0.24px] text-black whitespace-pre-line">
-            {'코디가 필요한\n상황을 알려주세요'}
-          </h1>
-          <p className="mt-2 text-sm font-medium leading-5 text-[#5E5E5E]">
-            자동으로 장소의 분위기를 반영해줘요.
-          </p>
+        <div className="flex-1 pt-14">
+          {/* 헤더↔타이틀 56 (날짜 선택과 동일) */}
+          <ScreenTitle
+            title="코디가 필요한 상황을 선택해주세요"
+            subtitle="자동으로 장소의 분위기를 반영해줘요"
+          />
 
-          {/* 무드 그리드 (2열, 가로 16 / 세로: 이미지끼리 40 = gap16 + 라벨16 + 라벨갭8) */}
-          <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-4">
-            {MOODS.map((mood, i) => (
-              <SelectableImageCard
-                key={mood.label}
-                src={mood.img}
-                label={mood.label}
-                selected={selected === i}
-                onClick={() => setSelected(i)}
-                aspectRatio="1/1"
-                labelPosition="below"
-                imageClassName="border border-[#E2E2E2]"
-              />
-            ))}
-          </div>
-
-          {/* 텍스트 직접 입력 (Search Field): 44 hug, radius100, padding 11/20, fill #787880 16%.
-              라벨 바텀 → 검색창 = 38 */}
-          <div className="mt-[38px] flex items-center gap-[34px] py-[11px] px-5 rounded-full bg-[#787880]/16">
-            {/* Figma: SF Pro Regular / 15 / lh22 / tracking -0.08px, placeholder #727272 */}
-            <input
-              type="text"
-              value={place}
-              onChange={(e) => setPlace(e.target.value)}
-              placeholder="혹은 텍스트로 장소를 입력해주세요"
-              className="flex-1 min-w-0 bg-transparent outline-none text-[15px] font-normal leading-[22px] tracking-[-0.08px] text-[#1A1C1C] placeholder:text-[#727272]"
-            />
-            <button
-              type="button"
-              aria-label="장소 추가"
-              className="flex items-center justify-center w-6 h-6 shrink-0 bg-transparent!"
+          {confirming ? (
+            /* 2단계 — 확정 뷰: 카드 155×200 (서브↔카드 107, 캐러셀 중앙과 동일 위치) + 라벨 (카드↔라벨 31) */
+            <div className="mt-[107px] flex flex-col items-center gap-[31px]">
+              <div className="w-[155px] h-[200px] overflow-hidden rounded-2xl">
+                <img src={selected.image} alt={selected.label} className="w-full h-full object-cover" />
+              </div>
+              {/* Pretendard 600 / 24px / lh150% / -2% / #1F2124 */}
+              <p className="text-[24px] font-semibold leading-[1.5] tracking-[-0.02em] text-center text-[#1F2124]">
+                {selected.label}
+              </p>
+            </div>
+          ) : (
+            /* 1단계 — 캐러셀: 중앙 155×200 (헤더↔카드 217 → 서브 아래 107) + 좌우 기울어진 카드 */
+            <div
+              className="relative mt-[107px] h-[220px] select-none touch-pan-y"
+              onPointerDown={onPointerDown}
+              onPointerUp={onPointerUp}
             >
-              <PlusIcon />
-            </button>
-          </div>
+              {SITUATIONS.map((s, i) => {
+                const rel = i - active;
+                if (Math.abs(rel) > 1) return null;
+                const isCenter = rel === 0;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => !isCenter && setActive(i)}
+                    className={[
+                      'absolute top-0 left-1/2 w-[155px] h-[200px] overflow-hidden rounded-2xl transition-transform duration-300',
+                      isCenter ? 'z-10' : 'z-0',
+                    ].join(' ')}
+                    style={{
+                      /* 좌우 대칭 (왼쪽 기준): Δx ∓232.72 / Δy +20 / rot ∓12° */
+                      transform: isCenter
+                        ? 'translateX(-50%)'
+                        : `translateX(calc(-50% + ${rel * 232.72}px)) rotate(${rel * 12}deg) translateY(40px)`,
+                    }}
+                  >
+                    <img src={s.image} alt={s.label} className="w-full h-full object-cover pointer-events-none" />
+                    {/* 사이드 카드 어둡게 — #1F2124 그라데이션 (불투명도 근사 40%) */}
+                    {!isCenter && (
+                      <span className="absolute inset-0 bg-linear-to-b from-[#1F2124]/40 to-transparent pointer-events-none" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* 하단 CTA */}
-        <StudioBottomCTA label="다음" onClick={() => navigate('/styling/items')} />
+        <BottomCTA
+          label={confirming ? '확인' : '다음'}
+          onClick={() => (confirming ? navigate('/styling/items') : setConfirming(true))}
+        />
       </div>
-    </PageLayout>
+    </div>
   );
 };
 

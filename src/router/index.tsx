@@ -39,6 +39,7 @@ import HomePage from '../pages/home/HomePage';
 import StylingStartPage from '../pages/styling/StylingStartPage';
 import StylingMethodPage from '../pages/styling/StylingMethodPage';
 import StylingDatePage from '../pages/styling/StylingDatePage';
+import StylingWeatherPage from '../pages/styling/StylingWeatherPage';
 import StylingMoodPage from '../pages/styling/StylingMoodPage';
 import StylingItemSelectPage from '../pages/styling/StylingItemSelectPage';
 import StylingLoadingPage from '../pages/styling/StylingLoadingPage';
@@ -184,6 +185,10 @@ const router = createBrowserRouter([
   {
     path: '/styling/date',
     element: <ProtectedRoute><StylingDatePage /></ProtectedRoute>,
+  },
+  {
+    path: '/styling/weather',
+    element: <ProtectedRoute><StylingWeatherPage /></ProtectedRoute>,
   },
   {
     path: '/styling/mood',

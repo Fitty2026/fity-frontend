@@ -1,135 +1,105 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PageLayout from '@/components/layout/PageeLayout';
-import { StudioHeader, StudioBottomCTA } from '@/features/styling/components';
-
-/** 이전/다음 달 화살표 (#0088FF) */
-const ChevronLeft = () => (
-  <svg width="9" height="16" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M6 1L1 6l5 5" stroke="#0088FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-const ChevronRight = () => (
-  <svg width="9" height="16" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M1 1l5 5-5 5" stroke="#0088FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-/** 월 선택 캐럿 (April 2025 옆, bold, #0088FF) */
-const CaretRight = () => (
-  <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M1 1l5 5-5 5" stroke="#0088FF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-/** 요일 헤더 라벨 (표준: 일~토) */
-const WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-
-/** April 2025 정적 그리드 (null=빈칸) */
-const WEEKS: (number | null)[][] = [
-  [null, null, 1, 2, 3, 4, 5],
-  [6, 7, 8, 9, 10, 11, 12],
-  [13, 14, 15, 16, 17, 18, 19],
-  [20, 21, 22, 23, 24, 25, 26],
-  [27, 28, 29, 30, null, null, null],
-];
+import { StudioHeader, ScreenTitle, DateField, StudioCalendar, WheelDatePicker, BottomCTA } from '@/features/styling/components';
 
 /**
- * 날짜 선택 (Styling Date Selection)
- * - 코디가 필요한 날 선택 → 자동 날씨 반영
- * ※ 정확한 px(폰트·셀 크기·색)는 Figma 속성 패널 캡쳐로 확정 예정
+ * 날짜 선택 (상황별 추천 플로우)
+ * - 헤더(뒤로·스튜디오·건너뛰기) + 안내 + 날짜 필드 + 캘린더 + 다음 CTA
+ * - 날짜 필드 탭 시 휠 데이트 피커 드롭다운
+ * ※ 세부 px/타이포/색은 Figma 스펙으로 확정 예정
  */
 const StylingDatePage = () => {
   const navigate = useNavigate();
-  const [selected, setSelected] = useState<number>(20);
+  const [year, setYear] = useState(2026);
+  const [month, setMonth] = useState(6);
+  const [selectedDay, setSelectedDay] = useState(28);
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  const prevMonth = () => {
+    if (month === 1) {
+      setYear((y) => y - 1);
+      setMonth(12);
+    } else {
+      setMonth((m) => m - 1);
+    }
+  };
+  const nextMonth = () => {
+    if (month === 12) {
+      setYear((y) => y + 1);
+      setMonth(1);
+    } else {
+      setMonth((m) => m + 1);
+    }
+  };
+
+  const handlePick = (y: number, m: number, d: number) => {
+    setYear(y);
+    setMonth(m);
+    setSelectedDay(d);
+  };
 
   return (
-    <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
-      <div className="flex flex-col h-[100dvh] min-h-0 bg-[#F9F9F9]">
-        <StudioHeader title="스튜디오" starCount={100} onBack={() => navigate(-1)} />
+    <div className="min-h-screen bg-neutral-100 flex justify-center">
+      <div className="relative w-full max-w-[430px] min-h-screen bg-white flex flex-col">
+        <StudioHeader onBack={() => navigate(-1)} onSkip={() => navigate('/styling/mood')} />
 
-        {/* 스크롤 영역 */}
-        {/* 헤더→타이틀 간격 40 */}
-        <div className="flex-1 overflow-y-auto min-h-0 pt-10 pb-6">
-          {/* 타이틀 + 서브 */}
-          <div className="px-5">
-            {/* Figma: Pretendard 500 / 24 / lh32 / tracking -0.24px / #000 */}
-            <h1 className="text-2xl font-medium leading-8 tracking-[-0.24px] text-black whitespace-pre-line">
-              {'코디가 필요할 날을\n선택해주세요'}
-            </h1>
-            <p className="mt-2 text-sm font-medium leading-5 text-[#5E5E5E]">
-              자동으로 날씨를 반영해줘요
-            </p>
+        <div className="flex-1 overflow-y-auto px-6 pt-14">
+          {/* 헤더↔타이틀 56 */}
+          <ScreenTitle
+            title="코디가 필요한 날을 선택해주세요"
+            subtitle="자동으로 날씨를 반영해줘요"
+          />
+
+          {/* 날짜 필드 + 휠 피커 드롭다운 (서브타이틀↔날짜필드 48) */}
+          <div className="relative mt-12">
+            <DateField
+              label={`${year}년 ${month}월 ${selectedDay}일`}
+              onClick={() => setPickerOpen((v) => !v)}
+              onNext={() => navigate('/styling/weather', { state: { year, month, day: selectedDay } })}
+            />
+            {pickerOpen && (
+              <>
+                {/* 바깥 클릭 시 닫기 */}
+                <button
+                  type="button"
+                  aria-label="닫기"
+                  className="fixed inset-0 z-10 cursor-default"
+                  onClick={() => setPickerOpen(false)}
+                />
+                {/* Figma: 123×94, top298/left55 → 필드 텍스트 시작(좌 31)·필드 하단 살짝 겹침 */}
+                <WheelDatePicker
+                  className="absolute left-[31px] top-[calc(100%-3px)] z-20"
+                  year={year}
+                  month={month}
+                  day={selectedDay}
+                  onChange={handlePick}
+                />
+              </>
+            )}
           </div>
 
-          {/* 캘린더 카드: 370×329, Top225(간격29), Left10, radius·border 없음, bg white */}
-          <div className="mt-[29px] mx-[10px] bg-white p-4">
-            {/* 월 헤더 (space-between: 월 그룹 좌 / 화살표 그룹 우) */}
-            <div className="flex items-center justify-between">
-              {/* 월 텍스트↔캐럿 갭 6, 캐럿 박스 10×18 */}
-              <button type="button" className="flex items-center gap-[6px] bg-transparent!">
-                {/* Figma(M3): SF Pro Semibold(590) / 17 / lh22 / tracking -0.43px / #000 */}
-                <span className="text-[17px] font-semibold leading-[22px] tracking-[-0.43px] text-black">April 2025</span>
-                <span className="flex items-center justify-center w-[10px] h-[18px]">
-                  <CaretRight />
-                </span>
-              </button>
-              {/* 화살표 그룹 폭 59 (박스 15×24 + 갭 29) */}
-              <div className="flex items-center gap-[29px]">
-                <button type="button" aria-label="이전 달" className="flex items-center justify-center w-[15px] h-6 bg-transparent!">
-                  <ChevronLeft />
-                </button>
-                <button type="button" aria-label="다음 달" className="flex items-center justify-center w-[15px] h-6 bg-transparent!">
-                  <ChevronRight />
-                </button>
-              </div>
-            </div>
-
-            {/* 요일 헤더 (행 height20). Figma(M3): SF Pro Semibold / 13 / lh18 / uppercase / #3C3C43 30% */}
-            <div className="mt-4 grid grid-cols-7">
-              {WEEKDAYS.map((d, i) => (
-                <div key={i} className="text-center text-[13px] font-semibold leading-[18px] uppercase text-[#3C3C43]/30">
-                  {d}
-                </div>
-              ))}
-            </div>
-
-            {/* 날짜 그리드 */}
-            <div className="mt-2 grid grid-cols-7 gap-y-2">
-              {WEEKS.flat().map((day, i) => {
-                if (day === null) return <div key={i} />;
-                const isSelected = day === selected;
-                const isFirst = day === 1;
-                return (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setSelected(day)}
-                    className="flex items-center justify-center h-11 bg-transparent!"
-                  >
-                    {/* Figma(M3 Day): 44×44. 일반=Regular/20/tracking -0.45px, 선택=Medium(510)/24/spacing0, 파랑 #0088FF */}
-                    <span
-                      className={[
-                        'flex items-center justify-center w-11 h-11 rounded-full leading-[25px]',
-                        isSelected
-                          ? 'bg-[#0088FF]/12 text-[#0088FF] text-[24px] font-medium'
-                          : isFirst
-                            ? 'text-[#0088FF] text-[20px] font-normal tracking-[-0.45px]'
-                            : 'text-black text-[20px] font-normal tracking-[-0.45px]',
-                      ].join(' ')}
-                    >
-                      {day}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <StudioCalendar
+            className="mt-6"
+            year={year}
+            month={month}
+            selectedDay={selectedDay}
+            todayDay={
+              year === new Date().getFullYear() && month === new Date().getMonth() + 1
+                ? new Date().getDate()
+                : undefined
+            }
+            onSelectDay={setSelectedDay}
+            onPrevMonth={prevMonth}
+            onNextMonth={nextMonth}
+          />
         </div>
 
-        {/* 하단 CTA */}
-        <StudioBottomCTA label="다음" onClick={() => navigate('/styling/mood')} />
+        <BottomCTA
+          label="다음"
+          onClick={() => navigate('/styling/weather', { state: { year, month, day: selectedDay } })}
+        />
       </div>
-    </PageLayout>
+    </div>
   );
 };
 
