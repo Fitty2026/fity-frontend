@@ -17,6 +17,7 @@ import ClosetHomePage from '../pages/closet/ClosetHomePage';
 import ClosetRegisterPage from '../pages/closet/ClosetRegisterPage';
 import ClosetPlatformPage from '../pages/closet/ClosetPlatformPage';
 import ClosetPermissionPage from '../pages/closet/ClosetPermissionPage';
+import ClosetImportingPage from '../pages/closet/ClosetImportingPage';
 import ClosetPhotoPage from '../pages/closet/ClosetPhotoPage';
 import ClosetLoadingPage from '../pages/closet/ClosetLoadingPage';
 import ClosetTagEditPage from '../pages/closet/ClosetTagEditPage';
@@ -119,7 +120,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/closet/register/importing',
-    element: <ProtectedRoute><ClosetLoadingPage variant="import" /></ProtectedRoute>,
+    element: <ProtectedRoute><ClosetImportingPage /></ProtectedRoute>,
   },
   {
     path: '/closet/register/analyzing',
