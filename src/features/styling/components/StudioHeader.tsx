@@ -1,9 +1,8 @@
-/** 옷걸이 + 보유 개수 (헤더 우측) */
+/** 옷걸이 + 보유 개수 (헤더 우측) — Figma 옷걸이 에셋 16×16 #1F2124, 아이콘↔텍스트 gap 4 */
 const HangerCountBadge = ({ count }: { count: number }) => (
-  <span className="flex items-center gap-1 text-[13px] font-medium text-[#1F2124]">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1F2124" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 7.2 3.6 14.9a1.8 1.8 0 0 0 1.2 3.1h14.4a1.8 1.8 0 0 0 1.2-3.1L12 7.2Z" />
-      <path d="M12 7.2v-1a2.3 2.3 0 1 1 2.3-2.3" />
+  <span className="flex items-center gap-1 text-[12px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124]">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M15.0982 10.7L8.83321 6L10.2995 4.9C10.3617 4.85349 10.4122 4.79313 10.447 4.7237C10.4818 4.65427 10.5 4.57768 10.5001 4.5C10.5001 3.83696 10.2367 3.20107 9.76785 2.73223C9.29901 2.26339 8.66312 2 8.00008 2C7.33704 2 6.70115 2.26339 6.23231 2.73223C5.76347 3.20107 5.50008 3.83696 5.50008 4.5C5.50008 4.63261 5.55276 4.75979 5.64653 4.85355C5.7403 4.94732 5.86747 5 6.00008 5C6.13269 5 6.25987 4.94732 6.35363 4.85355C6.4474 4.75979 6.50008 4.63261 6.50008 4.5C6.50109 4.12339 6.64374 3.76094 6.89968 3.48466C7.15561 3.20837 7.50612 3.03848 7.88155 3.00872C8.25699 2.97896 8.62988 3.09152 8.92615 3.32403C9.22242 3.55655 9.42038 3.892 9.48071 4.26375L7.70883 5.59312L7.69133 5.60625L0.901955 10.7C0.734177 10.8258 0.610207 11.0012 0.54758 11.2014C0.484953 11.4015 0.48684 11.6163 0.552974 11.8153C0.619107 12.0144 0.74614 12.1876 0.916103 12.3104C1.08607 12.4333 1.29036 12.4996 1.50008 12.5H14.5001C14.71 12.5 14.9145 12.434 15.0848 12.3112C15.2551 12.1885 15.3824 12.0153 15.4488 11.8162C15.5151 11.6171 15.5172 11.4022 15.4546 11.2018C15.392 11.0015 15.268 10.8259 15.1001 10.7H15.0982ZM14.5001 11.5H1.50008L8.00008 6.625L14.5001 11.5Z" fill="#1F2124" />
     </svg>
     {count}개
   </span>
@@ -34,7 +33,7 @@ interface StudioHeaderProps {
  */
 const StudioHeader = ({ title = '스튜디오', logo = false, onBack, count, onSkip }: StudioHeaderProps) => {
   return (
-    <header className="relative shrink-0 flex items-center justify-center h-[52px] px-5 bg-inherit border-b border-[#EEF0F2]">
+    <header className="relative shrink-0 flex items-center justify-center h-[53px] px-5 bg-inherit border-b border-[#B2B8BD]">
       {onBack && (
         <button
           type="button"
@@ -47,7 +46,13 @@ const StudioHeader = ({ title = '스튜디오', logo = false, onBack, count, onS
       )}
 
       {logo ? (
-        <span className="text-[20px] font-extrabold tracking-tight text-[#1F2124]">Fitty</span>
+        // Figma: Instrument Sans 700 / 23px / lh100% / letter-spacing 0 / #1F2124
+        <span
+          className="text-[23px] font-bold leading-none tracking-normal text-[#1F2124]"
+          style={{ fontFamily: "'Instrument Sans', sans-serif" }}
+        >
+          Fitty
+        </span>
       ) : (
         <span className="text-base font-semibold text-[#1F2124]">{title}</span>
       )}
