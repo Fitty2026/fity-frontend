@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { ClosetBottomNav } from '@/features/closet/components';
@@ -101,7 +100,7 @@ const ClothesRow = ({ items }: { items: string[] }) => (
 const ClosetHomePage = () => {
   const navigate = useNavigate();
   // 임시: 옷 등록 여부 (백엔드 연결 시 실제 데이터 유무로 대체)
-  const [filled, setFilled] = useState(false);
+  const filled = true;
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
@@ -234,15 +233,6 @@ const ClosetHomePage = () => {
         )}
 
         <ClosetBottomNav />
-
-        {/* 임시 상태 전환 버튼 (시연용 — 커밋 전 제거 여부 확인) */}
-        <button
-          type="button"
-          onClick={() => setFilled((v) => !v)}
-          className="fixed bottom-28 right-4 z-50 rounded-full bg-black/60 px-3 py-2 text-[12px] text-white cursor-pointer"
-        >
-          {filled ? '빈 상태 보기' : '옷 있는 상태 보기'}
-        </button>
       </div>
     </PageLayout>
   );
