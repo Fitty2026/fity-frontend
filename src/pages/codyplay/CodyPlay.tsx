@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -8,11 +8,7 @@ import { mockOutfits } from '../../mocks/data/outfit';
 import type { Outfit } from '../../types';
 
 const CodyPlay = () => {
-  const [result, setResult] = useState<Outfit>();
-
-  useEffect(() => {
-    setResult(mockOutfits?.[0]);
-  }, []);
+  const [result] = useState<Outfit | undefined>(() => mockOutfits[0]);
 
   const navigate = useNavigate();
   return (
@@ -20,9 +16,9 @@ const CodyPlay = () => {
       <h1 className=" w-full text-[#1F2124] text-[20px] text-center font-[600] leading-[150%] mt-[56px] tracking-[-2%]">
         코디를 저장할까요?
       </h1>
-      <div className="mt-[40px] mx-[40px]  object-cover">
+      <div className="mt-[40px] mx-[40px] rounded-[24px] overflow-hidden">
         <img
-          className="rounded-[24px] aspect-[0.754/1] object-cover"
+          className="block w-full aspect-[0.754/1] object-cover"
           src={result?.imageUrl}
           alt={result?.createdAt}
         ></img>
@@ -30,7 +26,7 @@ const CodyPlay = () => {
       <div className="mt-[30px] mx-[24px] flex flex-col gap-[6px] ">
         <button
           onClick={() => {
-            navigate('/codyplay/retouch');
+            navigate('/codyplay/retouch', { state: { animateImage: true } });
           }}
           className="bg-[#F6F7F8] rounded-[32px] py-[16px] text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
         >

@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 import PageLayout from '@/components/layout/PageeLayout';
+import '@/features/codyplay/codyRetouch.css';
 
 import { mockOutfits } from '../../mocks/data/outfit';
 import type { ClothingItem, Outfit } from '../../types';
@@ -42,6 +44,7 @@ const recommendItems: ClothingItem[] = [
 ];
 
 const CodyRetouch = () => {
+  const location = useLocation();
   const [result, setResult] = useState<Outfit | undefined>(() => mockOutfits[0]);
   const [selectItem, setSelectItem] = useState<ClothingItem | null>();
   const [changeItem, setChangeItem] = useState<ClothingItem | null>(null);
@@ -69,9 +72,11 @@ const CodyRetouch = () => {
         수정할 아이템을 선택해주세요
       </h1>
       <div className="mt-[40px] mr-[24px] flex justify-beteewn gap-[16px]">
-        <div className="flex-163 aspect-[163/439] overflow-hidden bg-blue">
+        <div
+          className={`${location.state?.animateImage ? 'retouch-image-enter' : ''} relative flex-163 aspect-[163/439] overflow-hidden bg-blue`}
+        >
           <img
-            className="rounded-r-[24px] h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
             src={result?.imageUrl}
             alt={result?.createdAt}
           ></img>
@@ -122,11 +127,12 @@ const CodyRetouch = () => {
             <div className="mt-[17px] flex flex-col h-[calc(100%-170px)] overflow-y-auto">
               {recommendItems
                 .filter((item) => selectItem.category === item.category)
-                .map((item) => (
+                .map((item, index) => (
                   <div
                     key={item.id}
                     onClick={() => setChangeItem(item)}
-                    className={`${changeItem?.id === item.id ? 'bg-[#E6E8EA]' : 'bg-[#F6F7F8]'} rounded-[4px] h-[68px] shrink-0 flex items-center pl-[12px]`}
+                    className={`${changeItem?.id === item.id ? 'bg-[#E6E8EA]' : 'bg-[#F6F7F8]'} retouch-recommend-drop rounded-[4px] h-[68px] shrink-0 flex items-center pl-[12px]`}
+                    style={{ animationDelay: `${180 + index * 80}ms` }}
                   >
                     <div className="h-[48px] w-[48px] object-cover">
                       <img className="object-cover h-full" src={item.imageUrl}></img>
@@ -160,15 +166,16 @@ const CodyRetouch = () => {
             </svg>
           </div>
         ) : (
-          <div className="flex gap-[24px] flex-col flex-172 aspect-[172/439] overflow-y-auto">
-            {result?.items.map((item) => (
+          <div className="flex gap-[24px] flex-col flex-172 aspect-[172/439] overflow-x-hidden overflow-y-auto">
+            {result?.items.map((item, index) => (
               <div
                 key={item.id}
                 onClick={() => {
                   setSelectItem(item);
                   setChangeItem(null);
                 }}
-                className={`${selectItem?.id === item.id ? 'bg-[#E6E8EA]' : 'bg-[#F6F7F8]'} rounded-[4px] h-[68px] shrink-0 flex items-center pl-[12px]`}
+                className={`${selectItem?.id === item.id ? 'bg-[#E6E8EA]' : 'bg-[#F6F7F8]'} retouch-item-enter rounded-[4px] h-[68px] shrink-0 flex items-center pl-[12px]`}
+                style={{ animationDelay: `${120 + index * 90}ms` }}
               >
                 <div className="h-[48px] w-[48px] object-cover">
                   <img className="object-cover h-full" src={item.imageUrl}></img>
