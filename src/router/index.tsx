@@ -5,23 +5,32 @@ import ProtectedRoute from './ProtectedRoute';
 import SplashPage from '../pages/auth/SplashPage';
 import ServiceIntroPage from '../pages/auth/ServiceIntroPage';
 import LoginPage from '../pages/auth/LoginPage';
+import SignupPage from '../pages/auth/SignupPage';
 
 // 1. 온보딩
-import StylePreferencePage from '../pages/onboarding/StylePreferencePage';
-import PhotoUploadPage from '../pages/onboarding/PhotoUploadPage';
+import ConsentPage from '../pages/onboarding/ConsentPage';
+import StyleSwipePage from '../pages/onboarding/StyleSwipePage';
+import StyleConfirmPage from '../pages/onboarding/StyleConfirmPage';
+import BodyTypePage from '../pages/onboarding/BodyTypePage';
+import BodyPhotoGuidePage from '../pages/onboarding/BodyPhotoGuidePage';
+import BodyCameraPage from '../pages/onboarding/BodyCameraPage';
+import BodyUploadPage from '../pages/onboarding/BodyUploadPage';
 import BodyAnalysisPage from '../pages/onboarding/BodyAnalysisPage';
-import AvatarGeneratePage from '../pages/onboarding/AvatarGeneratePage';
+import BodyResultPage from '../pages/onboarding/BodyResultPage';
 
 // 2. 옷장
 import ClosetHomePage from '../pages/closet/ClosetHomePage';
 import ClosetRegisterPage from '../pages/closet/ClosetRegisterPage';
 import ClosetPlatformPage from '../pages/closet/ClosetPlatformPage';
 import ClosetPermissionPage from '../pages/closet/ClosetPermissionPage';
+import ClosetImportingPage from '../pages/closet/ClosetImportingPage';
 import ClosetPhotoPage from '../pages/closet/ClosetPhotoPage';
 import ClosetLoadingPage from '../pages/closet/ClosetLoadingPage';
 import ClosetTagEditPage from '../pages/closet/ClosetTagEditPage';
 import ClosetCompletePage from '../pages/closet/ClosetCompletePage';
 import ClosetItemDetailPage from '../pages/closet/ClosetItemDetailPage';
+import ClosetItemListPage from '../pages/closet/ClosetItemListPage';
+import ClosetIntroPage from '../pages/closet/ClosetIntroPage';
 
 // 3. 홈
 import HomePage from '../pages/home/HomePage';
@@ -55,8 +64,8 @@ import MyPage from '../pages/mypage/MyPage';
 import RouteErrorPage from '../pages/error/RouteErrorPage';
 import NotFoundPage from '../pages/error/NotFoundPage';
 
-// dev 전용
-import DevPreviewPage from '../pages/dev/DevPreviewPage';
+import CodyPlay from '@/pages/codyplay/CodyPlay';
+import CodyRetouch from '@/pages/codyplay/CodyRetouch';
 
 const router = createBrowserRouter([
 
@@ -68,23 +77,44 @@ const router = createBrowserRouter([
     { path: '/', element: <SplashPage /> },
     { path: '/intro', element: <ServiceIntroPage /> },
     { path: '/login', element: <LoginPage /> },
+    { path: '/signup', element: <SignupPage /> },
 
     // ── 온보딩 (로그인 후 최초 1회) ───────────────
     {
       path: '/onboarding',
-      element: <ProtectedRoute><StylePreferencePage /></ProtectedRoute>,
+      element: <ProtectedRoute><ConsentPage /></ProtectedRoute>,
     },
     {
-      path: '/onboarding/photo',
-      element: <ProtectedRoute><PhotoUploadPage /></ProtectedRoute>,
+      path: '/onboarding/style',
+      element: <ProtectedRoute><StyleSwipePage /></ProtectedRoute>,
     },
     {
-      path: '/onboarding/analysis',
+      path: '/onboarding/style/confirm',
+      element: <ProtectedRoute><StyleConfirmPage /></ProtectedRoute>,
+    },
+    {
+      path: '/onboarding/body',
+      element: <ProtectedRoute><BodyTypePage /></ProtectedRoute>,
+    },
+    {
+      path: '/onboarding/body/photo',
+      element: <ProtectedRoute><BodyPhotoGuidePage /></ProtectedRoute>,
+    },
+    {
+      path: '/onboarding/body/camera',
+      element: <ProtectedRoute><BodyCameraPage /></ProtectedRoute>,
+    },
+    {
+      path: '/onboarding/body/upload',
+      element: <ProtectedRoute><BodyUploadPage /></ProtectedRoute>,
+    },
+    {
+      path: '/onboarding/body/analysis',
       element: <ProtectedRoute><BodyAnalysisPage /></ProtectedRoute>,
     },
     {
-      path: '/onboarding/avatar',
-      element: <ProtectedRoute><AvatarGeneratePage /></ProtectedRoute>,
+      path: '/onboarding/body/result',
+      element: <ProtectedRoute><BodyResultPage /></ProtectedRoute>,
     },
 
     // ── 메인 (로그인 필요) ────────────────────────
@@ -97,6 +127,10 @@ const router = createBrowserRouter([
   {
     path: '/closet',
     element: <ProtectedRoute><ClosetHomePage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/intro',
+    element: <ProtectedRoute><ClosetIntroPage /></ProtectedRoute>,
   },
   {
     path: '/closet/register',
@@ -116,7 +150,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/closet/register/importing',
-    element: <ProtectedRoute><ClosetLoadingPage variant="import" /></ProtectedRoute>,
+    element: <ProtectedRoute><ClosetImportingPage /></ProtectedRoute>,
   },
   {
     path: '/closet/register/analyzing',
@@ -129,6 +163,10 @@ const router = createBrowserRouter([
   {
     path: '/closet/register/complete',
     element: <ProtectedRoute><ClosetCompletePage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/items',
+    element: <ProtectedRoute><ClosetItemListPage /></ProtectedRoute>,
   },
   {
     path: '/closet/:itemId',
@@ -165,6 +203,16 @@ const router = createBrowserRouter([
     element: <ProtectedRoute><StylingLoadingPage /></ProtectedRoute>,
   },
 
+  //코디 플레이
+  {
+    path: '/codyplay',
+    element: <ProtectedRoute><CodyPlay /></ProtectedRoute>
+  },
+  {
+    path: '/codyplay/retouch',
+    element: <ProtectedRoute><CodyRetouch /></ProtectedRoute>
+  },
+
   // 코디 결과
   {
     path: '/outfit/result',
@@ -191,7 +239,6 @@ const router = createBrowserRouter([
 
   // 내 코디
   {
-    path: '/myoutfit',
     element: <ProtectedRoute><MyOutfitListPage /></ProtectedRoute>,
   },
   {
@@ -204,9 +251,6 @@ const router = createBrowserRouter([
       path: '/mypage',
       element: <ProtectedRoute><MyPage /></ProtectedRoute>,
     },
-
-    // dev 전용 미리보기 (프로덕션 빌드에서는 라우트 미등록)
-    ...(import.meta.env.DEV ? [{ path: '/dev', element: <DevPreviewPage /> }] : []),
 
     // 없는 경로 → 404
     { path: '*', element: <NotFoundPage /> },

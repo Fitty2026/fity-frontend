@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 
-interface InputProps {
+export interface InputProps {
   label?: string;
   placeholder?: string;
   type?: 'text' | 'email' | 'password' | 'number' | 'tel';
@@ -12,6 +12,7 @@ interface InputProps {
   errorMessage?: string;
   disabled?: boolean;
   className?: string;
+  rightElement?: React.ReactNode;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -28,6 +29,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       errorMessage,
       disabled = false,
       className = '',
+      rightElement,
     },
     ref,
   ) => {
@@ -36,28 +38,34 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label className="text-sm font-medium text-neutral-700">{label}</label>
         )}
-        <input
-          ref={ref}
-          type={type}
-          value={value}
-          onChange={onChange}
-          onBlur={onBlur}
-          name={name}
-          autoComplete={autoComplete}
-          placeholder={placeholder}
-          disabled={disabled}
-          className={[
-            'w-full h-12 px-4 text-sm bg-white border rounded-xl outline-none transition-colors',
-            'placeholder:text-neutral-400',
-            errorMessage
-              ? 'border-red-400 focus:border-red-500'
-              : 'border-neutral-300 focus:border-black',
-            disabled ? 'opacity-40 cursor-not-allowed bg-neutral-100' : '',
-            className,
-          ]
-            .filter(Boolean)
-            .join(' ')}
-        />
+        <div className="relative w-full">
+          <input
+            ref={ref}
+            type={type}
+            value={value}
+            onChange={onChange}
+            onBlur={onBlur}
+            name={name}
+            autoComplete={autoComplete}
+            placeholder={placeholder}
+            disabled={disabled}
+            className={[
+              'w-full h-12 px-4 text-sm bg-white border rounded-xl outline-none transition-colors',
+              'placeholder:text-neutral-400',
+              rightElement ? 'pr-12' : '',
+              errorMessage
+                ? 'border-red-400 focus:border-red-500'
+                : 'border-neutral-300 focus:border-black',
+              disabled ? 'opacity-40 cursor-not-allowed bg-neutral-100' : '',
+              className,
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          />
+          {rightElement && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">{rightElement}</div>
+          )}
+        </div>
         {errorMessage && (
           <p className="text-xs text-red-500">{errorMessage}</p>
         )}

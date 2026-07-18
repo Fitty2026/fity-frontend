@@ -1,168 +1,168 @@
-import { type FormEvent, useState } from 'react';
+import { useEffect, useState } from 'react';
+
+import { useNavigate } from 'react-router-dom';
 
 import PageLayout from '@/components/layout/PageeLayout';
 import Input from '@/components/ui/Input';
-import { Link } from 'react-router-dom';
 
-type tagType = {
-  label: string;
+import { mockOutfits } from '../../mocks/data/outfit';
+import type { Outfit } from '../../types';
+
+const Tag = ({ isSelected = false, tag = '', onclick = () => {} }) => {
+  return (
+    <div
+      onClick={onclick}
+      className={`border relative transition-all duration-0.3 ${isSelected ? 'bg-[#B2B8BD] pr-[28px]' : ''} border-[#34363C] rounded-[32px] px-[12px] py-[4px] text-[#34363C] text-[14px] leading-[160%] tracking-[-2%]`}
+    >
+      {tag}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="8"
+        height="8"
+        viewBox="0 0 8 8"
+        fill="none"
+        className={`absolute bottom-1/2 translate-y-1/2 right-[12px] ${isSelected ? 'visible' : 'hidden'}`}
+      >
+        <path d="M0 8L8 0M0 0L8 8" stroke="#34363C" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </div>
+  );
 };
 
-const mockProductList = [
-  {
-    id: 1,
-    name: '울 오버핏 코트',
-    description: '전체적인 톤을 맞춰줘요',
-    url: '',
-    imgUrl: 'https://static.lookpin.co.kr/20250223125033-a52c/bb8a724e255a4399b2975545a33d16fa.jpg',
-  },
-  {
-    id: 2,
-    name: '하의',
-    description: '힙한 무드를 연출할 수 있는 아이템이에요',
-    url: '',
-    imgUrl: 'https://m.troubadour.kr/web/product/big/202505/bda60510d318641ada0b54ead25ec1ab.jpg',
-  },
-  {
-    id: 3,
-    name: '상의',
-    description: '레이어드 기본적인 아이템이에요',
-    url: '',
-    imgUrl:
-      'https://img.ssfshop.com/cmd/LB_750x1000/src/https://img.ssfshop.com/goods/8SBR/24/11/29/GM0024112978689_0_THNAIL_ORGINL_20241203174400242.jpg',
-  },
-];
 const OutfitSavePage = () => {
-  const [tag, setTag] = useState<tagType[]>([]);
-  const [tagInput, setTagInput] = useState('');
-  const [clickTag, setClickTag] = useState<Number>(5);
+  const [result, setResult] = useState<Outfit>();
+  const [selectedTag, setSelectedTag] = useState<Number>(5);
 
-  const handleTagChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTagInput(e.target.value);
+  const clickTag = (index: Number) => {
+    setSelectedTag(index);
   };
 
-  const addTag = () => {
-    setTag((prevItems) => [...prevItems, { label: `#${tagInput}` }]);
-    setTagInput('');
-  };
+  useEffect(() => {
+    setResult(mockOutfits?.[0]);
+  }, []);
 
-  const handleClickTag = (index: Number) => {
-    if (index === clickTag) {
-      setTag((prevItems) => prevItems.filter((_, i) => i !== clickTag));
-      setClickTag(5);
-    } else {
-      setClickTag(index);
-    }
-  };
-
-  const handleMemoInput = (event: FormEvent<HTMLTextAreaElement>) => {
-    const textarea = event.currentTarget;
-    textarea.style.height = 'auto';
-    textarea.style.height = `${textarea.scrollHeight}px`;
-  };
+  const navigate = useNavigate();
 
   return (
-    <PageLayout
-      className="mb-[180px]"
-      showBottomNav={false}
-      showHeader={true}
-      showBack={true}
-      title="코디 저장"
-    >
-      <div className="ItemList p-[34px] rounded-[12px] borader border-[#CFC4C54D] bg-[#EEEEEE] mx-[20px] mt-[20px] grid grid-cols-2 gap-[4px]">
-        {mockProductList.map((product) => (
+    <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="수정하기">
+      <div className="relative mt-[24px] mx-[24px]">
+        <div className="w-[calc(77.49196%_-_12.3987px)] relative">
           <img
-            key={product.id}
-            src={product.imgUrl}
-            alt={product.name}
-            className="w-full aspect-square object-cover bg-[#F5F5F5] rounded-[12px] "
-          />
-        ))}
+            className="block w-full rounded-[8px] aspect-square object-cover"
+            src={result?.imageUrl}
+            alt={result?.createdAt}
+          ></img>
+          <p className="absolute top-[9px] left-[14px] text-[#474C52] text-[12px] font-[600] leading-[165%] tracking-[-2%]">
+            {result?.createdAt.slice(0, 10).split('-').join('.')}
+          </p>
+        </div>
+        <div className="absolute inset-y-0 right-0 w-[calc(22.50804%_-_3.6013px)] space-y-[22.142857%] overflow-y-auto overscroll-contain touch-pan-y [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {result?.items.map((item) => (
+            <img
+              key={item.id}
+              className="block w-full rounded-[8px] aspect-square object-cover"
+              src={item.imageUrl}
+              alt={item.imageUrl}
+            ></img>
+          ))}{' '}
+        </div>
+      </div>
+      <div className="mt-[16px] mx-[24px] bg-[#E9E9E9] rounded-[8px] p-[10px] flex justify-center items-center gap-[8px]">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+        >
+          <g clip-path="url(#clip0_1461_116902)">
+            <circle cx="8" cy="8" r="7.6" stroke="#34363C" stroke-width="0.8" />
+            <path
+              d="M7.99935 4.66699V11.3337M11.3327 8.00033H4.66602"
+              stroke="#34363C"
+              stroke-width="0.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </g>
+          <defs>
+            <clipPath id="clip0_1461_116902">
+              <rect width="16" height="16" fill="white" />
+            </clipPath>
+          </defs>
+        </svg>{' '}
+        <p className="text-[#1F2124] text-[12px] font-[500] leading-[165%] tracking-[-2%]">
+          아이템 추가
+        </p>
+      </div>
+      <div className="mt-[27px] mx-[24px]">
+        <h2 className="text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
+          코디 이름
+        </h2>
+        <Input className="mt-[8px]" placeholder="코디 이름을 입력해주세요"></Input>
+      </div>
+      <div className="mt-[16px] mx-[24px]">
+        <h2 className="text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
+          태그
+        </h2>
+        <div className="mt-[8px] flex flex-wrap gap-[8px] items-center">
+          {result?.styleTags.map((tag, index) => (
+            <Tag
+              tag={tag}
+              isSelected={selectedTag == index}
+              key={tag}
+              onclick={() => clickTag(index)}
+            />
+          ))}
 
-        <div className="flex w-full bg-[#E8E8E8] aspect-square items-center justify-center  rounded-[12px] ">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 14 14"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
             fill="none"
+            className="ml-[15px]"
           >
-            <path d="M6 8H0V6H6V0H8V6H14V8H8V14H6V8Z" fill="#7E7576" />
+            <g clip-path="url(#clip0_1461_116923)">
+              <circle cx="12" cy="12" r="11.5" stroke="#34363C" />
+              <path
+                d="M12 7V17M17 12H7"
+                stroke="#34363C"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </g>
+            <defs>
+              <clipPath id="clip0_1461_116923">
+                <rect width="24" height="24" fill="white" />
+              </clipPath>
+            </defs>
           </svg>
         </div>
       </div>
-      <div className="CodyName mx-[20px] mt-[24px]">
-        <p className="text-[12px] font-[500] text-[#4C4546] mb-[8px]">코디 이름</p>
-        <Input placeholder="예: 미니멀 시티룩" />
-      </div>
-      <div className="Tag mx-[20px] mt-[24px]">
-        <p className="text-[12px] font-[500] text-[#4C4546] mb-[8px]">상황 태그</p>
-        <div className="flex flex-wrap gap-[8px] ">
-          {tag.map((tag, index) => (
-            <div
-              key={index}
-              onClick={() => handleClickTag(index)}
-              className={`relative border  rounded-full text-[#4C4546] text-[12px] text-[500] px-[16px] py-[8px] overflow-hidden transition-all ${index === clickTag ? 'pr-[41px] bg-[#E2E2E2]  border-[#00000033] ' : 'bg-[#EEEEEE]  border-[#CFC4C533] '}`}
-            >
-              {tag.label}
-
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="9"
-                height="9"
-                viewBox="0 0 9 9"
-                fill="none"
-                className={`translate-y-1/2 bottom-1/2  absolute  transition-all right-[16px] `}
-              >
-                <path
-                  d="M0.816667 8.16667L0 7.35L3.26667 4.08333L0 0.816667L0.816667 0L4.08333 3.26667L7.35 0L8.16667 0.816667L4.9 4.08333L8.16667 7.35L7.35 8.16667L4.08333 4.9L0.816667 8.16667Z"
-                  fill={` ${index === clickTag ? '#1A1C1C' : '#00000000'}`}
-                />
-              </svg>
-            </div>
-          ))}
-        </div>
-        <div className="relative  mt-[24px]">
-          <Input
-            className=""
-            placeholder="태그 추가 (최대 5개)"
-            value={tagInput}
-            onChange={handleTagChange}
-          />
-          <div
-            className="absolute right-[12px] bottom-1/2 translate-y-1/2 cursor-pointer"
-            onClick={addTag}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-            >
-              <path
-                d="M9 15H11V11H15V9H11V5H9V9H5V11H9V15ZM10 20C8.61667 20 7.31667 19.7375 6.1 19.2125C4.88333 18.6875 3.825 17.975 2.925 17.075C2.025 16.175 1.3125 15.1167 0.7875 13.9C0.2625 12.6833 0 11.3833 0 10C0 8.61667 0.2625 7.31667 0.7875 6.1C1.3125 4.88333 2.025 3.825 2.925 2.925C3.825 2.025 4.88333 1.3125 6.1 0.7875C7.31667 0.2625 8.61667 0 10 0C11.3833 0 12.6833 0.2625 13.9 0.7875C15.1167 1.3125 16.175 2.025 17.075 2.925C17.975 3.825 18.6875 4.88333 19.2125 6.1C19.7375 7.31667 20 8.61667 20 10C20 11.3833 19.7375 12.6833 19.2125 13.9C18.6875 15.1167 17.975 16.175 17.075 17.075C16.175 17.975 15.1167 18.6875 13.9 19.2125C12.6833 19.7375 11.3833 20 10 20ZM10 18C12.2333 18 14.125 17.225 15.675 15.675C17.225 14.125 18 12.2333 18 10C18 7.76667 17.225 5.875 15.675 4.325C14.125 2.775 12.2333 2 10 2C7.76667 2 5.875 2.775 4.325 4.325C2.775 5.875 2 7.76667 2 10C2 12.2333 2.775 14.125 4.325 15.675C5.875 17.225 7.76667 18 10 18Z"
-                fill="black"
-              />
-            </svg>
-          </div>
+      <div className="mt-[24px] mx-[24px] flex">
+        <h2 className="flex-86 text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
+          메모
+        </h2>
+        <div className="flex-241">
+          <textarea
+            name=""
+            id=""
+            placeholder="메모를 입력해주세요 (선택)"
+            className="w-full min-h-[63px] bg-[#F6F7F8] rounded-[4px] px-[8px] py-[10px] text-[#B2B8BD] text-[12px] font-[500] leading-[165%] tracking-[-2%] outline-none resize-none overflow-hidden "
+          ></textarea>
         </div>
       </div>
-      <div className="Memo mx-[20px] mt-[24px]">
-        <p className="text-[12px] font-[500] text-[#4C4546] mb-[8px]">메모 (선택)</p>
-        <textarea
-          className="w-full min-h-12 px-4 py-3 text-sm bg-white border border-neutral-300 rounded-xl outline-none transition-colors placeholder:text-neutral-400 focus:border-black resize-none overflow-hidden"
-          onInput={handleMemoInput}
-          placeholder="스타일링 팁이나 구매 희망 사항을 적어주세요."
-        />
-      </div>
-      <div className="fixed backdrop-blur-[12px] max-w-[430px] pb-[20px] z-10 border-t border-[#F4F4F5] bg-[##FFFFFFCC] bottom-[0px] right-1/2 translate-x-1/2 w-full">
-        <Link
-          to={'/outfit/share'}
-          className="mt-[30px] mb-[40px] mx-[20px] border bg-[#000000] h-[48px] rounded-[8px]  text-[16px] text-[#FFFFFF] text-medium font-[500] text-center flex items-center justify-center cursor-pointer"
+      <div className="mt-[20px] mx-[24px]">
+        <button
+          onClick={() => {
+            navigate('/outfit/result');
+          }}
+          className="w-full bg-[#1F2124] rounded-[32px] py-[16px] text-[#F6F7F8] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
         >
-          저장하기
-        </Link>
+          확인
+        </button>
       </div>
     </PageLayout>
   );

@@ -1,116 +1,97 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
-import { RegisterOptionCard, BottomCTA } from '@/features/closet/components';
+import { OnboardingTopBar } from '@/features/closet/components';
+import registerBgBlob from '@/assets/images/closet-register-bg-blob.png';
 
-type RegisterMethod = 'auto' | 'manual';
-
-/** 뒤로가기 아이콘 — Figma 에셋 */
-const BackIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M3.825 9L9.425 14.6L8 16L0 8L8 0L9.425 1.4L3.825 7H16V9H3.825Z" fill="black" />
+const AlbumIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 28 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M1 16L7.87867 9.12133C8.15724 8.84275 8.48796 8.62177 8.85194 8.47101C9.21592 8.32024 9.60603 8.24264 10 8.24264C10.394 8.24264 10.7841 8.32024 11.1481 8.47101C11.512 8.62177 11.8428 8.84275 12.1213 9.12133L19 16M17 14L18.8787 12.1213C19.1572 11.8428 19.488 11.6218 19.8519 11.471C20.2159 11.3202 20.606 11.2426 21 11.2426C21.394 11.2426 21.7841 11.3202 22.1481 11.471C22.512 11.6218 22.8428 11.8428 23.1213 12.1213L27 16M3 21H25C25.5304 21 26.0391 20.7893 26.4142 20.4142C26.7893 20.0391 27 19.5304 27 19V3C27 2.46957 26.7893 1.96086 26.4142 1.58579C26.0391 1.21071 25.5304 1 25 1H3C2.46957 1 1.96086 1.21071 1.58579 1.58579C1.21071 1.96086 1 2.46957 1 3V19C1 19.5304 1.21071 20.0391 1.58579 20.4142C1.96086 20.7893 2.46957 21 3 21ZM17 6H17.0107V6.01067H17V6ZM17.5 6C17.5 6.13261 17.4473 6.25979 17.3536 6.35355C17.2598 6.44732 17.1326 6.5 17 6.5C16.8674 6.5 16.7402 6.44732 16.6464 6.35355C16.5527 6.25979 16.5 6.13261 16.5 6C16.5 5.86739 16.5527 5.74022 16.6464 5.64645C16.7402 5.55268 16.8674 5.5 17 5.5C17.1326 5.5 17.2598 5.55268 17.3536 5.64645C17.4473 5.74022 17.5 5.86739 17.5 6Z" stroke="#1F2124" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
-/** 카드 우측 아이콘 박스 (흰색 라운드 박스) */
-const IconBox = ({ children }: { children: React.ReactNode }) => (
-  <span className="flex items-center justify-center w-[51px] h-[51px] rounded-[8px] bg-[#EEEEEE]">
-    {children}
-  </span>
-);
-
-/** 자동 가져오기 아이콘 (구매 내역 연동) — Figma 에셋 */
-const AutoImportIcon = () => (
-  <svg width="25" height="20" viewBox="0 0 25 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M0 20V17.5H3.40625C2.34375 16.5833 1.51042 15.4792 0.90625 14.1875C0.302083 12.8958 0 11.5 0 10C0 7.66667 0.708333 5.60938 2.125 3.82812C3.54167 2.04688 5.33333 0.875 7.5 0.3125V2.9375C6.04167 3.45833 4.84375 4.35937 3.90625 5.64062C2.96875 6.92187 2.5 8.375 2.5 10C2.5 11.125 2.72396 12.1615 3.17187 13.1094C3.61979 14.0573 4.22917 14.875 5 15.5625V12.5H7.5V20H0ZM13.75 20C12.7083 20 11.8229 19.6354 11.0938 18.9062C10.3646 18.1771 10 17.2917 10 16.25C10 15.25 10.3437 14.3906 11.0312 13.6719C11.7188 12.9531 12.5625 12.5729 13.5625 12.5312C13.9167 11.7812 14.4427 11.1719 15.1406 10.7031C15.8385 10.2344 16.625 10 17.5 10C18.6042 10 19.5573 10.3594 20.3594 11.0781C21.1615 11.7969 21.6458 12.6875 21.8125 13.75C22.6875 13.75 23.4375 14.0521 24.0625 14.6563C24.6875 15.2604 25 15.9896 25 16.8438C25 17.7188 24.6979 18.4635 24.0937 19.0781C23.4896 19.6927 22.75 20 21.875 20H13.75ZM17.375 8.75C17.2292 7.89583 16.9479 7.10417 16.5313 6.375C16.1146 5.64583 15.6042 5 15 4.4375V7.5H12.5V0H20V2.5H16.5937C17.4896 3.29167 18.224 4.21875 18.7969 5.28125C19.3698 6.34375 19.7396 7.5 19.9063 8.75H17.375ZM13.75 17.5H21.875C22.0417 17.5 22.1875 17.4375 22.3125 17.3125C22.4375 17.1875 22.5 17.0417 22.5 16.875C22.5 16.7083 22.4375 16.5625 22.3125 16.4375C22.1875 16.3125 22.0417 16.25 21.875 16.25H19.6875V14.6875C19.6875 14.0833 19.474 13.5677 19.0469 13.1406C18.6198 12.7135 18.1042 12.5 17.5 12.5C16.8958 12.5 16.3802 12.7135 15.9531 13.1406C15.526 13.5677 15.3125 14.0833 15.3125 14.6875V15H13.75C13.3958 15 13.099 15.1198 12.8594 15.3594C12.6198 15.599 12.5 15.8958 12.5 16.25C12.5 16.6042 12.6198 16.901 12.8594 17.1406C13.099 17.3802 13.3958 17.5 13.75 17.5Z" fill="black"/>
+const CameraIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M9.10267 8.23361C8.86265 8.61349 8.54243 8.93625 8.16445 9.17925C7.78647 9.42225 7.3599 9.57961 6.91467 9.64027C6.408 9.71227 5.90533 9.78961 5.40267 9.87361C3.99867 10.1069 3 11.3429 3 12.7656V24.0003C3 24.7959 3.31607 25.559 3.87868 26.1216C4.44129 26.6842 5.20435 27.0003 6 27.0003H26C26.7957 27.0003 27.5587 26.6842 28.1213 26.1216C28.6839 25.559 29 24.7959 29 24.0003V12.7656C29 11.3429 28 10.1069 26.5973 9.87361C26.0943 9.78979 25.5902 9.71201 25.0853 9.64027C24.6403 9.57942 24.214 9.42198 23.8363 9.17899C23.4586 8.936 23.1385 8.61333 22.8987 8.23361L21.8027 6.47894C21.5565 6.07907 21.2176 5.7444 20.8147 5.50325C20.4118 5.26211 19.9567 5.1216 19.488 5.09361C17.1643 4.9688 14.8357 4.9688 12.512 5.09361C12.0433 5.1216 11.5882 5.26211 11.1853 5.50325C10.7824 5.7444 10.4435 6.07907 10.1973 6.47894L9.10267 8.23361Z" stroke="#34363C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M22 17C22 18.5913 21.3679 20.1174 20.2426 21.2426C19.1174 22.3679 17.5913 23 16 23C14.4087 23 12.8826 22.3679 11.7574 21.2426C10.6321 20.1174 10 18.5913 10 17C10 15.4087 10.6321 13.8826 11.7574 12.7574C12.8826 11.6321 14.4087 11 16 11C17.5913 11 19.1174 11.6321 20.2426 12.7574C21.3679 13.8826 22 15.4087 22 17ZM25 14H25.0107V14.0107H25V14Z" stroke="#34363C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
-/** 직접 등록 아이콘 — Figma 에셋 */
-const ManualCameraIcon = () => (
-  <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M11.75 8.75H21.75C21.1875 7.3125 20.3281 6.07812 19.1719 5.04687C18.0156 4.01562 16.6875 3.29167 15.1875 2.875L11.75 8.75ZM8.875 11.25L13.875 2.625C13.6458 2.58333 13.4167 2.55208 13.1875 2.53125C12.9583 2.51042 12.7292 2.5 12.5 2.5C11.125 2.5 9.84375 2.76042 8.65625 3.28125C7.46875 3.80208 6.41667 4.5 5.5 5.375L8.875 11.25ZM2.8125 15H9.625L4.625 6.375C3.95833 7.22917 3.4375 8.17188 3.0625 9.20313C2.6875 10.2344 2.5 11.3333 2.5 12.5C2.5 12.9375 2.52604 13.3594 2.57812 13.7656C2.63021 14.1719 2.70833 14.5833 2.8125 15ZM9.8125 22.125L13.1875 16.25H3.25C3.8125 17.6875 4.67187 18.9219 5.82812 19.9531C6.98438 20.9844 8.3125 21.7083 9.8125 22.125ZM12.5 22.5C13.875 22.5 15.1562 22.2396 16.3437 21.7188C17.5312 21.1979 18.5833 20.5 19.5 19.625L16.125 13.75L11.125 22.375C11.3542 22.4167 11.5781 22.4479 11.7969 22.4688C12.0156 22.4896 12.25 22.5 12.5 22.5ZM20.375 18.625C21.0417 17.7708 21.5625 16.8281 21.9375 15.7969C22.3125 14.7656 22.5 13.6667 22.5 12.5C22.5 12.0625 22.474 11.6406 22.4219 11.2344C22.3698 10.8281 22.2917 10.4167 22.1875 10H15.375L20.375 18.625ZM12.5 25C10.7917 25 9.17708 24.6719 7.65625 24.0156C6.13542 23.3594 4.80729 22.4635 3.67188 21.3281C2.53646 20.1927 1.64062 18.8646 0.984375 17.3438C0.328125 15.8229 0 14.2083 0 12.5C0 10.7708 0.328125 9.15104 0.984375 7.64063C1.64062 6.13021 2.53646 4.80729 3.67188 3.67188C4.80729 2.53646 6.13542 1.64062 7.65625 0.984375C9.17708 0.328125 10.7917 0 12.5 0C14.2292 0 15.849 0.328125 17.3594 0.984375C18.8698 1.64062 20.1927 2.53646 21.3281 3.67188C22.4635 4.80729 23.3594 6.13021 24.0156 7.64063C24.6719 9.15104 25 10.7708 25 12.5C25 14.2083 24.6719 15.8229 24.0156 17.3438C23.3594 18.8646 22.4635 20.1927 21.3281 21.3281C20.1927 22.4635 18.8698 23.3594 17.3594 24.0156C15.849 24.6719 14.2292 25 12.5 25Z" fill="#5E5E5E"/>
+const BagIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M21 14V8C21 6.67392 20.4732 5.40215 19.5355 4.46447C18.5978 3.52678 17.3261 3 16 3C14.6739 3 13.4021 3.52678 12.4644 4.46447C11.5268 5.40215 11 6.67392 11 8V14M26.1413 11.3427L27.8253 27.3427C27.9186 28.2293 27.2253 29 26.3333 29H5.66665C5.45626 29.0002 5.24817 28.9562 5.05591 28.8708C4.86365 28.7853 4.69151 28.6604 4.55068 28.5041C4.40984 28.3478 4.30347 28.1636 4.23845 27.9635C4.17344 27.7634 4.15125 27.5519 4.17331 27.3427L5.85865 11.3427C5.89752 10.9741 6.07148 10.6329 6.34698 10.385C6.62248 10.1371 6.98002 9.99993 7.35065 10H24.6493C25.4173 10 26.0613 10.58 26.1413 11.3427ZM11.5 14C11.5 14.1326 11.4473 14.2598 11.3535 14.3536C11.2598 14.4473 11.1326 14.5 11 14.5C10.8674 14.5 10.7402 14.4473 10.6464 14.3536C10.5527 14.2598 10.5 14.1326 10.5 14C10.5 13.8674 10.5527 13.7402 10.6464 13.6464C10.7402 13.5527 10.8674 13.5 11 13.5C11.1326 13.5 11.2598 13.5527 11.3535 13.6464C11.4473 13.7402 11.5 13.8674 11.5 14ZM21.5 14C21.5 14.1326 21.4473 14.2598 21.3535 14.3536C21.2598 14.4473 21.1326 14.5 21 14.5C20.8674 14.5 20.7402 14.4473 20.6464 14.3536C20.5527 14.2598 20.5 14.1326 20.5 14C20.5 13.8674 20.5527 13.7402 20.6464 13.6464C20.7402 13.5527 20.8674 13.5 21 13.5C21.1326 13.5 21.2598 13.5527 21.3535 13.6464C21.4473 13.7402 21.5 13.8674 21.5 14Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
+
+const ReceiptIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M3 11H29M3 12H29M7 19H15M7 22H11M6 26H26C26.7957 26 27.5587 25.6839 28.1213 25.1213C28.6839 24.5587 29 23.7956 29 23V9C29 8.20435 28.6839 7.44129 28.1213 6.87868C27.5587 6.31607 26.7957 6 26 6H6C5.20435 6 4.44129 6.31607 3.87868 6.87868C3.31607 7.44129 3 8.20435 3 9V23C3 23.7956 3.31607 24.5587 3.87868 25.1213C4.44129 25.6839 5.20435 26 6 26Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const OPTIONS = [
+  { key: 'album', label: '앨범에서 선택', icon: <AlbumIcon />, to: '/closet/register/photo' },
+  { key: 'camera', label: '카메라로 촬영', icon: <CameraIcon />, to: '/closet/register/photo' },
+  { key: 'platform', label: '쇼핑몰 연동하기', icon: <BagIcon />, to: '/closet/register/platform' },
+  { key: 'receipt', label: '영수증 불러오기', icon: <ReceiptIcon />, to: '/closet/register/platform' },
+];
 
 /**
- * 옷 등록 방식 선택 (Frame 19)
- * - 자동으로 가져오기 (구매 내역 연동) / 직접 등록하기 (사진)
+ * 옷장 등록 방식 선택 (자동/직접).
+ * 타이틀 + 4가지 등록 방식(앨범/카메라/쇼핑몰/영수증) 그룹 카드.
  */
 const ClosetRegisterPage = () => {
   const navigate = useNavigate();
-  const [method, setMethod] = useState<RegisterMethod>('auto');
-
-  const handleNext = () => {
-    // TODO: 다음 화면 라우트 추가 예정
-    // auto  → 쇼핑몰 선택(Platform Selection)
-    // manual → 사진 업로드(Photo Upload Clothing)
-    if (method === 'auto') {
-      navigate('/closet/register/platform');
-    } else {
-      navigate('/closet/register/photo');
-    }
-  };
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
-      <div className="flex flex-col h-[100dvh] min-h-0 bg-[#F9F9F9]">
-        {/* 헤더 (Figma: 높이 64) — 고정 */}
-        <header className="flex items-center justify-between h-16 px-4 bg-white border-b border-neutral-100">
-          <div className="w-10">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="flex items-center justify-center w-10 h-10 -ml-2"
-              aria-label="뒤로가기"
-            >
-              <BackIcon />
-            </button>
-          </div>
-          <h1 className="text-base font-medium leading-5 text-black">사진으로 옷 등록하기</h1>
-          <div className="w-10" />
-        </header>
+      <div className="relative flex flex-col flex-1 min-h-0 bg-white overflow-hidden">
+        {/* 배경 blob — Figma: 1078.79², top 0, left -451, angle 10.07°(=CSS -10.07°) */}
+        <img
+          src={registerBgBlob}
+          alt=""
+          className="pointer-events-none select-none absolute max-w-none"
+          style={{
+            width: '1078.79px',
+            height: '1078.79px',
+            top: '50px',
+            left: '-351px',
+            transform: 'rotate(-10.07deg)',
+            opacity: 1,
+          }}
+          draggable={false}
+        />
 
-        {/* 스크롤 영역 (이 층만 스크롤) */}
-        <div className="flex-1 overflow-y-auto min-h-0">
-          {/* 등록 방식 선택 */}
-          <div className="flex flex-col gap-4 px-5 pt-[49px]">
-            <RegisterOptionCard
-              title="자동으로 가져오기"
-              description={'구매 내역을 연동해 옷장을\n자동으로 채워요'}
-              badge="추천"
-              icon={<IconBox><AutoImportIcon /></IconBox>}
-              selected={method === 'auto'}
-              onClick={() => setMethod('auto')}
-              className="h-[120px]"
-            />
-            <RegisterOptionCard
-              title="직접 등록하기"
-              description={'사진으로 옷을 하나씩 추가\n할 수 있어요'}
-              icon={<IconBox><ManualCameraIcon /></IconBox>}
-              selected={method === 'manual'}
-              onClick={() => setMethod('manual')}
-              className="h-[120px]"
-            />
+        <OnboardingTopBar progress={52 / 375} showSkip onSkip={() => navigate('/closet')} />
+
+        <div className="relative flex-1 overflow-y-auto px-6 pt-[68px]">
+          {/* 타이틀 (Figma: Pretendard 700 / 24px / lh150% / -2%) */}
+          <h1 className="text-[24px] font-bold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
+            옷을 등록해
+            <br />
+            코디를 완성해보세요
+          </h1>
+          {/* 부제 (Figma: Pretendard 500 / 14px / lh160% / -2% / #5A6169) */}
+          <p className="mt-1 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#5A6169]">
+            보유한 옷을 추가하면
+            <br />
+            더 정확한 코디를 추천해드려요
+          </p>
+
+          {/* 옵션 그룹 카드 (Figma: bg #FFF 20%, radius16, shadow 0/8/16 #000 8%, backdrop blur) */}
+          <div className="mt-[111px] overflow-hidden rounded-2xl bg-white/20 shadow-[0_8px_16px_0_rgba(0,0,0,0.08)] backdrop-blur-md">
+            {OPTIONS.map((opt) => (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => navigate(opt.to)}
+                className="flex items-center gap-[40px] w-full h-20 pl-6 pr-[14px] text-left cursor-pointer border-b border-[#E6E8EA] last:border-b-0"
+              >
+                <span className="shrink-0">{opt.icon}</span>
+                <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">{opt.label}</span>
+              </button>
+            ))}
           </div>
         </div>
-
-        {/* 하단 안내 (버튼 위 — 고정, 안 찌부러지게 shrink-0) */}
-        <p className="shrink-0 pb-[10px] text-center text-base font-medium leading-6 text-[#5E5E5E]">
-          나중에 언제든 추가할 수 있어요
-        </p>
-
-        {/* Figma: Fixed Bottom Button Section (390×97, bg #FFFFFF, border-top 1px #F5F5F5, padding 20) */}
-        <BottomCTA className="shrink-0">
-          {/* Figma: Button — Fill 350 / Hug 56 / radius 8 / #000000 */}
-          <button
-            type="button"
-            onClick={handleNext}
-            className="w-full h-14 rounded-lg bg-black! text-white text-base font-medium leading-6"
-          >
-            다음
-          </button>
-        </BottomCTA>
       </div>
     </PageLayout>
   );
