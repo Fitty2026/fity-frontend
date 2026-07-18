@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -7,40 +7,64 @@ import PageLayout from '@/components/layout/PageeLayout';
 import { mockOutfits } from '../../mocks/data/outfit';
 import type { ClothingItem, Outfit } from '../../types';
 
-const recommendItems = [
-  { id: '청자켓', category: '아우터', imageUrl: '' },
-  { id: '바람막이', category: '아우터', imageUrl: '' },
-  { id: '회색 볼레로', category: '아우터', imageUrl: '' },
-  { id: '베이지 트렌치코트', category: '아우터', imageUrl: '' },
-  { id: '블랙 레더 재킷', category: '아우터', imageUrl: '' },
-  { id: '레이어드 티', category: '상의', imageUrl: '' },
-  { id: '화이트 셔츠', category: '상의', imageUrl: '' },
-  { id: '스트라이프 니트', category: '상의', imageUrl: '' },
-  { id: '크롭 후드티', category: '상의', imageUrl: '' },
-  { id: '블랙 와이드 팬츠', category: '하의', imageUrl: '' },
-  { id: '연청 데님 팬츠', category: '하의', imageUrl: '' },
-  { id: '베이지 카고 팬츠', category: '하의', imageUrl: '' },
-  { id: '플리츠 미디 스커트', category: '하의', imageUrl: '' },
-  { id: '화이트 스니커즈', category: '신발', imageUrl: '' },
-  { id: '블랙 로퍼', category: '신발', imageUrl: '' },
-  { id: '실버 러닝화', category: '신발', imageUrl: '' },
-  { id: '브라운 숄더백', category: '가방', imageUrl: '' },
-  { id: '블랙 미니 크로스백', category: '가방', imageUrl: '' },
-  { id: '나일론 백팩', category: '가방', imageUrl: '' },
-  { id: '실버 체인 목걸이', category: '액세서리', imageUrl: '' },
-  { id: '블랙 볼캡', category: '액세서리', imageUrl: '' },
-  { id: '심플 링 귀걸이', category: '액세서리', imageUrl: '' },
+const createRecommendItem = (
+  id: string,
+  category: ClothingItem['category'],
+): ClothingItem => ({
+  id,
+  category,
+  imageUrl: '',
+  tags: [],
+  createdAt: '',
+});
+
+const recommendItems: ClothingItem[] = [
+  createRecommendItem('청자켓', '아우터'),
+  createRecommendItem('바람막이', '아우터'),
+  createRecommendItem('회색 볼레로', '아우터'),
+  createRecommendItem('베이지 트렌치코트', '아우터'),
+  createRecommendItem('블랙 레더 재킷', '아우터'),
+  createRecommendItem('레이어드 티', '상의'),
+  createRecommendItem('화이트 셔츠', '상의'),
+  createRecommendItem('스트라이프 니트', '상의'),
+  createRecommendItem('크롭 후드티', '상의'),
+  createRecommendItem('블랙 와이드 팬츠', '하의'),
+  createRecommendItem('연청 데님 팬츠', '하의'),
+  createRecommendItem('베이지 카고 팬츠', '하의'),
+  createRecommendItem('플리츠 미디 스커트', '하의'),
+  createRecommendItem('화이트 스니커즈', '신발'),
+  createRecommendItem('블랙 로퍼', '신발'),
+  createRecommendItem('실버 러닝화', '신발'),
+  createRecommendItem('브라운 숄더백', '가방'),
+  createRecommendItem('블랙 미니 크로스백', '가방'),
+  createRecommendItem('나일론 백팩', '가방'),
+  createRecommendItem('실버 체인 목걸이', '액세서리'),
+  createRecommendItem('블랙 볼캡', '액세서리'),
+  createRecommendItem('심플 링 귀걸이', '액세서리'),
 ];
 
 const CodyRetouch = () => {
-  const [result, setResult] = useState<Outfit>();
+  const [result, setResult] = useState<Outfit | undefined>(() => mockOutfits[0]);
   const [selectItem, setSelectItem] = useState<ClothingItem | null>();
-
-  useEffect(() => {
-    setResult(mockOutfits?.[0]);
-  }, []);
+  const [changeItem, setChangeItem] = useState<ClothingItem | null>(null);
 
   const navigate = useNavigate();
+
+  const handleChangeItem = () => {
+    if (!selectItem || !changeItem) return;
+
+    setResult((prevResult) => {
+      if (!prevResult) return prevResult;
+
+      return {
+        ...prevResult,
+        items: prevResult.items.map((item) => (item.id === selectItem.id ? changeItem : item)),
+      };
+    });
+    setSelectItem(null);
+    setChangeItem(null);
+  };
+
   return (
     <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="스튜디오">
       <h1 className=" w-full text-[#1F2124] text-[20px] text-center font-[600] leading-[150%] mt-[56px] tracking-[-2%]">
@@ -71,7 +95,10 @@ const CodyRetouch = () => {
               </div>
             </div>
             <div
-              onClick={() => setSelectItem(null)}
+              onClick={() => {
+                setSelectItem(null);
+                setChangeItem(null);
+              }}
               className="mt-[4px] flex justify-end items-center gap-[4px] text-[#5A6169] text-[10px] font-[500] leading-[165%] tracking-[-2%]"
             >
               <svg
@@ -99,7 +126,7 @@ const CodyRetouch = () => {
                 .map((item) => (
                   <div
                     key={item.id}
-                    onClick={() => {}}
+                    onClick={() => setChangeItem(item)}
                     className="bg-[#F6F7F8] rounded-[4px] h-[68px] shrink-0 flex items-center pl-[12px]"
                   >
                     <div className="h-[48px] w-[48px] object-cover">
@@ -164,7 +191,11 @@ const CodyRetouch = () => {
             <button className="w-full bg-[#E6E8EA] rounded-[32px] py-[16px] text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
               추가 아이템 보러가기
             </button>
-            <button className="mt-[8px] w-full bg-[#1F2124] rounded-[32px] py-[16px] text-[#F6F7F8] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
+            <button
+              onClick={handleChangeItem}
+              disabled={!changeItem}
+              className="mt-[8px] w-full bg-[#1F2124] disabled:bg-[#E6E8EA] rounded-[32px] py-[16px] text-[#F6F7F8] disabled:text-[#959BA7] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
+            >
               수정하기
             </button>
           </div>
@@ -173,6 +204,7 @@ const CodyRetouch = () => {
             onClick={() => {
               navigate('/codyplay');
             }}
+            disabled={true}
             className="w-full bg-[#E6E8EA] rounded-[32px] py-[16px] text-[#959BA7] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
           >
             수정하기
