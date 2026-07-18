@@ -34,6 +34,13 @@ const ClosetTagEditPage = () => {
     return () => clearTimeout(t);
   }, []);
 
+  // 체크 배지 표시 1초 후 완료 화면으로 이동 (임시: 추후 백엔드/실제 흐름과 연동)
+  useEffect(() => {
+    if (!showCheck) return;
+    const t = setTimeout(() => navigate('/closet/register/complete'), 1000);
+    return () => clearTimeout(t);
+  }, [showCheck, navigate]);
+
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
       <div className="flex flex-col flex-1 min-h-0 bg-white">
