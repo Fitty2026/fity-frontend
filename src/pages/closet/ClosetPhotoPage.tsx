@@ -86,6 +86,7 @@ const ClosetPhotoPage = () => {
         {/* 셔터 — 하단 40px, 가로 중앙 */}
         <button
           type="button"
+          onClick={() => navigate('/closet/register/tags')}
           className="absolute left-1/2 -translate-x-1/2 cursor-pointer"
           style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 40px)' }}
           aria-label="촬영"

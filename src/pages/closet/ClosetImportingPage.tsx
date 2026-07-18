@@ -45,6 +45,13 @@ const ClosetImportingPage = () => {
     return () => clearTimeout(t);
   }, []);
 
+  // 완료 표시 후 태그 확인 화면으로 이동 (임시: 추후 백엔드 완료 응답과 연동)
+  useEffect(() => {
+    if (!done) return;
+    const t = setTimeout(() => navigate('/closet/register/tags'), 1200);
+    return () => clearTimeout(t);
+  }, [done, navigate]);
+
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
       <style>{`@keyframes hangerFill { from { height: 0; } to { height: 160px; } }`}</style>
