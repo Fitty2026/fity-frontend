@@ -1,118 +1,104 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
-import Badge from '@/components/ui/Badge';
-import { ClothingThumbnail, BottomCTA } from '@/features/closet/components';
+import { OnboardingTopBar } from '@/features/closet/components';
+import mockItem from '@/assets/images/closet/tag-mock.png';
+import mockLeft from '@/assets/images/closet/tag-mock2.png';
+import mockRight from '@/assets/images/closet/tag-mock3.png';
 
-/** 뒤로가기 아이콘 — Figma 에셋 */
-const BackIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M3.825 9L9.425 14.6L8 16L0 8L8 0L9.425 1.4L3.825 7H16V9H3.825Z" fill="black" />
+/** 완료 체크 배지 48×48 — 원 #F6F7F8 + 체크 #1F2124 */
+const CheckBadge = () => (
+  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clipPath="url(#clip0_1461_116178)">
+      <circle cx="24" cy="24" r="24" fill="#F6F7F8" />
+      <path d="M13 25L21.8 33L35 15" stroke="#1F2124" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+    </g>
+    <defs>
+      <clipPath id="clip0_1461_116178">
+        <rect width="48" height="48" fill="white" />
+      </clipPath>
+    </defs>
   </svg>
 );
 
 /**
- * 태그 추가(+) 버튼 — 태그 칩과 동일 스타일(pill)
- * TODO: 클릭 시 태그 추가 동작 구현 (현재 와이어프레임, 미동작)
- */
-const PlusButton = () => (
-  <button
-    type="button"
-    className="inline-flex items-center justify-center h-[25px] w-[34px] rounded-full border! border-[#CFC4C5]! bg-[#EEEEEE]! text-[#5E5E5E]"
-    aria-label="태그 추가"
-  >
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <path d="M12 5v14M5 12h14" />
-    </svg>
-  </button>
-);
-
-/** 태그 확인·수정 대상 아이템 (와이어프레임용 목업). 첫 태그 = 카테고리(강조) */
-const ITEMS = [
-  { id: 1, category: '상의', tags: ['화이트', '미니멀', '베이직', '면'] },
-  { id: 2, category: '하의', tags: ['블랙', '캐주얼', '데님', '스트레이트'] },
-  { id: 3, category: '아우터', tags: ['그레이', '모던', '오버사이즈'] },
-  { id: 4, category: '상의', tags: ['블랙', '스트릿', '후드', '겨울'] },
-];
-
-/**
- * 태그 확인 및 수정 (Batch Tag Edit)
- * - 분석 결과 태그를 아이템별로 확인/수정
+ * 태그 확인 및 수정 — "옷이 추가되었어요" + 추가된 옷 캐러셀 + 옷장 보러가기/코디 시작하기.
  */
 const ClosetTagEditPage = () => {
   const navigate = useNavigate();
+  // 진입 1초 후 체크 배지 표시
+  const [showCheck, setShowCheck] = useState(false);
 
-  const handleDone = () => {
-    // TODO: 추가 완료(Bulk Upload Success) 화면 라우트 추가 예정
-    navigate('/closet/register/complete');
-  };
+  useEffect(() => {
+    const t = setTimeout(() => setShowCheck(true), 1000);
+    return () => clearTimeout(t);
+  }, []);
+
+  // 체크 배지 표시 1초 후 완료 화면으로 이동 (임시: 추후 백엔드/실제 흐름과 연동)
+  useEffect(() => {
+    if (!showCheck) return;
+    const t = setTimeout(() => navigate('/closet/register/complete'), 1000);
+    return () => clearTimeout(t);
+  }, [showCheck, navigate]);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
-      <div className="flex flex-col h-[100dvh] min-h-0 bg-[#F9F9F9]">
-        {/* 헤더 (타이틀 중앙) */}
-        <header className="relative flex items-center justify-center h-16 px-4 bg-white">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="absolute left-4 flex items-center justify-center w-10 h-10 -ml-2"
-            aria-label="뒤로가기"
-          >
-            <BackIcon />
-          </button>
-          <h1 className="text-base font-medium leading-5 text-black">태그 확인 및 수정</h1>
-        </header>
+      <div className="flex flex-col flex-1 min-h-0 bg-white">
+        {/* 로딩바 300/375, fill #9D98F0 */}
+        <OnboardingTopBar progress={300 / 375} />
 
-        {/* 스크롤 영역 */}
-        <div className="flex-1 overflow-y-auto min-h-0">
-          <div className="flex flex-col gap-4 pt-6 px-5 pb-6">
-            <p className="text-base font-medium leading-6 text-[#5E5E5E]">잘못된 부분만 수정해주세요</p>
+        {/* 안내 문구 — 로딩바 아래 52px, 20 SemiBold #1F2124 */}
+        <h1 className="mt-[52px] text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
+          옷이 추가되었어요
+        </h1>
 
-            {/* 아이템 카드 리스트 */}
-            <div className="flex flex-col gap-4">
-              {ITEMS.map((item) => {
-                // 카테고리 + 태그 + 추가버튼을 3개씩 끊어 줄 배치 (칩은 글씨에 맞춰 hug)
-                // TODO: 태그 클릭 시 수정 동작 구현 (현재 와이어프레임, 미동작)
-                const chips = [
-                  <Badge key="cat" label={item.category} selected />,
-                  ...item.tags.map((tag) => (
-                    <Badge key={tag} label={tag} className="bg-[#EEEEEE]! border-[#CFC4C5]!" />
-                  )),
-                  <PlusButton key="plus" />,
-                ];
-                const rows: React.ReactNode[][] = [];
-                for (let i = 0; i < chips.length; i += 3) rows.push(chips.slice(i, i + 3));
-
-                return (
-                  <div
-                    key={item.id}
-                    className="flex gap-4 p-4 min-h-[130px] rounded-xl border border-[#E2E2E2] bg-white"
-                  >
-                    <ClothingThumbnail ratio="auto" className="w-[80px] h-[98px] shrink-0" />
-                    {/* 한 줄 최대 3개, 행/열 gap 8 */}
-                    <div className="flex-1 flex flex-col gap-2">
-                      {rows.map((row, ri) => (
-                        <div key={ri} className="flex items-start gap-2">
-                          {row}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+        {/* 체크 배지 — 타이틀 아래 24px, 중앙 (로딩바→106). 진입 1초 후 표시 (공간은 유지) */}
+        <div className="mt-6 flex h-12 justify-center">
+          {showCheck && <CheckBadge />}
         </div>
 
-        {/* 하단 CTA */}
-        <BottomCTA className="shrink-0">
+        {/* 캐러셀 — 중앙 155×200 + 양옆(기울임). 배지 아래 58px (로딩바→212) */}
+        <div className="relative mt-[58px] h-[200px]">
+          {/* 왼쪽 옷 — 126×152 (목업2), border1 #E6E8EA. 중앙 카드 기준: 세로 +67, 가로 간격 16.23, rot −13° */}
+          <img
+            src={mockLeft}
+            alt=""
+            className="absolute h-[152px] w-[126px] rounded-2xl border border-[#E6E8EA] object-cover"
+            style={{ left: 'calc(50% - 172.21px)', top: '155.22px', transform: 'translate(-50%, -50%) rotate(-13deg)' }}
+          />
+          {/* 오른쪽 옷 — 126×152 (목업3), border1 #E6E8EA. 중앙 카드 기준: 세로 +67, 가로 간격 24, rot +11.04° */}
+          <img
+            src={mockRight}
+            alt=""
+            className="absolute h-[152px] w-[126px] rounded-2xl border border-[#E6E8EA] object-cover"
+            style={{ left: 'calc(50% + 177.89px)', top: '153.66px', transform: 'translate(-50%, -50%) rotate(11.04deg)' }}
+          />
+          {/* 중앙 옷 — 155×200, radius16, border1 #E6E8EA */}
+          <img
+            src={mockItem}
+            alt=""
+            className="absolute left-1/2 top-0 -translate-x-1/2 h-[200px] w-[155px] rounded-2xl border border-[#E6E8EA] object-cover"
+          />
+        </div>
+
+        {/* 버튼 — 화면 바닥 고정, 바닥 여백 40 (간격 8) */}
+        <div className="mt-auto flex flex-col gap-2 px-6 pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
           <button
             type="button"
-            onClick={handleDone}
-            className="w-full h-14 rounded-lg bg-black! text-white text-base font-medium leading-6"
+            onClick={() => navigate('/closet')}
+            className="w-full h-[58px] rounded-[32px] bg-[#F6F7F8] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124] cursor-pointer"
           >
-            완료
+            옷장 보러가기
           </button>
-        </BottomCTA>
+          {/* 코디 시작하기 — 코디 생성 시작 화면(타 파트)으로 이동 */}
+          <button
+            type="button"
+            onClick={() => navigate('/styling')}
+            className="w-full h-[58px] rounded-[32px] bg-[#F6F7F8] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124] cursor-pointer"
+          >
+            코디 시작하기
+          </button>
+        </div>
       </div>
     </PageLayout>
   );
