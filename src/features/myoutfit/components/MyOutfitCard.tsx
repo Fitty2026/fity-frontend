@@ -1,103 +1,96 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-interface cardProps {
-  context: string | undefined;
-  createdAt: string;
-  imageUrl: string;
-  isSaved: boolean;
+import type {Outfit} from "../../../types/index"
+
+interface ItemCardProps  {
+  outfit: Outfit;
 }
 
-const MyOutfitCard = ({ context, createdAt, imageUrl }: cardProps) => {
-  const [openMenu, setOpenMenu] = useState(false);
+const MyOutfitCard = ({outfit}:ItemCardProps) => {
+
   const navigate = useNavigate();
+  const tagScrollRef = useRef<HTMLSpanElement>(null);
+  const tagDragRef = useRef({ isDragging: false, startX: 0, scrollLeft: 0 });
+  const [isTagScrolled, setIsTagScrolled] = useState(false);
+
+  const handleTagPointerDown = (event: React.PointerEvent<HTMLSpanElement>) => {
+    if (event.pointerType !== 'mouse' || !tagScrollRef.current) return;
+
+    tagDragRef.current = {
+      isDragging: true,
+      startX: event.clientX,
+      scrollLeft: tagScrollRef.current.scrollLeft,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handleTagPointerMove = (event: React.PointerEvent<HTMLSpanElement>) => {
+    if (!tagDragRef.current.isDragging || !tagScrollRef.current) return;
+
+    tagScrollRef.current.scrollLeft =
+      tagDragRef.current.scrollLeft - (event.clientX - tagDragRef.current.startX);
+  };
+
+  const handleTagPointerUp = (event: React.PointerEvent<HTMLSpanElement>) => {
+    if (!tagDragRef.current.isDragging) return;
+
+    tagDragRef.current.isDragging = false;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
 
   return (
-    <div className="relative flex flex-col ">
-      <img
-        src={imageUrl}
-        alt={context}
-        className=" relative rounded-[12px] border-[#F3F4F6] bg-[#E2E2E2] h-[248.5px] aspect-[3/2] object-cover"
-        onClick={() => navigate(`/myoutfit/${context}`)}
-      />{' '}
-      <div className=" bg-[#FFFFFFCC] w-[32px] h-[32px] rounded-full flex items-center justify-center absolute top-[8px] right-[8px] shadow-[0px 1px 2px 0px #0000000D] backdrop-blur-[8px]">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
-          viewBox="0 0 14 14"
-          fill="none"
-        >
-          <path
-            d="M11.306 3.70726C11.0861 3.48304 10.825 3.30517 10.5376 3.18381C10.2502 3.06246 9.94222 3 9.63115 3C9.32007 3 9.01205 3.06246 8.72467 3.18381C8.43729 3.30517 8.17619 3.48304 7.95628 3.70726L7.49989 4.17238L7.04349 3.70726C6.59929 3.25456 5.99682 3.00023 5.36862 3.00023C4.74043 3.00023 4.13796 3.25456 3.69375 3.70726C3.24955 4.15996 3 4.77395 3 5.41416C3 6.05438 3.24955 6.66837 3.69375 7.12107L4.15014 7.58619L7.49989 11L10.8496 7.58619L11.306 7.12107C11.526 6.89695 11.7006 6.63086 11.8196 6.33798C11.9387 6.0451 12 5.73119 12 5.41416C12 5.09714 11.9387 4.78322 11.8196 4.49035C11.7006 4.19747 11.526 3.93137 11.306 3.70726Z"
-            fill="black"
-            stroke="black"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={()=>navigate(`/myoutfit/:${outfit.id}`)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          navigate(`/myoutfit/:${outfit.id}`);
+        }
+      }}
+      className={'w-full cursor-pointer text-left rounded-lg overflow-hidden bg-white'}
+    >
+      {/* 이미지 영역 156×211 */}
+      <div className="relative aspect-[156/211]">
+        <img src={outfit.imageUrl} alt={outfit.context} className="absolute inset-0 w-full h-full object-cover" />
+        {/* 하단 그라데이션 (#000 투명 → 검정) */}
+        <div className="absolute inset-x-0 bottom-0 h-[45%] bg-linear-to-t from-black/70 to-transparent" />
+        {/* 날짜(좌) + 태그(우) */}
+        <div className="absolute inset-x-0 bottom-0 flex items-end gap-[18px] px-2 pb-2">
+          {/* 날짜: Pretendard 600 / 10px / lh165% / -2% / #F6F7F8 */}
+          <span className="shrink-0 text-[10px] font-semibold leading-[1.65] tracking-[-0.02em] text-[#F6F7F8]">
+            {outfit.createdAt.slice(0,10).split("-").join(".")}
+          </span>
+          {/* 태그칩: bg #5A6169 / radius8 / pad 1·6 / 텍스트 600 8px / #F6F7F8 */}
+          <span
+            ref={tagScrollRef}
+            onClick={(event) => event.stopPropagation()}
+            onPointerDown={handleTagPointerDown}
+            onPointerMove={handleTagPointerMove}
+            onPointerUp={handleTagPointerUp}
+            onPointerCancel={handleTagPointerUp}
+            onScroll={(event) => setIsTagScrolled(event.currentTarget.scrollLeft > 1)}
+            className={`${isTagScrolled ? '[mask-image:linear-gradient(to_right,transparent_0,black_16px)] [-webkit-mask-image:linear-gradient(to_right,transparent_0,black_16px)]' : ''} flex w-0 flex-1 select-none gap-1 overflow-x-auto overscroll-x-contain touch-pan-x cursor-grab active:cursor-grabbing [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}
+          >
+            {outfit.styleTags.map((tag) => (
+              <span
+                key={tag}
+                className="shrink-0 whitespace-nowrap rounded-lg bg-[#5A6169] px-1.5 py-px text-[8px] font-semibold leading-[1.65] tracking-[-0.02em] text-[#F6F7F8]"
+              >
+                #{tag}
+              </span>
+            ))}
+          </span>
+        </div>
       </div>
-      <div className="flex overflow-hidden relative flex-col items-start w-full mt-[12px]">
-        <div className=" flex items-center justify-between w-full ">
-          <h3 className="pl-[4px] text-[18px] font-[500]">{context}</h3>
-          <button
-            className="cursor-pointer w-[32px] h-[32px] rounded-full flex items-center justify-center"
-            onClick={() => setOpenMenu(!openMenu)}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="17"
-              height="17"
-              viewBox="0 0 17 17"
-              fill="none"
-            >
-              <path
-                d="M8.49996 9.20866C8.89116 9.20866 9.20829 8.89153 9.20829 8.50033C9.20829 8.10912 8.89116 7.79199 8.49996 7.79199C8.10876 7.79199 7.79163 8.10912 7.79163 8.50033C7.79163 8.89153 8.10876 9.20866 8.49996 9.20866Z"
-                stroke="#6A6A6A"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <path
-                d="M8.49996 4.24967C8.89116 4.24967 9.20829 3.93254 9.20829 3.54134C9.20829 3.15014 8.89116 2.83301 8.49996 2.83301C8.10876 2.83301 7.79163 3.15014 7.79163 3.54134C7.79163 3.93254 8.10876 4.24967 8.49996 4.24967Z"
-                stroke="#6A6A6A"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <path
-                d="M8.49996 14.1667C8.89116 14.1667 9.20829 13.8495 9.20829 13.4583C9.20829 13.0671 8.89116 12.75 8.49996 12.75C8.10876 12.75 7.79163 13.0671 7.79163 13.4583C7.79163 13.8495 8.10876 14.1667 8.49996 14.1667Z"
-                stroke="#6A6A6A"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
-        <p className="pl-[4px] text-[11px] font-[400] text-[#848484]">
-          {createdAt.slice(0, 10).split('-').join('.')}
-        </p>
-
-        <div
-          className={`absolute top-0 h-full w-full bg-[#FFFFFF] flex flex-row justify-between transition-all duration-300 ease-in-out ${
-            openMenu ? 'top-0 opacity-100' : 'top-[-100%] opacity-0'
-          }`}
-        >
-          <div className="flex-1 text-[12px] font-[500] text-[#6A6A6A] text-center content-center cursor-pointer border-r-[1px] border-[#E5E5E5]">
-            기능1
-          </div>
-          <div className="flex-1 text-[12px] font-[500] text-[#6A6A6A] text-center content-center cursor-pointer border-r-[1px] border-[#E5E5E5]">
-            기능2
-          </div>
-          <button
-            className="flex-1 text-[12px] font-[500] text-[#6A6A6A] cursor-pointer "
-            onClick={() => setOpenMenu(false)}
-          >
-            {'닫기'}
-          </button>
-        </div>
+      {/* 타이틀 바 156×36 (#1F2124, pad 7·34, 중앙 흰 텍스트) */}
+      <div className="flex items-center justify-center bg-[#1F2124] px-[34px] py-[7px]">
+        <span className="text-[14px] font-semibold leading-[1.6] tracking-[-0.02em] text-center text-white">
+          {outfit.context}
+        </span>
       </div>
     </div>
   );
