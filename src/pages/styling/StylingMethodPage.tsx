@@ -1,89 +1,75 @@
 import { useNavigate } from 'react-router-dom';
-import PageLayout from '@/components/layout/PageeLayout';
-import { StudioHeader, StudioBottomNav } from '@/features/styling/components';
+import { StudioHeader, StudioBottomNav, OptionCard } from '@/features/styling/components';
+import methodBlob from '@/assets/images/styling/method-blob.png';
 
-/** 캘린더 아이콘 — 상황 추천 카드 (21.25×23.89, 흰색) */
-const CalendarIcon = () => (
-  <svg width="21.25" height="23.89" viewBox="0 0 22 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M2.2596 23.8941C1.62819 23.8941 1.09374 23.6754 0.656244 23.2379C0.218748 22.8004 0 22.266 0 21.6346V4.90384C0 4.27243 0.218748 3.73798 0.656244 3.30049C1.09374 2.86299 1.62819 2.64424 2.2596 2.64424H3.9904V0H5.91344V2.64424H15.3846V0H17.2595V2.64424H18.9903C19.6217 2.64424 20.1562 2.86299 20.5937 3.30049C21.0312 3.73798 21.2499 4.27243 21.2499 4.90384V21.6346C21.2499 22.266 21.0312 22.8004 20.5937 23.2379C20.1562 23.6754 19.6217 23.8941 18.9903 23.8941H2.2596ZM2.2596 22.0192H18.9903C19.0865 22.0192 19.1746 21.9791 19.2548 21.899C19.3349 21.8189 19.375 21.7307 19.375 21.6346V9.90384H1.87495V21.6346C1.87495 21.7307 1.91502 21.8189 1.99516 21.899C2.07529 21.9791 2.16344 22.0192 2.2596 22.0192ZM1.87495 8.02888H19.375V4.90384C19.375 4.80768 19.3349 4.71953 19.2548 4.6394C19.1746 4.55926 19.0865 4.5192 18.9903 4.5192H2.2596C2.16344 4.5192 2.07529 4.55926 1.99516 4.6394C1.91502 4.71953 1.87495 4.80768 1.87495 4.90384V8.02888ZM1.87495 8.02888V4.90384C1.87495 4.80768 1.87495 4.71953 1.87495 4.6394C1.87495 4.55926 1.87495 4.5192 1.87495 4.5192C1.87495 4.5192 1.87495 4.55926 1.87495 4.6394C1.87495 4.71953 1.87495 4.80768 1.87495 4.90384V8.02888Z" fill="white" />
+/** 직접 코디하기 — 이미지/사진 아이콘 (Figma 32×32) */
+const PhotoIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M3 21L9.87867 14.1213C10.1572 13.8428 10.488 13.6218 10.8519 13.471C11.2159 13.3202 11.606 13.2426 12 13.2426C12.394 13.2426 12.7841 13.3202 13.1481 13.471C13.512 13.6218 13.8428 13.8428 14.1213 14.1213L21 21M19 19L20.8787 17.1213C21.1572 16.8428 21.488 16.6218 21.8519 16.471C22.2159 16.3202 22.606 16.2426 23 16.2426C23.394 16.2426 23.7841 16.3202 24.1481 16.471C24.512 16.6218 24.8428 16.8428 25.1213 17.1213L29 21M5 26H27C27.5304 26 28.0391 25.7893 28.4142 25.4142C28.7893 25.0391 29 24.5304 29 24V8C29 7.46957 28.7893 6.96086 28.4142 6.58579C28.0391 6.21071 27.5304 6 27 6H5C4.46957 6 3.96086 6.21071 3.58579 6.58579C3.21071 6.96086 3 7.46957 3 8V24C3 24.5304 3.21071 25.0391 3.58579 25.4142C3.96086 25.7893 4.46957 26 5 26ZM19 11H19.0107V11.0107H19V11ZM19.5 11C19.5 11.1326 19.4473 11.2598 19.3536 11.3536C19.2598 11.4473 19.1326 11.5 19 11.5C18.8674 11.5 18.7402 11.4473 18.6464 11.3536C18.5527 11.2598 18.5 11.1326 18.5 11C18.5 10.8674 18.5527 10.7402 18.6464 10.6464C18.7402 10.5527 18.8674 10.5 19 10.5C19.1326 10.5 19.2598 10.5527 19.3536 10.6464C19.4473 10.7402 19.5 10.8674 19.5 11Z" stroke="#1F2124" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
-/** 연필 아이콘 — 직접 코디 카드 (17×17, #1A1C1C) */
-const PencilIcon = () => (
-  <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M1.49996 15.5H2.76149L12.9981 5.26339L11.7365 4.00186L1.49996 14.2384V15.5ZM0 16.9999V13.6154L13.1904 0.430759C13.3416 0.293415 13.5086 0.187286 13.6913 0.112372C13.874 0.0374573 14.0656 0 14.2661 0C14.4666 0 14.6608 0.0355759 14.8488 0.106728C15.0367 0.177879 15.2032 0.291018 15.348 0.446143L16.5692 1.68267C16.7243 1.82754 16.8349 1.99423 16.9009 2.18275C16.9669 2.37127 16.9999 2.55979 16.9999 2.74831C16.9999 2.9494 16.9656 3.1413 16.8969 3.32402C16.8282 3.50674 16.719 3.67371 16.5692 3.82493L3.38455 16.9999H0ZM15.5096 2.74611L14.2538 1.49035L15.5096 2.74611ZM12.3562 4.64369L11.7365 4.00186L12.9981 5.26339L12.3562 4.64369Z" fill="#1A1C1C" />
-  </svg>
-);
-
-/** 오른쪽 화살표 — 직접 코디 카드 (6.71×11.31, #A1A1AA) */
-const ChevronRight = () => (
-  <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M4.6 5.65382L0 1.05382L1.05382 0L6.70764 5.65382L1.05382 11.3076L0 10.2538L4.6 5.65382Z" fill="#A1A1AA" />
+/** 상황별 코디 추천받기 — 쇼핑백 아이콘 (Figma 32×32) */
+const BagIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M21 14V8C21 6.67392 20.4732 5.40215 19.5355 4.46447C18.5978 3.52678 17.3261 3 16 3C14.6739 3 13.4021 3.52678 12.4644 4.46447C11.5268 5.40215 11 6.67392 11 8V14M26.1413 11.3427L27.8253 27.3427C27.9186 28.2293 27.2253 29 26.3333 29H5.66665C5.45626 29.0002 5.24817 28.9562 5.05591 28.8708C4.86365 28.7853 4.69151 28.6604 4.55068 28.5041C4.40984 28.3478 4.30347 28.1636 4.23845 27.9635C4.17344 27.7634 4.15125 27.5519 4.17331 27.3427L5.85865 11.3427C5.89752 10.9741 6.07148 10.6329 6.34698 10.385C6.62248 10.1371 6.98002 9.99993 7.35065 10H24.6493C25.4173 10 26.0613 10.58 26.1413 11.3427ZM11.5 14C11.5 14.1326 11.4473 14.2598 11.3535 14.3536C11.2598 14.4473 11.1326 14.5 11 14.5C10.8674 14.5 10.7402 14.4473 10.6464 14.3536C10.5527 14.2598 10.5 14.1326 10.5 14C10.5 13.8674 10.5527 13.7402 10.6464 13.6464C10.7402 13.5527 10.8674 13.5 11 13.5C11.1326 13.5 11.2598 13.5527 11.3535 13.6464C11.4473 13.7402 11.5 13.8674 11.5 14ZM21.5 14C21.5 14.1326 21.4473 14.2598 21.3535 14.3536C21.2598 14.4473 21.1326 14.5 21 14.5C20.8674 14.5 20.7402 14.4473 20.6464 14.3536C20.5527 14.2598 20.5 14.1326 20.5 14C20.5 13.8674 20.5527 13.7402 20.6464 13.6464C20.7402 13.5527 20.8674 13.5 21 13.5C21.1326 13.5 21.2598 13.5527 21.3535 13.6464C21.4473 13.7402 21.5 13.8674 21.5 14Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
 /**
- * 코디 방식 선택 (Styling Method Selection)
- * - 상황으로 추천받기(추천) / 직접 코디하기 두 방식 선택
- * ※ 정확한 px(카드 radius·padding·아이콘 박스·폰트)는 Figma 속성 패널 캡쳐로 확정 예정
+ * 코디 방식 선택 (스튜디오)
+ * - 타이틀 블록 + 배경 blob + 방식 카드 2개 (직접 코디하기 / 상황별 코디 추천받기)
+ * ※ 세부 px/타이포/blob 에셋은 Figma 스펙으로 확정 예정 (스캐폴드)
  */
 const StylingMethodPage = () => {
   const navigate = useNavigate();
 
   return (
-    <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
-      <div className="flex flex-col h-[100dvh] min-h-0 bg-[#F9F9F9]">
-        <StudioHeader title="스튜디오" starCount={100} onBack={() => navigate(-1)} />
+    <div className="min-h-screen bg-neutral-100 flex justify-center">
+      <div className="relative w-full max-w-[430px] min-h-screen bg-[#F8F8FF] flex flex-col overflow-hidden">
+        <StudioHeader count={88} />
 
-        {/* 스크롤 영역 */}
-        {/* 좌우 여백 20, 헤더→카드1 간격 40 */}
-        <div className="flex-1 overflow-y-auto min-h-0 px-5 pt-10 pb-6 flex flex-col gap-4">
-          {/* 카드 1 — 상황으로 추천받기 (선택 강조). Figma: radius16 / border1 #000 / padding16 / shadow 0 1 2 #000/5% */}
-          <button
-            type="button"
-            onClick={() => navigate('/styling/date')}
-            className="relative w-full text-left rounded-2xl border! border-black! bg-white! p-4! shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]"
-          >
-            {/* 추천 뱃지 (우상단): hug 46×23, radius full, padding 4/12, bg #000 */}
-            <span className="absolute top-4 right-4 inline-flex items-center justify-center py-1 px-3 rounded-full bg-black text-white text-[10px] font-medium leading-[15px] tracking-[1px]">
-              추천
-            </span>
-            {/* 아이콘 박스: 48×48, radius8, bg #000 */}
-            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-black">
-              <CalendarIcon />
-            </div>
-            {/* Figma: Pretendard 500 / 16 / lh24 / #1A1C1C */}
-            <p className="mt-4 text-base font-medium leading-6 text-[#1A1C1C]">상황으로 추천받기</p>
-            {/* Figma: Pretendard 500 / 16 / lh24 / #4C4546 */}
-            <p className="mt-2 text-base font-medium leading-6 text-[#4C4546]">
-              날씨, 약속, 장소에 맞는 코디 추천
+        <div className="relative flex-1 overflow-y-auto pb-28">
+          {/* 배경 blob — Figma: 289.26×314.27, top123/left69(아트보드) → 콘텐츠 top~20, rot -11.65°, crop */}
+          <img
+            src={methodBlob}
+            alt=""
+            aria-hidden
+            className="pointer-events-none absolute left-[109px] top-[50px] w-[289.26px] h-[314.27px] object-cover rotate-[8.35deg]"
+          />
+
+          {/* 타이틀 블록 (헤더↔타이틀 72, 좌측 24) */}
+          <div className="relative px-6 pt-[72px]">
+            {/* 타이틀: Pretendard 700 / 24px / lh150% / -2% / #1F2124 (327×72) */}
+            <h1 className="text-[24px] font-bold leading-[1.5] tracking-[-0.02em] text-[#1F2124] whitespace-pre-line">
+              {'나만의 옷으로\n코디를 완성해보세요'}
+            </h1>
+            {/* 서브: Pretendard 500 / 14px / lh160% / -2% / #5A6169 (327×44), 타이틀↔서브 4 */}
+            <p className="mt-1 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#5A6169] whitespace-pre-line">
+              {'사진 한 장으로\n스타일을 더 스마트하게'}
             </p>
-          </button>
+          </div>
 
-          {/* 카드 2 — 직접 코디하기 */}
-          <button
-            type="button"
-            onClick={() => navigate('/styling/items')}
-            className="flex items-center gap-4 w-full text-left rounded-2xl border border-[#E5E5E5] bg-white p-4"
-          >
-            {/* 아이콘 박스: 48×48, radius8, bg #E8E8E8 */}
-            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-[#E8E8E8] shrink-0">
-              <PencilIcon />
-            </div>
-            <div className="flex-1">
-              {/* Figma: Pretendard 500 / 18 / lh27 / #1A1C1C */}
-              <p className="text-lg font-medium leading-[27px] text-[#1A1C1C]">직접 코디하기</p>
-              {/* Figma: Pretendard 500 / 16 / lh24 / #4C4546 */}
-              <p className="mt-1 text-base font-medium leading-6 text-[#4C4546]">자유롭게 스타일링</p>
-            </div>
-            <ChevronRight />
-          </button>
+          {/* 방식 카드 2개 (각 326×126, 서브타이틀↔카드 109) */}
+          <div className="relative mt-[109px] px-6 flex flex-col gap-4">
+            <OptionCard
+              title="직접 코디하기"
+              description={'보유한 옷을 직접 등록하고\n코디를 만들어보세요'}
+              icon={<PhotoIcon />}
+              onClick={() => navigate('/styling/items')}
+            />
+            <OptionCard
+              title="상황별 코디 추천받기"
+              description={'상황, 날씨, 장소에 맞는\n코디를 추천받아보세요'}
+              icon={<BagIcon />}
+              onClick={() => navigate('/styling/date')}
+            />
+          </div>
         </div>
 
-        <StudioBottomNav activePath="/styling" />
+        <StudioBottomNav />
       </div>
-    </PageLayout>
+    </div>
   );
 };
 

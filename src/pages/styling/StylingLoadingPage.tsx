@@ -1,48 +1,59 @@
-import PageLayout from '@/components/layout/PageeLayout';
-import SILHOUETTE from '@/assets/images/styling/ai-loading-silhouette.png';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { StudioHeader, HangerLoader } from '@/features/styling/components';
+
+/** 채움 속도: 1초에 2cm ≈ 75.6px (96dpi), 옷걸이 높이 160px → 약 2.1초 */
+const FILL_SPEED_PX_PER_SEC = 75.6;
+const HANGER_HEIGHT_PX = 160;
 
 /**
- * AI 코디 생성 로딩 (AI Outfit Generation, AI-01)
- * - 코디 생성 중 실루엣 + 진행률 표시 (정적 60%)
- * ※ 정확한 px/실제 실루엣 이미지는 추후 반영
+ * 코디 생성 (로딩 → 완료)
+ * - 헤더(뒤로·88개) + 문구(헤더↔156) + 옷걸이(문구↔76, 189×160 중앙)
+ * - 옷걸이가 위→아래로 보라색으로 채워지고, 완료 시 체크 + 문구 변경
+ * ※ 완료 후 이동은 미정 (스코프 확인 필요)
  */
 const StylingLoadingPage = () => {
+  const navigate = useNavigate();
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    let raf: number;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const filled = ((now - start) / 1000) * FILL_SPEED_PX_PER_SEC;
+      const next = Math.min(1, filled / HANGER_HEIGHT_PX);
+      setProgress(next);
+      if (next < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  const done = progress >= 1;
+
+  // 완성 1초 후 코디 결과(코디 플레이)로 이동
+  useEffect(() => {
+    if (!done) return;
+    const timer = setTimeout(() => navigate('/outfit/result'), 1000);
+    return () => clearTimeout(timer);
+  }, [done, navigate]);
+
   return (
-    <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
-      <div className="flex flex-col justify-center h-[100dvh] min-h-0 px-5 bg-[#F9F9F9]">
-        {/* 타이틀 — Pretendard 500 / 24 / lh32 / tracking -0.24px / #000 */}
-        <h1 className="text-2xl font-medium leading-8 tracking-[-0.24px] text-center text-black">코디를 만들고 있어요</h1>
-        {/* 서브 — Pretendard 500 / 16 / lh24 / #5E5E5E, 타이틀↔서브 간격 8 */}
-        <p className="mt-2 text-base font-medium leading-6 text-center text-[#5E5E5E] whitespace-pre-line">
-          {'당신만을 위한 완벽한\n코디를 생성 중입니다'}
-        </p>
+    <div className="min-h-screen bg-neutral-100 flex justify-center">
+      <div className="relative w-full max-w-[430px] min-h-screen bg-white flex flex-col">
+        <StudioHeader onBack={() => navigate(-1)} count={88} />
 
-        {/* 실루엣 + 진행률 (320×480, radius12, max-w320 중앙, bg #EEEEEE) */}
-        <div className="relative mt-6 mx-auto w-full max-w-[320px] aspect-[320/480] rounded-xl overflow-hidden bg-[#EEEEEE]">
-          <img src={SILHOUETTE} alt="코디 생성 중" className="w-full h-full object-cover opacity-40" />
-          {/* 하단 진행률 오버레이 — 바 위 / LOADING·60% 아래. 좌우·바텀 인셋 16 */}
-          <div className="absolute inset-x-0 bottom-0 px-4 pb-4">
-            {/* 트랙 288×4, radius full, bg #848484 20% / 진행 60% 검정 */}
-            <div className="h-1 w-full rounded-full bg-[#848484]/20 overflow-hidden">
-              <div className="h-full w-[60%] rounded-full bg-black" />
-            </div>
-            {/* 글씨: Epilogue 700 / 12 / lh16 / tracking 0.6px / #000. 바→텍스트 갭 8 */}
-            <div className="mt-2 flex items-center justify-between font-['Epilogue'] font-bold [font-synthesis:none] text-[12px] leading-4 tracking-[0.6px] text-black">
-              <span>LOADING</span>
-              <span>60%</span>
-            </div>
-          </div>
+        <div className="flex-1 flex flex-col items-center pt-[156px]">
+          {/* 문구 — Title/T3: Pretendard 600 / 20px / lh150% / -2% / #1F2124, 헤더↔문구 156 */}
+          <p className="text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-center text-[#1F2124]">
+            {done ? '코디가 완성되었어요' : '코디를 만들고 있어요'}
+          </p>
+
+          {/* 옷걸이 189×160 중앙, 문구↔옷걸이 76 */}
+          <HangerLoader progress={progress} className="mt-[76px]" />
         </div>
-
-        {/* 하단 안내 */}
-        {/* Figma: Pretendard 500 / 16 / lh24 / #000, 이미지↔이 텍스트 간격 32 */}
-        <p className="mt-8 text-base font-medium leading-6 text-center text-black">잠시만 기다려주세요</p>
-        {/* Figma: Pretendard 500 / 16 / lh24 / #5E5E5E, 간격 4 */}
-        <p className="mt-1 text-base font-medium leading-6 text-center text-[#5E5E5E]">
-          곧 추천 결과를 보여드릴게요
-        </p>
       </div>
-    </PageLayout>
+    </div>
   );
 };
 
