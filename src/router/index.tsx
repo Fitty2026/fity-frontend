@@ -46,7 +46,7 @@ import StylingLoadingPage from '../pages/styling/StylingLoadingPage';
 
 // 5. 코디 결과
 import OutfitResultPage from '../pages/outfit/OutfitResultPage';
-import OutfitSavePage from '../pages/outfit/OutfitSavePage';
+import OutfitEditPage from '../pages/outfit/OutfitEditPage';
 import OutfitSharePage from '../pages/outfit/OutfitSharePage';
 
 // 6. 커머스
@@ -66,6 +66,8 @@ import NotFoundPage from '../pages/error/NotFoundPage';
 
 import CodyPlay from '@/pages/codyplay/CodyPlay';
 import CodyRetouch from '@/pages/codyplay/CodyRetouch';
+import MyOutfitEditPage from '@/pages/myoutfit/MyOutfitEditPage';
+import MyOutfitDeletePage from '@/pages/myoutfit/MyOutfitDeletePage';
 
 const router = createBrowserRouter([
 
@@ -219,8 +221,8 @@ const router = createBrowserRouter([
     element: <ProtectedRoute><OutfitResultPage /></ProtectedRoute>,
   },
   {
-    path: '/outfit/save',
-    element: <ProtectedRoute><OutfitSavePage /></ProtectedRoute>,
+    path: '/outfit/edit',
+    element: <ProtectedRoute><OutfitEditPage /></ProtectedRoute>,
   },
   {
     path: '/outfit/share',
@@ -239,13 +241,21 @@ const router = createBrowserRouter([
 
   // 내 코디
   {
+    path: '/myoutfit',
     element: <ProtectedRoute><MyOutfitListPage /></ProtectedRoute>,
   },
   {
     path: '/myoutfit/:outfitId',
     element: <ProtectedRoute><MyOutfitDetailPage /></ProtectedRoute>,
   },
-
+  {
+    path: '/myoutfit/edit/:outfitId',
+    element: <ProtectedRoute><MyOutfitEditPage /></ProtectedRoute>,
+  },
+   {
+    path: '/myoutfit/delete/:outfitId',
+    element: <ProtectedRoute><MyOutfitDeletePage /></ProtectedRoute>,
+  },
   // 마이페이지
     {
       path: '/mypage',
