@@ -201,8 +201,8 @@ const ClosetItemDetailPage = () => {
                       key={tag}
                       type="button"
                       onClick={() => setSelectedTag(selected ? null : tag)}
-                      className={`flex h-[26px] cursor-pointer items-center gap-2.5 rounded-full border border-[#34363C] px-2 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#34363C] transition-colors ${
-                        selected ? 'bg-[#E6E8EA]' : 'bg-white'
+                      className={`flex h-[26px] cursor-pointer items-center gap-2 rounded-full border border-[#34363C] px-2 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#34363C] transition-colors ${
+                        selected ? 'bg-[#B2B8BD]' : 'bg-white'
                       }`}
                     >
                       {tag}
