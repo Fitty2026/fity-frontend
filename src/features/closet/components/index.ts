@@ -14,3 +14,4 @@ export { default as CategoryFilterTabs } from './CategoryFilterTabs';
 export { default as ClothingThumbnail } from './ClothingThumbnail';
 export { default as ItemGrid } from './ItemGrid';
 export { default as ClosetBottomNav } from './ClosetBottomNav';
+export { default as CtaButton } from './CtaButton';

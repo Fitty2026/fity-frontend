@@ -29,6 +29,7 @@ import ClosetLoadingPage from '../pages/closet/ClosetLoadingPage';
 import ClosetTagEditPage from '../pages/closet/ClosetTagEditPage';
 import ClosetCompletePage from '../pages/closet/ClosetCompletePage';
 import ClosetItemDetailPage from '../pages/closet/ClosetItemDetailPage';
+import ClosetItemDeletePage from '../pages/closet/ClosetItemDeletePage';
 import ClosetItemListPage from '../pages/closet/ClosetItemListPage';
 import ClosetIntroPage from '../pages/closet/ClosetIntroPage';
 
@@ -173,6 +174,10 @@ const router = createBrowserRouter([
   {
     path: '/closet/:itemId',
     element: <ProtectedRoute><ClosetItemDetailPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/:itemId/delete',
+    element: <ProtectedRoute><ClosetItemDeletePage /></ProtectedRoute>,
   },
 
   // 코디 생성

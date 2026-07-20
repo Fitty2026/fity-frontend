@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
-import { mockClosetItems } from '@/mocks/data/closet';
+import { CtaButton } from '@/features/closet/components';
+import useClosetStore from '@/store/closetStore';
 
 /** 뒤로가기 — 24×24 */
 const BackIcon = () => (
@@ -79,7 +80,8 @@ const InfoRow = ({ label, value, withChevron = false }: { label: string; value: 
 const ClosetItemDetailPage = () => {
   const navigate = useNavigate();
   const { itemId } = useParams<{ itemId: string }>();
-  const item = mockClosetItems.find((it) => it.id === itemId);
+  const items = useClosetStore((state) => state.items);
+  const item = items.find((it) => it.id === itemId);
 
   // 상세 뷰 이미지 (없으면 대표 이미지로 대체)
   const views = item?.detailImages ?? (item ? [item.imageUrl, item.imageUrl, item.imageUrl] : []);
@@ -129,7 +131,7 @@ const ClosetItemDetailPage = () => {
           <span className="text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">옷장</span>
           <span className="absolute right-5 flex items-center gap-1 text-[12px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124]">
             <CountIcon />
-            {mockClosetItems.length}개
+            {items.length}개
           </span>
         </div>
 
@@ -258,20 +260,15 @@ const ClosetItemDetailPage = () => {
             </div>
           </div>
 
-          {/* 하단 버튼 — 화면 하단 고정(mt-auto) (이후 플로우 시안 대기, 동작 미연결) */}
+          {/* 하단 버튼 — 화면 하단 고정(mt-auto). 수정하기 동작은 플로우 확정 대기 */}
           <div className="mt-auto flex flex-col gap-2">
-            <button
-              type="button"
-              className="h-16 w-full cursor-pointer rounded-full bg-[#F6F7F8] text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124]"
-            >
-              삭제하기
-            </button>
-            <button
-              type="button"
-              className="h-[58px] w-full cursor-pointer rounded-full bg-[#1F2124] text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-white"
-            >
-              수정하기
-            </button>
+            <CtaButton
+              label="삭제하기"
+              variant="fill"
+              height={64}
+              onClick={() => navigate(`/closet/${item.id}/delete`)}
+            />
+            <CtaButton label="수정하기" variant="dark" />
           </div>
         </div>
       </div>

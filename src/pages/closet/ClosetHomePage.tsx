@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { ClosetBottomNav } from '@/features/closet/components';
-import { mockClosetItems } from '@/mocks/data/closet';
+import useClosetStore from '@/store/closetStore';
 import type { ClothingItem } from '@/types';
 
 /** 카테고리 행 노출 순서 (해당 카테고리 옷이 있을 때만 표시) */
@@ -97,7 +97,7 @@ const ClothesRow = ({ items, onItemClick }: { items: ClothingItem[]; onItemClick
  */
 const ClosetHomePage = () => {
   const navigate = useNavigate();
-  const items = mockClosetItems;
+  const items = useClosetStore((state) => state.items);
   const filled = items.length > 0;
   const [search, setSearch] = useState('');
 
