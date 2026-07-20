@@ -4,6 +4,9 @@ import top2Img from '../../assets/images/items/top2.jpg';
 import pantsImg from '../../assets/images/items/pants.jpg';
 import outerImg from '../../assets/images/items/outer.jpg';
 import shoesImg from '../../assets/images/items/shoes.jpg';
+import detailFullImg from '../../assets/images/items/detail-full.png';
+import detailSideImg from '../../assets/images/items/detail-side.png';
+import detailBackImg from '../../assets/images/items/detail-back.png';
 import tagMock1 from '../../assets/images/closet/tag-mock.png';
 import tagMock2 from '../../assets/images/closet/tag-mock2.png';
 import tagMock3 from '../../assets/images/closet/tag-mock3.png';
@@ -107,5 +110,17 @@ export const mockClosetItems: ClothingItem[] = [
     brand: '무신사 스탠다드',
     purchasedFrom: '무신사',
     createdAt: '2026-04-15T00:00:00Z',
+  },
+  {
+    id: 'item-012',
+    imageUrl: detailFullImg,
+    category: '상의',
+    subCategory: '반팔 셔츠',
+    colors: ['#7B4A32', '#FFFFFF'],
+    tags: ['캐주얼', 'Y2K', '데일리'],
+    brand: 'ZARA',
+    purchasedFrom: 'ZARA',
+    createdAt: '2026-06-27T00:00:00Z',
+    detailImages: [detailFullImg, detailSideImg, detailBackImg],
   },
 ];
