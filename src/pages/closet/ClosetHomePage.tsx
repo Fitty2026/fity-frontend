@@ -1,16 +1,12 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { ClosetBottomNav } from '@/features/closet/components';
-import mock1 from '@/assets/images/closet/tag-mock.png';
-import mock2 from '@/assets/images/closet/tag-mock2.png';
-import mock3 from '@/assets/images/closet/tag-mock3.png';
+import { mockClosetItems } from '@/mocks/data/closet';
+import type { ClothingItem } from '@/types';
 
-/** 옷 있는 상태 목 데이터 — 카테고리별 이미지 (임시: 태그 화면 목업 재활용) */
-const MOCK_ROWS = [
-  { key: 'top', items: [mock1, mock2, mock3, mock1] },
-  { key: 'bottom', items: [mock3, mock1, mock2, mock3] },
-  { key: 'shoes', items: [mock2, mock3, mock1, mock2] },
-];
+/** 카테고리 행 노출 순서 (해당 카테고리 옷이 있을 때만 표시) */
+const ROW_CATEGORIES = ['아우터', '상의', '하의', '신발', '가방', '액세서리'] as const;
 
 /** 현황 카테고리 아이콘 — 32×32, #5A6169 */
 const StatIcon = ({ kind }: { kind: 'top' | 'bottom' | 'shoes' | 'etc' }) => (
@@ -80,12 +76,14 @@ const BagIcon = () => (
   </svg>
 );
 
-/** 옷 가로 스크롤 행 — 스크롤바 숨김 + 하단 구분선(좌우 24) */
-const ClothesRow = ({ items }: { items: string[] }) => (
+/** 옷 가로 스크롤 행 — 스크롤바 숨김 + 하단 구분선(좌우 24). 아이템 클릭 시 상세 이동 */
+const ClothesRow = ({ items, onItemClick }: { items: ClothingItem[]; onItemClick: (id: string) => void }) => (
   <div>
     <div className="flex gap-2 overflow-x-auto px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {items.map((src, i) => (
-        <img key={i} src={src} alt="" className="h-[134px] w-[104px] shrink-0 rounded-2xl object-cover" />
+      {items.map((item) => (
+        <button key={item.id} type="button" onClick={() => onItemClick(item.id)} className="shrink-0 cursor-pointer">
+          <img src={item.imageUrl} alt={item.tags.join(' ')} className="h-[134px] w-[104px] rounded-2xl object-cover" />
+        </button>
       ))}
     </div>
     {/* 구분선 — 좌우 24 안쪽 */}
@@ -95,12 +93,29 @@ const ClothesRow = ({ items }: { items: string[] }) => (
 
 /**
  * 내 옷장 홈 — 등록된 옷 없음(빈 상태) / 있음(목록) 두 상태.
- * 백엔드 연결 전: 우하단 임시 토글 버튼으로 상태 전환 (시연용, 추후 제거)
+ * 데이터: mockClosetItems (백엔드 연결 시 API 응답으로 대체)
  */
 const ClosetHomePage = () => {
   const navigate = useNavigate();
-  // 임시: 옷 등록 여부 (백엔드 연결 시 실제 데이터 유무로 대체)
-  const filled = true;
+  const items = mockClosetItems;
+  const filled = items.length > 0;
+  const [search, setSearch] = useState('');
+
+  const countOf = (category: string) => items.filter((item) => item.category === category).length;
+  // 기타 = 상의/하의/신발 외 전부 (아우터·가방·액세서리)
+  const etcCount = items.length - countOf('상의') - countOf('하의') - countOf('신발');
+
+  // 검색 — 카테고리/태그/브랜드에 검색어 포함된 아이템만 (현황 카드 카운트는 전체 기준 유지)
+  const query = search.trim();
+  const visibleItems = query
+    ? items.filter((item) =>
+        [item.category, item.brand ?? '', ...item.tags].some((text) => text.includes(query)),
+      )
+    : items;
+  const rows = ROW_CATEGORIES.map((category) => ({
+    category,
+    items: visibleItems.filter((item) => item.category === category),
+  })).filter((row) => row.items.length > 0);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
@@ -116,10 +131,10 @@ const ClosetHomePage = () => {
             <BackIcon />
           </button>
           <span className="text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">옷장</span>
-          {/* 카운트 — 12 Medium lh165 −2% #1F2124. 빈 상태 0개 / 옷 있으면 88개 (목) */}
+          {/* 카운트 — 12 Medium lh165 −2% #1F2124 */}
           <span className="absolute right-5 flex items-center gap-1 text-[12px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124]">
             <CountIcon />
-            {filled ? '88개' : '0개'}
+            {items.length}개
           </span>
         </div>
 
@@ -142,10 +157,10 @@ const ClosetHomePage = () => {
               <div className="flex items-center justify-between">
                 {(
                   [
-                    { kind: 'top', label: '상의', count: 88 },
-                    { kind: 'bottom', label: '하의', count: 88 },
-                    { kind: 'shoes', label: '신발', count: 88 },
-                    { kind: 'etc', label: '기타', count: 88 },
+                    { kind: 'top', label: '상의', count: countOf('상의') },
+                    { kind: 'bottom', label: '하의', count: countOf('하의') },
+                    { kind: 'shoes', label: '신발', count: countOf('신발') },
+                    { kind: 'etc', label: '기타', count: etcCount },
                   ] as const
                 ).map((stat) => (
                   <div key={stat.kind} className="flex h-[42px] w-[70px] items-center justify-between">
@@ -157,7 +172,7 @@ const ClosetHomePage = () => {
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124]">전체 의류 88</p>
+              <p className="text-[10px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124]">전체 의류 {items.length}</p>
             </div>
 
             {/* 카테고리 헤더 — 327×26, 현황 카드 아래 43 */}
@@ -181,6 +196,8 @@ const ClosetHomePage = () => {
                 <SearchIcon />
                 <input
                   type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
                   placeholder="검색어를 입력해주세요"
                   className="w-full bg-transparent text-[12px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124] placeholder-[#B2B8BD] outline-none"
                 />
@@ -189,9 +206,18 @@ const ClosetHomePage = () => {
 
             {/* 카테고리별 옷 가로 스크롤 행 — 134 높이 */}
             <div className="mt-4 flex flex-col gap-4 pb-6">
-              {MOCK_ROWS.map((row) => (
-                <ClothesRow key={row.key} items={row.items} />
+              {rows.map((row) => (
+                <ClothesRow
+                  key={row.category}
+                  items={row.items}
+                  onItemClick={(id) => navigate(`/closet/${id}`)}
+                />
               ))}
+              {rows.length === 0 && (
+                <p className="px-6 py-8 text-center text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#959BA7]">
+                  검색 결과가 없어요
+                </p>
+              )}
             </div>
           </div>
         ) : (
