@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import cameraMock from '@/assets/images/closet/camera-mock.png';
@@ -31,11 +32,15 @@ const ShutterIcon = () => (
   </svg>
 );
 
-/** 플래시(off) — 32×32, stroke #F6F7F8 */
-const FlashIcon = () => (
+/** 플래시 — 32×32, stroke #F6F7F8. off는 사선으로 가로지른 형태 */
+const FlashIcon = ({ on }: { on: boolean }) => (
   <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
     <g clipPath="url(#clip0_1461_117649)">
-      <path d="M15.216 20.8733L13 29L17.9933 23.6507M12.3427 18H5L8.54533 14.2013M11.276 11.276L19 3L16 14H27L20.724 20.724M11.276 11.276L4 4M11.276 11.276L20.724 20.724M20.724 20.724L28 28" stroke="#F6F7F8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      {on ? (
+        <path d="M19 3L8 17H15L13 29L24 15H17L19 3Z" stroke="#F6F7F8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      ) : (
+        <path d="M15.216 20.8733L13 29L17.9933 23.6507M12.3427 18H5L8.54533 14.2013M11.276 11.276L19 3L16 14H27L20.724 20.724M11.276 11.276L4 4M11.276 11.276L20.724 20.724M20.724 20.724L28 28" stroke="#F6F7F8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      )}
     </g>
     <defs>
       <clipPath id="clip0_1461_117649">
@@ -52,6 +57,15 @@ const FlashIcon = () => (
  */
 const ClosetPhotoPage = () => {
   const navigate = useNavigate();
+  const [flashOn, setFlashOn] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  // 촬영/갤러리 선택 후 이동 — 기존 라우트 유지 (분석 화면 경유 여부는 시안 확인 대기)
+  const goNext = () => navigate('/closet/register/tags');
+
+  const handlePickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.length) goNext();
+  };
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
@@ -73,20 +87,22 @@ const ClosetPhotoPage = () => {
           <CloseIcon />
         </button>
 
-        {/* 플래시 — 상태바 아래 14px, 우 24px */}
+        {/* 플래시 — 상태바 아래 14px, 우 24px. 켜짐/꺼짐 토글 */}
         <button
           type="button"
+          onClick={() => setFlashOn((v) => !v)}
           className="absolute right-6 cursor-pointer"
           style={{ top: 'calc(env(safe-area-inset-top, 0px) + 14px)' }}
-          aria-label="플래시"
+          aria-label={flashOn ? '플래시 끄기' : '플래시 켜기'}
+          aria-pressed={flashOn}
         >
-          <FlashIcon />
+          <FlashIcon on={flashOn} />
         </button>
 
         {/* 셔터 — 하단 40px, 가로 중앙 */}
         <button
           type="button"
-          onClick={() => navigate('/closet/register/tags')}
+          onClick={goNext}
           className="absolute left-1/2 -translate-x-1/2 cursor-pointer"
           style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 40px)' }}
           aria-label="촬영"
@@ -94,9 +110,11 @@ const ClosetPhotoPage = () => {
           <ShutterIcon />
         </button>
 
-        {/* 갤러리 — 좌 24, 하단 40 */}
+        {/* 갤러리 — 좌 24, 하단 40. 파일 선택 후 분석으로 */}
+        <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={handlePickFile} />
         <button
           type="button"
+          onClick={() => fileInput.current?.click()}
           className="absolute left-6 cursor-pointer"
           style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 40px)' }}
           aria-label="갤러리"
@@ -104,9 +122,10 @@ const ClosetPhotoPage = () => {
           <GalleryIcon />
         </button>
 
-        {/* 저장 — 우 24, 하단 40 (갤러리와 대칭) */}
+        {/* 저장 — 우 24, 하단 40 (갤러리와 대칭). 동작 정의 대기 → 임시로 다음 화면 진행 */}
         <button
           type="button"
+          onClick={goNext}
           className="absolute right-6 cursor-pointer"
           style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 40px)' }}
           aria-label="저장"
