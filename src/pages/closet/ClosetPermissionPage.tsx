@@ -2,7 +2,24 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
+import useClosetStore from '@/store/closetStore';
 import musinsaLogo from '@/assets/images/closet/platform-musinsa.png';
+
+/** 플랫폼 로고 — 에셋 있는 곳만 이미지, 나머지는 임시 박스 (플랫폼 선택 화면과 동일 처리) */
+const PLATFORM_LOGOS: Record<string, string> = {
+  MUSINSA: musinsaLogo,
+};
+
+const PlatformLogo = ({ name }: { name: string }) => {
+  const logo = PLATFORM_LOGOS[name];
+  return logo ? (
+    <img src={logo} alt={name} className="h-[72px] w-[72px] rounded-2xl object-cover" />
+  ) : (
+    <span className="flex h-[72px] w-[72px] items-center justify-center rounded-2xl bg-[#1F2124] px-1 text-center text-[12px] font-semibold leading-[1.3] tracking-[-0.02em] text-white">
+      {name}
+    </span>
+  );
+};
 
 /** 상세보기 화살표 — 9×17, #959BA7 */
 const Chevron = () => (
@@ -50,6 +67,9 @@ const Checkbox = ({ checked }: { checked: boolean }) =>
  */
 const ClosetPermissionPage = () => {
   const navigate = useNavigate();
+  const storedPlatforms = useClosetStore((state) => state.selectedPlatforms);
+  // 새로고침·직접 진입으로 선택값이 없으면 레이아웃 유지를 위해 기본 노출
+  const selectedPlatforms = storedPlatforms.length > 0 ? storedPlatforms : ['MUSINSA'];
   const [purchase, setPurchase] = useState(false);
   const [data, setData] = useState(false);
   const allChecked = purchase && data;
@@ -66,9 +86,11 @@ const ClosetPermissionPage = () => {
         <OnboardingTopBar progress={300 / 375} showSkip onSkip={() => navigate('/closet')} />
 
         <div className="flex-1 overflow-y-auto px-6">
-          {/* 선택 쇼핑몰 로고 */}
-          <div className="mt-[52px] flex justify-center">
-            <img src={musinsaLogo} alt="MUSINSA" className="h-[72px] w-[72px] rounded-2xl object-cover" />
+          {/* 선택 쇼핑몰 로고 — 복수 선택 시 나란히 표시 (표시 방식 시안 미확정) */}
+          <div className="mt-[52px] flex flex-wrap justify-center gap-3">
+            {selectedPlatforms.map((name) => (
+              <PlatformLogo key={name} name={name} />
+            ))}
           </div>
 
           {/* 안내 */}
