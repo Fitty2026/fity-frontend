@@ -6,12 +6,26 @@ import mockItem from '@/assets/images/closet/tag-mock.png';
 import mockLeft from '@/assets/images/closet/tag-mock2.png';
 import mockRight from '@/assets/images/closet/tag-mock3.png';
 
-/** 완료 체크 배지 48×48 — 원 #F6F7F8 + 체크 #1F2124 */
-const CheckBadge = () => (
+/**
+ * 완료 체크 배지 48×48 — 등장 시 연회색(원 #F6F7F8 / 체크 #1F2124),
+ * 이어서 반전 상태(원 #1F2124 / 체크 #F6F7F8)로 전환.
+ */
+const CheckBadge = ({ filled }: { filled: boolean }) => (
   <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
     <g clipPath="url(#clip0_1461_116178)">
-      <circle cx="24" cy="24" r="24" fill="#F6F7F8" />
-      <path d="M13 25L21.8 33L35 15" stroke="#1F2124" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+      <circle
+        cx="24"
+        cy="24"
+        r="24"
+        style={{ fill: filled ? '#1F2124' : '#F6F7F8', transition: 'fill 300ms ease' }}
+      />
+      <path
+        d="M13 25L21.8 33L35 15"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{ stroke: filled ? '#F6F7F8' : '#1F2124', transition: 'stroke 300ms ease' }}
+      />
     </g>
     <defs>
       <clipPath id="clip0_1461_116178">
@@ -26,20 +40,20 @@ const CheckBadge = () => (
  */
 const ClosetTagEditPage = () => {
   const navigate = useNavigate();
-  // 진입 1초 후 체크 배지 표시
+  // 진입 1초 후 체크 배지 표시 → 다시 0.8초 후 반전(검정) 상태로 전환
   const [showCheck, setShowCheck] = useState(false);
+  const [filledCheck, setFilledCheck] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setShowCheck(true), 1000);
     return () => clearTimeout(t);
   }, []);
 
-  // 체크 배지 표시 1초 후 완료 화면으로 이동 (임시: 추후 백엔드/실제 흐름과 연동)
   useEffect(() => {
     if (!showCheck) return;
-    const t = setTimeout(() => navigate('/closet/register/complete'), 1000);
+    const t = setTimeout(() => setFilledCheck(true), 800);
     return () => clearTimeout(t);
-  }, [showCheck, navigate]);
+  }, [showCheck]);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
@@ -54,7 +68,7 @@ const ClosetTagEditPage = () => {
 
         {/* 체크 배지 — 타이틀 아래 24px, 중앙 (로딩바→106). 진입 1초 후 표시 (공간은 유지) */}
         <div className="mt-6 flex h-12 justify-center">
-          {showCheck && <CheckBadge />}
+          {showCheck && <CheckBadge filled={filledCheck} />}
         </div>
 
         {/* 캐러셀 — 중앙 155×200 + 양옆(기울임). 배지 아래 58px (로딩바→212) */}
