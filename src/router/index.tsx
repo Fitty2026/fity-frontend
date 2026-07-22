@@ -46,9 +46,9 @@ import StylingItemSelectPage from '../pages/styling/StylingItemSelectPage';
 import StylingLoadingPage from '../pages/styling/StylingLoadingPage';
 
 // 5. 코디 결과
-import OutfitResultPage from '../pages/outfit/OutfitResultPage';
-import OutfitEditPage from '../pages/outfit/OutfitEditPage';
-import OutfitSharePage from '../pages/outfit/OutfitSharePage';
+import CodyPlayPage from '@/pages/codyplay/CodyPlayPage';
+import CodyRetouchPage from '@/pages/codyplay/CodyRetouchPage';
+import OutfitSharePage from '../pages/codyplay/OutfitSharePage';
 
 // 6. 커머스
 import ProductListPage from '../pages/commerce/ProductListPage';
@@ -65,8 +65,7 @@ import MyPage from '../pages/mypage/MyPage';
 import RouteErrorPage from '../pages/error/RouteErrorPage';
 import NotFoundPage from '../pages/error/NotFoundPage';
 
-import CodyPlayPage from '@/pages/codyplay/CodyPlayPage';
-import CodyRetouchPage from '@/pages/codyplay/CodyRetouchPage';
+
 import MyOutfitEditPage from '@/pages/myoutfit/MyOutfitEditPage';
 import MyOutfitDeletePage from '@/pages/myoutfit/MyOutfitDeletePage';
 
@@ -221,14 +220,6 @@ const router = createBrowserRouter([
   },
 
   // 코디 결과
-  {
-    path: '/outfit/result',
-    element: <ProtectedRoute><OutfitResultPage /></ProtectedRoute>,
-  },
-  {
-    path: '/outfit/edit',
-    element: <ProtectedRoute><OutfitEditPage /></ProtectedRoute>,
-  },
   {
     path: '/outfit/share',
     element: <ProtectedRoute><OutfitSharePage /></ProtectedRoute>,
