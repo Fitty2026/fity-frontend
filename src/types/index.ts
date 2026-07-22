@@ -55,6 +55,10 @@ export interface ClothingItem {
   brand?: string;
   purchasedFrom?: string; // 구매 플랫폼
   createdAt: string;
+  subCategory?: string; // 세부 카테고리 (예: 반팔 셔츠)
+  colors?: string[]; // 색상 hex 목록
+  memo?: string;
+  detailImages?: string[]; // 상세 뷰 이미지 [전체, 옆면, 뒷면]
 }
 
 // ============================================================

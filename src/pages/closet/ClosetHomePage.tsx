@@ -1,16 +1,13 @@
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
-import { ClosetBottomNav } from '@/features/closet/components';
-import mock1 from '@/assets/images/closet/tag-mock.png';
-import mock2 from '@/assets/images/closet/tag-mock2.png';
-import mock3 from '@/assets/images/closet/tag-mock3.png';
+import { ClosetBottomNav, ClosetSearchField, ClosetTopBar } from '@/features/closet/components';
+import { matchesQuery } from '@/features/closet/searchItems';
+import useClosetStore from '@/store/closetStore';
+import type { ClothingItem } from '@/types';
 
-/** 옷 있는 상태 목 데이터 — 카테고리별 이미지 (임시: 태그 화면 목업 재활용) */
-const MOCK_ROWS = [
-  { key: 'top', items: [mock1, mock2, mock3, mock1] },
-  { key: 'bottom', items: [mock3, mock1, mock2, mock3] },
-  { key: 'shoes', items: [mock2, mock3, mock1, mock2] },
-];
+/** 카테고리 행 노출 순서 (해당 카테고리 옷이 있을 때만 표시) */
+const ROW_CATEGORIES = ['아우터', '상의', '하의', '신발', '가방', '액세서리'] as const;
 
 /** 현황 카테고리 아이콘 — 32×32, #5A6169 */
 const StatIcon = ({ kind }: { kind: 'top' | 'bottom' | 'shoes' | 'etc' }) => (
@@ -38,27 +35,6 @@ const PlusSmallIcon = () => (
   </svg>
 );
 
-/** 검색 돋보기 아이콘 — 16×16, #959BA7 */
-const SearchIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M13.9995 13.9995L10.5349 10.5349M10.5349 10.5349C11.4726 9.59716 11.9994 8.32534 11.9994 6.99921C11.9994 5.67308 11.4726 4.40126 10.5349 3.46354C9.59716 2.52583 8.32534 1.99902 6.99921 1.99902C5.67308 1.99902 4.40126 2.52583 3.46354 3.46354C2.52583 4.40126 1.99902 5.67308 1.99902 6.99921C1.99902 8.32534 2.52583 9.59716 3.46354 10.5349C4.40126 11.4726 5.67308 11.9994 6.99921 11.9994C8.32534 11.9994 9.59716 11.4726 10.5349 10.5349Z" stroke="#959BA7" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-/** 뒤로가기 — 24×24 */
-const BackIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M15.75 19.5L8.25 12L15.75 4.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-/** 카운트 옷걸이 — 16×16, #1F2124 */
-const CountIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M15.0982 10.7L8.83321 6L10.2995 4.9C10.3617 4.85349 10.4122 4.79313 10.447 4.7237C10.4818 4.65427 10.5 4.57768 10.5001 4.5C10.5001 3.83696 10.2367 3.20107 9.76785 2.73223C9.29901 2.26339 8.66312 2 8.00008 2C7.33704 2 6.70115 2.26339 6.23231 2.73223C5.76347 3.20107 5.50008 3.83696 5.50008 4.5C5.50008 4.63261 5.55276 4.75979 5.64653 4.85355C5.7403 4.94732 5.86747 5 6.00008 5C6.13269 5 6.25987 4.94732 6.35363 4.85355C6.4474 4.75979 6.50008 4.63261 6.50008 4.5C6.50109 4.12339 6.64374 3.76094 6.89968 3.48466C7.15561 3.20837 7.50612 3.03848 7.88155 3.00872C8.25699 2.97896 8.62988 3.09152 8.92615 3.32403C9.22242 3.55655 9.42038 3.892 9.48071 4.26375L7.70883 5.59312L7.69133 5.60625L0.901955 10.7C0.734177 10.8258 0.610207 11.0012 0.54758 11.2014C0.484953 11.4015 0.48684 11.6163 0.552974 11.8153C0.619107 12.0144 0.74614 12.1876 0.916103 12.3104C1.08607 12.4333 1.29036 12.4996 1.50008 12.5H14.5001C14.71 12.5 14.9145 12.434 15.0848 12.3112C15.2551 12.1885 15.3824 12.0153 15.4488 11.8162C15.5151 11.6171 15.5172 11.4022 15.4546 11.2018C15.392 11.0015 15.268 10.8259 15.1001 10.7H15.0982ZM14.5001 11.5H1.50008L8.00008 6.625L14.5001 11.5Z" fill="#1F2124" />
-  </svg>
-);
-
 /** 빈 옷장 점선 원 — 60×60 */
 const EmptyDashedIcon = () => (
   <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -80,12 +56,14 @@ const BagIcon = () => (
   </svg>
 );
 
-/** 옷 가로 스크롤 행 — 스크롤바 숨김 + 하단 구분선(좌우 24) */
-const ClothesRow = ({ items }: { items: string[] }) => (
+/** 옷 가로 스크롤 행 — 스크롤바 숨김 + 하단 구분선(좌우 24). 아이템 클릭 시 상세 이동 */
+const ClothesRow = ({ items, onItemClick }: { items: ClothingItem[]; onItemClick: (id: string) => void }) => (
   <div>
     <div className="flex gap-2 overflow-x-auto px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {items.map((src, i) => (
-        <img key={i} src={src} alt="" className="h-[134px] w-[104px] shrink-0 rounded-2xl object-cover" />
+      {items.map((item) => (
+        <button key={item.id} type="button" onClick={() => onItemClick(item.id)} className="shrink-0 cursor-pointer">
+          <img src={item.imageUrl} alt={item.tags.join(' ')} loading="lazy" className="h-[134px] w-[104px] rounded-2xl object-cover" />
+        </button>
       ))}
     </div>
     {/* 구분선 — 좌우 24 안쪽 */}
@@ -95,33 +73,37 @@ const ClothesRow = ({ items }: { items: string[] }) => (
 
 /**
  * 내 옷장 홈 — 등록된 옷 없음(빈 상태) / 있음(목록) 두 상태.
- * 백엔드 연결 전: 우하단 임시 토글 버튼으로 상태 전환 (시연용, 추후 제거)
+ * 데이터: mockClosetItems (백엔드 연결 시 API 응답으로 대체)
  */
 const ClosetHomePage = () => {
   const navigate = useNavigate();
-  // 임시: 옷 등록 여부 (백엔드 연결 시 실제 데이터 유무로 대체)
-  const filled = true;
+  const items = useClosetStore((state) => state.items);
+  const filled = items.length > 0;
+  const [search, setSearch] = useState('');
+
+  // 현황 카드 카운트 — items 바뀔 때만 재계산 (검색과 무관, 전체 기준)
+  const counts = useMemo(() => {
+    const countOf = (category: string) => items.filter((item) => item.category === category).length;
+    const top = countOf('상의');
+    const bottom = countOf('하의');
+    const shoes = countOf('신발');
+    // 기타 = 상의/하의/신발 외 전부 (아우터·가방·액세서리)
+    return { top, bottom, shoes, etc: items.length - top - bottom - shoes };
+  }, [items]);
+
+  // 검색 결과를 카테고리 행으로 분할 — items·search 바뀔 때만 재계산
+  const rows = useMemo(() => {
+    const visibleItems = items.filter((item) => matchesQuery(item, search));
+    return ROW_CATEGORIES.map((category) => ({
+      category,
+      items: visibleItems.filter((item) => item.category === category),
+    })).filter((row) => row.items.length > 0);
+  }, [items, search]);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
       <div className="relative flex flex-col flex-1 min-h-0 bg-white">
-        {/* 상단바 — back / 옷장 / 카운트 */}
-        <div className="relative flex h-[53px] items-center justify-center border-b border-[#B2B8BD]">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="absolute left-5 cursor-pointer"
-            aria-label="뒤로가기"
-          >
-            <BackIcon />
-          </button>
-          <span className="text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">옷장</span>
-          {/* 카운트 — 12 Medium lh165 −2% #1F2124. 빈 상태 0개 / 옷 있으면 88개 (목) */}
-          <span className="absolute right-5 flex items-center gap-1 text-[12px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124]">
-            <CountIcon />
-            {filled ? '88개' : '0개'}
-          </span>
-        </div>
+        <ClosetTopBar height={53} />
 
         {filled ? (
           /* 옷 있는 상태 (러프 — 세부 스펙 대기) */
@@ -142,10 +124,10 @@ const ClosetHomePage = () => {
               <div className="flex items-center justify-between">
                 {(
                   [
-                    { kind: 'top', label: '상의', count: 88 },
-                    { kind: 'bottom', label: '하의', count: 88 },
-                    { kind: 'shoes', label: '신발', count: 88 },
-                    { kind: 'etc', label: '기타', count: 88 },
+                    { kind: 'top', label: '상의', count: counts.top },
+                    { kind: 'bottom', label: '하의', count: counts.bottom },
+                    { kind: 'shoes', label: '신발', count: counts.shoes },
+                    { kind: 'etc', label: '기타', count: counts.etc },
                   ] as const
                 ).map((stat) => (
                   <div key={stat.kind} className="flex h-[42px] w-[70px] items-center justify-between">
@@ -157,7 +139,7 @@ const ClosetHomePage = () => {
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124]">전체 의류 88</p>
+              <p className="text-[10px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124]">전체 의류 {items.length}</p>
             </div>
 
             {/* 카테고리 헤더 — 327×26, 현황 카드 아래 43 */}
@@ -175,23 +157,25 @@ const ClosetHomePage = () => {
               </button>
             </div>
 
-            {/* 검색바 — 327×36, radius32, border #959BA7, 헤더 아래 24 */}
+            {/* 검색바 — 헤더 아래 24 */}
             <div className="mt-6 px-6">
-              <div className="flex h-9 items-center gap-2.5 rounded-[32px] border border-[#959BA7] bg-white py-2 pl-3 pr-3">
-                <SearchIcon />
-                <input
-                  type="text"
-                  placeholder="검색어를 입력해주세요"
-                  className="w-full bg-transparent text-[12px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124] placeholder-[#B2B8BD] outline-none"
-                />
-              </div>
+              <ClosetSearchField value={search} onChange={setSearch} />
             </div>
 
             {/* 카테고리별 옷 가로 스크롤 행 — 134 높이 */}
             <div className="mt-4 flex flex-col gap-4 pb-6">
-              {MOCK_ROWS.map((row) => (
-                <ClothesRow key={row.key} items={row.items} />
+              {rows.map((row) => (
+                <ClothesRow
+                  key={row.category}
+                  items={row.items}
+                  onItemClick={(id) => navigate(`/closet/items/${id}`)}
+                />
               ))}
+              {rows.length === 0 && (
+                <p className="px-6 py-8 text-center text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#959BA7]">
+                  검색 결과가 없어요
+                </p>
+              )}
             </div>
           </div>
         ) : (
