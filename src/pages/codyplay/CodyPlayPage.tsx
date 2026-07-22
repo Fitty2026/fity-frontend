@@ -34,7 +34,7 @@ const CodyPlayPage = () => {
         </button>
         <button
           onClick={() => {
-            navigate('/outfit/share');
+            navigate('/outfit/share', { state: { animateImage: true } });
           }}
           className="bg-[#1F2124] rounded-[32px] py-[16px] text-[#F6F7F8] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
         >
