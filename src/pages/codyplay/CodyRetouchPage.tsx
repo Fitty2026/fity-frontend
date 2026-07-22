@@ -1,16 +1,14 @@
-import { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import PageLayout from '@/components/layout/PageeLayout';
+import RetouchItem from '@/features/codyplay/components/RetouchItem';
 import '@/features/codyplay/codyRetouch.css';
 
 import { mockOutfits } from '../../mocks/data/outfit';
 import type { ClothingItem, Outfit } from '../../types';
 
-const createRecommendItem = (
-  id: string,
-  category: ClothingItem['category'],
-): ClothingItem => ({
+const createRecommendItem = (id: string, category: ClothingItem['category']): ClothingItem => ({
   id,
   category,
   imageUrl: '',
@@ -47,12 +45,16 @@ const CodyRetouchPage = () => {
   const location = useLocation();
   const [result, setResult] = useState<Outfit | undefined>(() => mockOutfits[0]);
   const [selectItem, setSelectItem] = useState<ClothingItem | null>();
+  const [selectCategory, setSelectCategory] = useState<string | null>();
   const [changeItem, setChangeItem] = useState<ClothingItem | null>(null);
-  const [showRecommendItems, setShowRecommendItems] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setSelectItem(result?.items.find((item) => item.category === selectCategory));
+  }, [selectCategory]);
 
   const handleChangeItem = () => {
     if (!selectItem || !changeItem) return;
-
     setResult((prevResult) => {
       if (!prevResult) return prevResult;
 
@@ -63,7 +65,17 @@ const CodyRetouchPage = () => {
     });
     setSelectItem(null);
     setChangeItem(null);
-    setShowRecommendItems(false);
+    setSelectCategory(null);
+  };
+
+  const deleteItemHandle = () => {
+    setResult((prev) => {
+      if (!prev || !selectItem) return prev;
+      return {
+        ...prev,
+        items: prev.items.filter((item) => item.category !== selectItem.category),
+      };
+    });
   };
 
   return (
@@ -82,70 +94,67 @@ const CodyRetouchPage = () => {
           ></img>
         </div>
 
-        {showRecommendItems && selectItem ? (
+        {selectCategory ? (
           <div className="flex-172 aspect-[172/439]  relative">
-            <div className="bg-[#F6F7F8] rounded-[4px] h-[68px] shrink-0 flex items-center pl-[12px]">
-              <div className="h-[48px] w-[48px] object-cover">
-                <img className="object-cover h-full" src={selectItem.imageUrl}></img>
-              </div>
-              <div className="pl-[8px]">
-                <p className="text-[#6F7881] text-[14px] font-[500] leading-[160%] tracking-[-2%]">
-                  {selectItem.category}
-                </p>
-                <h5 className="text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
-                  {selectItem.id}
-                </h5>
-              </div>
-            </div>
             <div
               onClick={() => {
                 setSelectItem(null);
                 setChangeItem(null);
-                setShowRecommendItems(false);
+                setSelectCategory(null);
               }}
+              className="bg-[#E6E8EA] rounded-[4px] h-[68px] shrink-0 flex items-center pl-[12px]"
+            >
+              <div className="h-[48px] w-[48px] object-cover">
+                {result?.items.find((item=>item.category === selectCategory))?.imageUrl ? (
+                  <img className="object-cover h-full" src={result?.items.find((item=>item.category === selectCategory))?.imageUrl}></img>
+                ) : (
+                  <div className="bg-[#F6F7F8] w-full h-full"></div>
+                )}
+              </div>
+              <div className="pl-[8px]">
+                <p className="text-[#6F7881] text-[14px] font-[500] leading-[160%] tracking-[-2%]">
+                 {selectCategory}
+                </p>
+                <h5 className="text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
+                  {result?.items.find((item=>item.category === selectCategory))?.id ? result?.items.find((item=>item.category === selectCategory))?.id : '-'}
+                </h5>
+              </div>
+            </div>
+            <div
+              onClick={deleteItemHandle}
               className="mt-[4px] flex justify-end items-center gap-[4px] text-[#5A6169] text-[10px] font-[500] leading-[165%] tracking-[-2%]"
             >
               <svg
-                xmlns="http://www.w3.org/2000/svg"
                 width="12"
                 height="12"
                 viewBox="0 0 12 12"
                 fill="none"
+                xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M8.01169 4.67373H10.5077L8.91719 3.08223C8.40513 2.57016 7.76729 2.20192 7.06779 2.01453C6.3683 1.82713 5.63179 1.82719 4.93232 2.01469C4.23285 2.20219 3.59507 2.57052 3.08309 3.08266C2.57111 3.5948 2.20297 4.2327 2.01569 4.93223M3.98869 7.32573H1.49269V9.82173M1.49269 7.32573L3.08269 8.91723C3.59475 9.42929 4.23258 9.79753 4.93208 9.98492C5.63158 10.1723 6.36808 10.1723 7.06755 9.98477C7.76702 9.79727 8.40481 9.42893 8.91679 8.91679C9.42877 8.40465 9.79691 7.76675 9.98419 7.06723M10.5077 2.17773V4.67273"
+                  d="M7.37 4.50026L7.197 9.00026M4.803 9.00026L4.63 4.50026M7.875 2.69676C8.45688 2.74181 9.03693 2.80802 9.614 2.89526C9.785 2.92126 9.955 2.94876 10.125 2.97826M9.614 2.89526L9.08 9.83676C9.05821 10.1194 8.93053 10.3833 8.72251 10.5759C8.51449 10.7684 8.24145 10.8753 7.958 10.8753H4.042C3.75855 10.8753 3.48551 10.7684 3.27749 10.5759C3.06947 10.3833 2.94179 10.1194 2.92 9.83676L2.386 2.89526M2.386 2.89526C2.215 2.92076 2.045 2.94826 1.875 2.97776M2.386 2.89526C2.96307 2.80802 3.54312 2.74181 4.125 2.69676M7.875 2.69676V2.23876C7.875 1.64876 7.42 1.15676 6.83 1.13826C6.27681 1.12058 5.72319 1.12058 5.17 1.13826C4.58 1.15676 4.125 1.64926 4.125 2.23876V2.69676M7.875 2.69676C6.62686 2.6003 5.37314 2.6003 4.125 2.69676"
                   stroke="#6F7881"
                   stroke-linecap="round"
                   stroke-linejoin="round"
                 />
               </svg>
-              수정할 아이템 바꾸기
+              아이템 삭제하기
             </div>
             <h2 className="mt-[40px] text-[#474C52] text-[14px] font-[500] leading-[160%] tracking-[-2%]">
               아래 아이템을 추천해요
             </h2>
             <div className="mt-[17px] flex flex-col h-[calc(100%-170px)] overflow-y-auto">
               {recommendItems
-                .filter((item) => selectItem.category === item.category)
+                .filter((item) => selectItem?.category === item.category)
                 .map((item, index) => (
-                  <div
+                  <RetouchItem
                     key={item.id}
+                    item={item}
+                    isSelected={changeItem?.id === item.id}
+                    animationClassName="retouch-recommend-drop"
+                    animationDelay={`${180 + index * 80}ms`}
                     onClick={() => setChangeItem(item)}
-                    className={`${changeItem?.id === item.id ? 'bg-[#E6E8EA]' : 'bg-[#F6F7F8]'} retouch-recommend-drop rounded-[4px] h-[68px] shrink-0 flex items-center pl-[12px]`}
-                    style={{ animationDelay: `${180 + index * 80}ms` }}
-                  >
-                    <div className="h-[48px] w-[48px] object-cover">
-                      <img className="object-cover h-full" src={item.imageUrl}></img>
-                    </div>
-                    <div className="pl-[8px]">
-                      <p className="text-[#6F7881] text-[14px] font-[500] leading-[160%] tracking-[-2%]">
-                        {item.category}
-                      </p>
-                      <h5 className="text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
-                        {item.id}
-                      </h5>
-                    </div>
-                  </div>
+                  />
                 ))}
             </div>
             <svg
@@ -168,53 +177,45 @@ const CodyRetouchPage = () => {
         ) : (
           <div className="flex gap-[24px] flex-col flex-172 aspect-[172/439] overflow-x-hidden overflow-y-auto">
             {result?.items.map((item, index) => (
-              <div
+              <RetouchItem
                 key={item.id}
+                item={item}
+                isSelected={selectItem?.id === item.id}
+                animationClassName="retouch-item-enter"
+                animationDelay={`${120 + index * 90}ms`}
                 onClick={() => {
                   setSelectItem(item);
                   setChangeItem(null);
                 }}
-                className={`${selectItem?.id === item.id ? 'bg-[#E6E8EA]' : 'bg-[#F6F7F8]'} retouch-item-enter rounded-[4px] h-[68px] shrink-0 flex items-center pl-[12px]`}
-                style={{ animationDelay: `${120 + index * 90}ms` }}
-              >
-                <div className="h-[48px] w-[48px] object-cover">
-                  <img className="object-cover h-full" src={item.imageUrl}></img>
-                </div>
-                <div className="pl-[8px]">
-                  <p className="text-[#6F7881] text-[14px] font-[500] leading-[160%] tracking-[-2%]">
-                    {item.category}
-                  </p>
-                  <h5 className="text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
-                    {item.id}
-                  </h5>
-                </div>
-              </div>
+              />
             ))}
           </div>
         )}
       </div>
 
       <div className="mt-[48px] mx-[24px]">
-        {showRecommendItems && selectItem ? (
+        {selectCategory && selectItem ? (
           <div>
-            <button className="w-full bg-[#E6E8EA] rounded-[32px] py-[16px] text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
-              추가 아이템 보러가기
+            <button
+              onClick={() => navigate('/commerce')}
+              className="w-full bg-[#E6E8EA] rounded-[32px] py-[16px] text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
+            >
+              다른 아이템 보러가기
             </button>
             <button
               onClick={handleChangeItem}
-              disabled={!changeItem}
               className="mt-[8px] w-full bg-[#1F2124] disabled:bg-[#E6E8EA] rounded-[32px] py-[16px] text-[#F6F7F8] disabled:text-[#959BA7] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
             >
-              수정하기
+              완료
             </button>
           </div>
         ) : (
           <button
-            onClick={() => setShowRecommendItems(true)}
+            onClick={() => setSelectCategory(selectItem?.category)}
             disabled={!selectItem}
             className="w-full bg-[#1F2124] disabled:bg-[#E6E8EA] rounded-[32px] py-[16px] text-[#F6F7F8] disabled:text-[#959BA7] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
           >
-            수정하기
+            확인
           </button>
         )}
       </div>

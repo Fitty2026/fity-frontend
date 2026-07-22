@@ -45,7 +45,7 @@ export interface OnboardingState {
 // ============================================================
 // 옷장 (Closet)
 // ============================================================
-export type ClothingCategory = '상의' | '하의' | '아우터' | '신발' | '가방' | '액세서리';
+export type ClothingCategory = '상의' | '하의' | '아우터' | '신발' | '가방' | '액세서리' | '기타';
 
 export interface ClothingItem {
   id: string;
