@@ -22,7 +22,11 @@ const RetouchItem = ({
       style={{ animationDelay }}
     >
       <div className="h-[48px] w-[48px] object-cover">
-        <img className="object-cover h-full" src={item.imageUrl}></img>
+        {item.imageUrl ? (
+          <img className="object-cover h-full" src={item.imageUrl}></img>
+        ) : (
+          <div className="h-full w-full bg-[#E6E8EA]" />
+        )}
       </div>
       <div className="pl-[8px]">
         <p className="text-[#6F7881] text-[14px] font-[500] leading-[160%] tracking-[-2%]">
