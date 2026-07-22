@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { ClosetBottomNav, ClosetSearchField, ClosetTopBar } from '@/features/closet/components';
@@ -62,7 +62,7 @@ const ClothesRow = ({ items, onItemClick }: { items: ClothingItem[]; onItemClick
     <div className="flex gap-2 overflow-x-auto px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {items.map((item) => (
         <button key={item.id} type="button" onClick={() => onItemClick(item.id)} className="shrink-0 cursor-pointer">
-          <img src={item.imageUrl} alt={item.tags.join(' ')} className="h-[134px] w-[104px] rounded-2xl object-cover" />
+          <img src={item.imageUrl} alt={item.tags.join(' ')} loading="lazy" className="h-[134px] w-[104px] rounded-2xl object-cover" />
         </button>
       ))}
     </div>
@@ -81,16 +81,24 @@ const ClosetHomePage = () => {
   const filled = items.length > 0;
   const [search, setSearch] = useState('');
 
-  const countOf = (category: string) => items.filter((item) => item.category === category).length;
-  // 기타 = 상의/하의/신발 외 전부 (아우터·가방·액세서리)
-  const etcCount = items.length - countOf('상의') - countOf('하의') - countOf('신발');
+  // 현황 카드 카운트 — items 바뀔 때만 재계산 (검색과 무관, 전체 기준)
+  const counts = useMemo(() => {
+    const countOf = (category: string) => items.filter((item) => item.category === category).length;
+    const top = countOf('상의');
+    const bottom = countOf('하의');
+    const shoes = countOf('신발');
+    // 기타 = 상의/하의/신발 외 전부 (아우터·가방·액세서리)
+    return { top, bottom, shoes, etc: items.length - top - bottom - shoes };
+  }, [items]);
 
-  // 검색 — 카테고리/태그/브랜드에 검색어 포함된 아이템만 (현황 카드 카운트는 전체 기준 유지)
-  const visibleItems = items.filter((item) => matchesQuery(item, search));
-  const rows = ROW_CATEGORIES.map((category) => ({
-    category,
-    items: visibleItems.filter((item) => item.category === category),
-  })).filter((row) => row.items.length > 0);
+  // 검색 결과를 카테고리 행으로 분할 — items·search 바뀔 때만 재계산
+  const rows = useMemo(() => {
+    const visibleItems = items.filter((item) => matchesQuery(item, search));
+    return ROW_CATEGORIES.map((category) => ({
+      category,
+      items: visibleItems.filter((item) => item.category === category),
+    })).filter((row) => row.items.length > 0);
+  }, [items, search]);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
@@ -116,10 +124,10 @@ const ClosetHomePage = () => {
               <div className="flex items-center justify-between">
                 {(
                   [
-                    { kind: 'top', label: '상의', count: countOf('상의') },
-                    { kind: 'bottom', label: '하의', count: countOf('하의') },
-                    { kind: 'shoes', label: '신발', count: countOf('신발') },
-                    { kind: 'etc', label: '기타', count: etcCount },
+                    { kind: 'top', label: '상의', count: counts.top },
+                    { kind: 'bottom', label: '하의', count: counts.bottom },
+                    { kind: 'shoes', label: '신발', count: counts.shoes },
+                    { kind: 'etc', label: '기타', count: counts.etc },
                   ] as const
                 ).map((stat) => (
                   <div key={stat.kind} className="flex h-[42px] w-[70px] items-center justify-between">

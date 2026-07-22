@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { ClosetBottomNav, ClosetSearchField, ClosetTopBar } from '@/features/closet/components';
@@ -106,23 +106,34 @@ const ClosetItemListPage = () => {
   const [color, setColor] = useState<string | null>(null);
   const [openDropdown, setOpenDropdown] = useState<'order' | 'brand' | 'color' | null>(null);
 
-  // 드롭다운 옵션 — 보유 아이템에서 추출 (임시)
-  const brandOptions = [...new Set(items.map((item) => item.brand).filter(Boolean) as string[])].sort((a, b) =>
-    a.localeCompare(b, 'ko'),
+  // 드롭다운 옵션 — 보유 아이템에서 추출. items 바뀔 때만 재계산
+  const brandOptions = useMemo(
+    () =>
+      [...new Set(items.map((item) => item.brand).filter(Boolean) as string[])].sort((a, b) =>
+        a.localeCompare(b, 'ko'),
+      ),
+    [items],
   );
-  const colorOptions = COLOR_NAMES.filter((name) => items.some((item) => item.tags.includes(name)));
-
-  const filtered = items
-    .filter((item) => filter === '전체' || item.category === filter)
-    .filter((item) => !brand || item.brand === brand)
-    .filter((item) => !color || item.tags.includes(color))
-    .filter((item) => matchesQuery(item, search));
-
-  const sorted = [...filtered].sort((a, b) =>
-    order === '오래된순' ? a.createdAt.localeCompare(b.createdAt) : b.createdAt.localeCompare(a.createdAt),
+  const colorOptions = useMemo(
+    () => COLOR_NAMES.filter((name) => items.some((item) => item.tags.includes(name))),
+    [items],
   );
 
-  const rows = chunk(sorted, 4);
+  // 필터·정렬·행 분할 — 관련 입력이 바뀔 때만 재계산 (드롭다운 열림 토글 등에는 재실행 안 함)
+  const rows = useMemo(() => {
+    const filtered = items
+      .filter((item) => filter === '전체' || item.category === filter)
+      .filter((item) => !brand || item.brand === brand)
+      .filter((item) => !color || item.tags.includes(color))
+      .filter((item) => matchesQuery(item, search));
+
+    const sorted = filtered.sort((a, b) =>
+      order === '오래된순' ? a.createdAt.localeCompare(b.createdAt) : b.createdAt.localeCompare(a.createdAt),
+    );
+
+    return chunk(sorted, 4);
+  }, [items, filter, brand, color, search, order]);
+
   const toggleDropdown = (key: 'order' | 'brand' | 'color') =>
     setOpenDropdown((prev) => (prev === key ? null : key));
 
@@ -212,7 +223,7 @@ const ClosetItemListPage = () => {
                       onClick={() => navigate(`/closet/${item.id}`)}
                       className="shrink-0 cursor-pointer"
                     >
-                      <img src={item.imageUrl} alt={item.tags.join(' ')} className="h-[134px] w-[104px] rounded-2xl object-cover" />
+                      <img src={item.imageUrl} alt={item.tags.join(' ')} loading="lazy" className="h-[134px] w-[104px] rounded-2xl object-cover" />
                     </button>
                   ))}
                 </div>
