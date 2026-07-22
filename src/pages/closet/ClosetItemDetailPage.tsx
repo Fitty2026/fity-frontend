@@ -242,7 +242,7 @@ const ClosetItemDetailPage = () => {
               label="삭제하기"
               variant="fill"
               height={64}
-              onClick={() => navigate(`/closet/${item.id}/delete`)}
+              onClick={() => navigate(`/closet/items/${item.id}/delete`)}
             />
             <CtaButton label="수정하기" variant="dark" />
           </div>

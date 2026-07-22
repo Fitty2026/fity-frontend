@@ -160,7 +160,7 @@ const router = createBrowserRouter([
     element: <ProtectedRoute><ClosetLoadingPage variant="analyze" /></ProtectedRoute>,
   },
   {
-    path: '/closet/register/tags',
+    path: '/closet/register/added',
     element: <ProtectedRoute><ClosetTagEditPage /></ProtectedRoute>,
   },
   {
@@ -172,11 +172,11 @@ const router = createBrowserRouter([
     element: <ProtectedRoute><ClosetItemListPage /></ProtectedRoute>,
   },
   {
-    path: '/closet/:itemId',
+    path: '/closet/items/:itemId',
     element: <ProtectedRoute><ClosetItemDetailPage /></ProtectedRoute>,
   },
   {
-    path: '/closet/:itemId/delete',
+    path: '/closet/items/:itemId/delete',
     element: <ProtectedRoute><ClosetItemDeletePage /></ProtectedRoute>,
   },
 

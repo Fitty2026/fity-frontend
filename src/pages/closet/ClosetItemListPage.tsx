@@ -220,7 +220,7 @@ const ClosetItemListPage = () => {
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => navigate(`/closet/${item.id}`)}
+                      onClick={() => navigate(`/closet/items/${item.id}`)}
                       className="shrink-0 cursor-pointer"
                     >
                       <img src={item.imageUrl} alt={item.tags.join(' ')} loading="lazy" className="h-[134px] w-[104px] rounded-2xl object-cover" />

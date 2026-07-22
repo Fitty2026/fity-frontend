@@ -30,7 +30,7 @@ const ClosetLoadingPage = ({ variant = 'analyze' }: { variant?: ClosetLoadingVar
   // 완료 표시 후 태그 확인 화면으로 이동 (임시: 추후 백엔드 완료 응답과 연동)
   useEffect(() => {
     if (!done) return;
-    const t = setTimeout(() => navigate('/closet/register/tags'), DONE_HOLD_MS);
+    const t = setTimeout(() => navigate('/closet/register/added'), DONE_HOLD_MS);
     return () => clearTimeout(t);
   }, [done, navigate]);
 

@@ -61,7 +61,7 @@ const ClosetPhotoPage = () => {
   const fileInput = useRef<HTMLInputElement>(null);
 
   // 촬영/갤러리 선택 후 이동 — 기존 라우트 유지 (분석 화면 경유 여부는 시안 확인 대기)
-  const goNext = () => navigate('/closet/register/tags');
+  const goNext = () => navigate('/closet/register/added');
 
   const handlePickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length) goNext();

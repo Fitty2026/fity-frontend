@@ -168,7 +168,7 @@ const ClosetHomePage = () => {
                 <ClothesRow
                   key={row.category}
                   items={row.items}
-                  onItemClick={(id) => navigate(`/closet/${id}`)}
+                  onItemClick={(id) => navigate(`/closet/items/${id}`)}
                 />
               ))}
               {rows.length === 0 && (
