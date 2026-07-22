@@ -23,7 +23,7 @@ const MyOutfitDetailPage = () => {
       showBottomNav={false}
       showHeader={true}
       showBack={true}
-      title="옷장"
+      title="룩북"
       className="relative"
     >
       <h1 className=" w-full text-[#1F2124] text-[20px] text-center font-[600] leading-[150%] mt-[56px] tracking-[-2%]">

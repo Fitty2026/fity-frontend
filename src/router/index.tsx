@@ -68,6 +68,8 @@ import NotFoundPage from '../pages/error/NotFoundPage';
 
 import MyOutfitEditPage from '@/pages/myoutfit/MyOutfitEditPage';
 import MyOutfitDeletePage from '@/pages/myoutfit/MyOutfitDeletePage';
+import MyOutfitAddItemPage from '@/pages/myoutfit/MyOutfitAddItemPage';
+import MyOutfitRecentlyDeletedPage from '@/pages/myoutfit/MyOutfitRecentlyDeletedPage';
 
 const router = createBrowserRouter([
 
@@ -241,6 +243,10 @@ const router = createBrowserRouter([
     element: <ProtectedRoute><MyOutfitListPage /></ProtectedRoute>,
   },
   {
+    path: '/myoutfit/recently-deleted',
+    element: <ProtectedRoute><MyOutfitRecentlyDeletedPage /></ProtectedRoute>,
+  },
+  {
     path: '/myoutfit/:outfitId',
     element: <ProtectedRoute><MyOutfitDetailPage /></ProtectedRoute>,
   },
@@ -248,10 +254,15 @@ const router = createBrowserRouter([
     path: '/myoutfit/edit/:outfitId',
     element: <ProtectedRoute><MyOutfitEditPage /></ProtectedRoute>,
   },
-   {
+  {
     path: '/myoutfit/delete/:outfitId',
     element: <ProtectedRoute><MyOutfitDeletePage /></ProtectedRoute>,
   },
+  {
+    path: '/myoutfit/additem/:outfitId',
+    element: <ProtectedRoute><MyOutfitAddItemPage /></ProtectedRoute>,
+  },
+
   // 마이페이지
     {
       path: '/mypage',

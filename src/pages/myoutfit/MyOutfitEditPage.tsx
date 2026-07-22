@@ -1,18 +1,48 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
 import PageLayout from '@/components/layout/PageeLayout';
 import Input from '@/components/ui/Input';
+import TagAddBottomSheet, { MAX_TAG_COUNT } from '@/features/myoutfit/components/TagAddBottomSheet';
 
 import { mockOutfits } from '../../mocks/data/outfit';
-import type { Outfit } from '../../types';
+import type { ClothingCategory, Outfit } from '../../types';
+
+const ITEM_MARKER_TOP: Record<ClothingCategory, number> = {
+  아우터: 30,
+  상의: 42,
+  하의: 64,
+  신발: 88,
+  가방: 48,
+  액세서리: 25,
+  기타: 65,
+};
+
+const ItemMarker = ({ itemId }: { itemId: string }) => (
+  <svg
+    width="61"
+    height="30"
+    viewBox="0 0 61 30"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <rect width="61" height="24" rx="4" fill="black" fillOpacity="0.6" />
+    <foreignObject x="4" y="0" width="53" height="24">
+      <div className="flex h-full items-center justify-center truncate px-[3px] text-[11px] font-[600] text-white">
+        {itemId || '-'}
+      </div>
+    </foreignObject>
+    <path d="M30.5 30L27.0359 24H33.9641L30.5 30Z" fill="black" fillOpacity="0.6" />
+  </svg>
+);
 
 const Tag = ({ isSelected = false, tag = '', onclick = () => {} }) => {
   return (
     <div
       onClick={onclick}
-      className={`border relative transition-all duration-0.3 ${isSelected ? 'bg-[#B2B8BD] pr-[28px]' : ''} border-[#34363C] rounded-[32px] px-[12px] py-[4px] text-[#34363C] text-[14px] leading-[160%] tracking-[-2%]`}
+      className={`select-none border relative transition-all duration-0.3 ${isSelected ? 'bg-[#B2B8BD] pr-[28px]' : ''} border-[#34363C] rounded-[32px] px-[12px] py-[4px] text-[#34363C] text-[14px] leading-[160%] tracking-[-2%]`}
     >
       {tag}
       <svg
@@ -30,32 +60,77 @@ const Tag = ({ isSelected = false, tag = '', onclick = () => {} }) => {
 };
 
 const MyOutfitEditPage = () => {
-  const [outfit, setResult] = useState<Outfit>();
-  const [selectedTag, setSelectedTag] = useState<Number>(5);
+  const [outfit, setResult] = useState<Outfit | undefined>(() => mockOutfits[0]);
+  const [selectedTag, setSelectedTag] = useState<number | null>(null);
+  const [isTagSheetOpen, setIsTagSheetOpen] = useState(false);
+  const [showItemMarkers, setShowItemMarkers] = useState(false);
 
-  const clickTag = (index: Number) => {
-    setSelectedTag(index);
+  const clickTag = (index: number) => {
+    if (selectedTag !== index) {
+      setSelectedTag(index);
+      return;
+    }
+
+    setResult((prev) =>
+      prev
+        ? {
+            ...prev,
+            styleTags: prev.styleTags.filter((_, tagIndex) => tagIndex !== index),
+          }
+        : prev,
+    );
+    setSelectedTag(null);
   };
 
-  useEffect(() => {
-    setResult(mockOutfits?.[0]);
-  }, []);
-
   const navigate = useNavigate();
+
+  const handleAddTag = (tag: string) => {
+    setResult((prev) => {
+      if (!prev || prev.styleTags.length >= MAX_TAG_COUNT || prev.styleTags.includes(tag)) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        styleTags: [...prev.styleTags, tag],
+      };
+    });
+  };
 
   return (
     <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="수정하기">
       <div className="relative mt-[24px] mx-[24px]">
-        <div className="w-[calc(77.49196%_-_12.3987px)] relative">
+        <button
+          type="button"
+          aria-label={showItemMarkers ? '아이템 위치 숨기기' : '아이템 위치 보기'}
+          aria-pressed={showItemMarkers}
+          onClick={() => setShowItemMarkers((isVisible) => !isVisible)}
+          className="relative block w-[calc(77.49196%_-_12.3987px)] text-left"
+        >
           <img
             className="block w-full rounded-[8px] aspect-square object-cover"
             src={outfit?.imageUrl}
             alt={outfit?.createdAt}
-          ></img>
+          />
           <p className="absolute top-[9px] left-[14px] text-[#474C52] text-[12px] font-[600] leading-[165%] tracking-[-2%]">
             {outfit?.createdAt.slice(0, 10).split('-').join('.')}
           </p>
-        </div>
+          {showItemMarkers &&
+            outfit?.items.map((item, index) => {
+              return (
+                <span
+                  key={item.id}
+                  className="pointer-events-none absolute -translate-x-1/2 -translate-y-full"
+                  style={{
+                    left: index % 2 === 0 ? '30%' : '70%',
+                    top: `${ITEM_MARKER_TOP[item.category]}%`,
+                  }}
+                >
+                  <ItemMarker itemId={item.id} />
+                </span>
+              );
+            })}
+        </button>
         <div className="absolute inset-y-0 right-0 w-[calc(22.50804%_-_3.6013px)] space-y-[22.142857%] overflow-y-auto overscroll-contain touch-pan-y [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {outfit?.items.map((item) => (
             <img
@@ -67,7 +142,10 @@ const MyOutfitEditPage = () => {
           ))}{' '}
         </div>
       </div>
-      <div className="mt-[16px] mx-[24px] bg-[#E9E9E9] rounded-[8px] p-[10px] flex justify-center items-center gap-[8px]">
+      <div
+        onClick={() => navigate(`/myoutfit/additem/:${outfit?.id}`)}
+        className="mt-[16px] mx-[24px] bg-[#E9E9E9] rounded-[8px] p-[10px] flex justify-center items-center gap-[8px]"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
@@ -109,36 +187,42 @@ const MyOutfitEditPage = () => {
           {outfit?.styleTags.map((tag, index) => (
             <Tag
               tag={tag}
-              isSelected={selectedTag == index}
+              isSelected={selectedTag === index}
               key={tag}
               onclick={() => clickTag(index)}
             />
           ))}
 
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            className="ml-[15px]"
+          <button
+            type="button"
+            aria-label="태그 추가"
+            onClick={() => setIsTagSheetOpen(true)}
+            className="ml-[15px] select-none"
           >
-            <g clip-path="url(#clip0_1461_116923)">
-              <circle cx="12" cy="12" r="11.5" stroke="#34363C" />
-              <path
-                d="M12 7V17M17 12H7"
-                stroke="#34363C"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </g>
-            <defs>
-              <clipPath id="clip0_1461_116923">
-                <rect width="24" height="24" fill="white" />
-              </clipPath>
-            </defs>
-          </svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
+              <g clipPath="url(#clip0_1461_116923)">
+                <circle cx="12" cy="12" r="11.5" stroke="#34363C" />
+                <path
+                  d="M12 7V17M17 12H7"
+                  stroke="#34363C"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </g>
+              <defs>
+                <clipPath id="clip0_1461_116923">
+                  <rect width="24" height="24" fill="white" />
+                </clipPath>
+              </defs>
+            </svg>
+          </button>
         </div>
       </div>
       <div className="mt-[24px] mx-[24px] flex">
@@ -157,23 +241,20 @@ const MyOutfitEditPage = () => {
       <div className="mt-[20px] mx-[24px]">
         <button
           onClick={() => {
-            navigate('/myoutfit/delete/:');
-          }}
-          className="w-full bg-[#F6F7F8] rounded-[32px] py-[16px] text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
-        >
-          삭제
-        </button>
-        <button
-          onClick={() => {
-            navigate('/outfit/result');
+            navigate(`/myoutfit/:${outfit?.id}`);
           }}
           className="w-full mt-[8px] bg-[#1F2124] rounded-[32px] py-[16px] text-[#F6F7F8] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
         >
           확인
         </button>
       </div>
+      <TagAddBottomSheet
+        isOpen={isTagSheetOpen}
+        currentTags={outfit?.styleTags ?? []}
+        onClose={() => setIsTagSheetOpen(false)}
+        onAddTag={handleAddTag}
+      />
     </PageLayout>
   );
 };
 export default MyOutfitEditPage;
-
