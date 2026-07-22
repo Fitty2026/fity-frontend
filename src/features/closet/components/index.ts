@@ -15,3 +15,5 @@ export { default as ClothingThumbnail } from './ClothingThumbnail';
 export { default as ItemGrid } from './ItemGrid';
 export { default as ClosetBottomNav } from './ClosetBottomNav';
 export { default as CtaButton } from './CtaButton';
+export { default as ClosetTopBar } from './ClosetTopBar';
+export { default as ClosetSearchField } from './ClosetSearchField';

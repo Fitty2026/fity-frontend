@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
-import { ClosetBottomNav } from '@/features/closet/components';
+import { ClosetBottomNav, ClosetSearchField, ClosetTopBar } from '@/features/closet/components';
+import { matchesQuery } from '@/features/closet/searchItems';
 import useClosetStore from '@/store/closetStore';
 import type { ClothingItem } from '@/types';
 
@@ -31,27 +32,6 @@ const PlusSmallIcon = () => (
   <svg width="27" height="27" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="13.5" cy="13.5" r="13.5" fill="#9D98F0" />
     <path d="M19.125 13.5C19.125 13.6243 19.0756 13.7435 18.9877 13.8315C18.8998 13.9194 18.7806 13.9688 18.6562 13.9688H13.9688V18.6562C13.9688 18.7806 13.9194 18.8998 13.8315 18.9877C13.7435 19.0756 13.6243 19.125 13.5 19.125C13.3757 19.125 13.2565 19.0756 13.1685 18.9877C13.0806 18.8998 13.0312 18.7806 13.0312 18.6562V13.9688H8.34375C8.21943 13.9688 8.1002 13.9194 8.01229 13.8315C7.92439 13.7435 7.875 13.6243 7.875 13.5C7.875 13.3757 7.92439 13.2565 8.01229 13.1685C8.1002 13.0806 8.21943 13.0312 8.34375 13.0312H13.0312V8.34375C13.0312 8.21943 13.0806 8.1002 13.1685 8.01229C13.2565 7.92439 13.3757 7.875 13.5 7.875C13.6243 7.875 13.7435 7.92439 13.8315 8.01229C13.9194 8.1002 13.9688 8.21943 13.9688 8.34375V13.0312H18.6562C18.7806 13.0312 18.8998 13.0806 18.9877 13.1685C19.0756 13.2565 19.125 13.3757 19.125 13.5Z" fill="#F6F7F8" />
-  </svg>
-);
-
-/** 검색 돋보기 아이콘 — 16×16, #959BA7 */
-const SearchIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M13.9995 13.9995L10.5349 10.5349M10.5349 10.5349C11.4726 9.59716 11.9994 8.32534 11.9994 6.99921C11.9994 5.67308 11.4726 4.40126 10.5349 3.46354C9.59716 2.52583 8.32534 1.99902 6.99921 1.99902C5.67308 1.99902 4.40126 2.52583 3.46354 3.46354C2.52583 4.40126 1.99902 5.67308 1.99902 6.99921C1.99902 8.32534 2.52583 9.59716 3.46354 10.5349C4.40126 11.4726 5.67308 11.9994 6.99921 11.9994C8.32534 11.9994 9.59716 11.4726 10.5349 10.5349Z" stroke="#959BA7" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-/** 뒤로가기 — 24×24 */
-const BackIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M15.75 19.5L8.25 12L15.75 4.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-/** 카운트 옷걸이 — 16×16, #1F2124 */
-const CountIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M15.0982 10.7L8.83321 6L10.2995 4.9C10.3617 4.85349 10.4122 4.79313 10.447 4.7237C10.4818 4.65427 10.5 4.57768 10.5001 4.5C10.5001 3.83696 10.2367 3.20107 9.76785 2.73223C9.29901 2.26339 8.66312 2 8.00008 2C7.33704 2 6.70115 2.26339 6.23231 2.73223C5.76347 3.20107 5.50008 3.83696 5.50008 4.5C5.50008 4.63261 5.55276 4.75979 5.64653 4.85355C5.7403 4.94732 5.86747 5 6.00008 5C6.13269 5 6.25987 4.94732 6.35363 4.85355C6.4474 4.75979 6.50008 4.63261 6.50008 4.5C6.50109 4.12339 6.64374 3.76094 6.89968 3.48466C7.15561 3.20837 7.50612 3.03848 7.88155 3.00872C8.25699 2.97896 8.62988 3.09152 8.92615 3.32403C9.22242 3.55655 9.42038 3.892 9.48071 4.26375L7.70883 5.59312L7.69133 5.60625L0.901955 10.7C0.734177 10.8258 0.610207 11.0012 0.54758 11.2014C0.484953 11.4015 0.48684 11.6163 0.552974 11.8153C0.619107 12.0144 0.74614 12.1876 0.916103 12.3104C1.08607 12.4333 1.29036 12.4996 1.50008 12.5H14.5001C14.71 12.5 14.9145 12.434 15.0848 12.3112C15.2551 12.1885 15.3824 12.0153 15.4488 11.8162C15.5151 11.6171 15.5172 11.4022 15.4546 11.2018C15.392 11.0015 15.268 10.8259 15.1001 10.7H15.0982ZM14.5001 11.5H1.50008L8.00008 6.625L14.5001 11.5Z" fill="#1F2124" />
   </svg>
 );
 
@@ -106,12 +86,7 @@ const ClosetHomePage = () => {
   const etcCount = items.length - countOf('상의') - countOf('하의') - countOf('신발');
 
   // 검색 — 카테고리/태그/브랜드에 검색어 포함된 아이템만 (현황 카드 카운트는 전체 기준 유지)
-  const query = search.trim();
-  const visibleItems = query
-    ? items.filter((item) =>
-        [item.category, item.brand ?? '', ...item.tags].some((text) => text.includes(query)),
-      )
-    : items;
+  const visibleItems = items.filter((item) => matchesQuery(item, search));
   const rows = ROW_CATEGORIES.map((category) => ({
     category,
     items: visibleItems.filter((item) => item.category === category),
@@ -120,23 +95,7 @@ const ClosetHomePage = () => {
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
       <div className="relative flex flex-col flex-1 min-h-0 bg-white">
-        {/* 상단바 — back / 옷장 / 카운트 */}
-        <div className="relative flex h-[53px] items-center justify-center border-b border-[#B2B8BD]">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="absolute left-5 cursor-pointer"
-            aria-label="뒤로가기"
-          >
-            <BackIcon />
-          </button>
-          <span className="text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">옷장</span>
-          {/* 카운트 — 12 Medium lh165 −2% #1F2124 */}
-          <span className="absolute right-5 flex items-center gap-1 text-[12px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124]">
-            <CountIcon />
-            {items.length}개
-          </span>
-        </div>
+        <ClosetTopBar height={53} />
 
         {filled ? (
           /* 옷 있는 상태 (러프 — 세부 스펙 대기) */
@@ -190,18 +149,9 @@ const ClosetHomePage = () => {
               </button>
             </div>
 
-            {/* 검색바 — 327×36, radius32, border #959BA7, 헤더 아래 24 */}
+            {/* 검색바 — 헤더 아래 24 */}
             <div className="mt-6 px-6">
-              <div className="flex h-9 items-center gap-2.5 rounded-[32px] border border-[#959BA7] bg-white py-2 pl-3 pr-3">
-                <SearchIcon />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="검색어를 입력해주세요"
-                  className="w-full bg-transparent text-[12px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124] placeholder-[#B2B8BD] outline-none"
-                />
-              </div>
+              <ClosetSearchField value={search} onChange={setSearch} />
             </div>
 
             {/* 카테고리별 옷 가로 스크롤 행 — 134 높이 */}
