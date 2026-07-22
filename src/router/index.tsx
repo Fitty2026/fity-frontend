@@ -65,8 +65,8 @@ import MyPage from '../pages/mypage/MyPage';
 import RouteErrorPage from '../pages/error/RouteErrorPage';
 import NotFoundPage from '../pages/error/NotFoundPage';
 
-import CodyPlay from '@/pages/codyplay/CodyPlay';
-import CodyRetouch from '@/pages/codyplay/CodyRetouch';
+import CodyPlayPage from '@/pages/codyplay/CodyPlayPage';
+import CodyRetouchPage from '@/pages/codyplay/CodyRetouchPage';
 import MyOutfitEditPage from '@/pages/myoutfit/MyOutfitEditPage';
 import MyOutfitDeletePage from '@/pages/myoutfit/MyOutfitDeletePage';
 
@@ -213,11 +213,11 @@ const router = createBrowserRouter([
   //코디 플레이
   {
     path: '/codyplay',
-    element: <ProtectedRoute><CodyPlay /></ProtectedRoute>
+    element: <ProtectedRoute><CodyPlayPage /></ProtectedRoute>
   },
   {
     path: '/codyplay/retouch',
-    element: <ProtectedRoute><CodyRetouch /></ProtectedRoute>
+    element: <ProtectedRoute><CodyRetouchPage /></ProtectedRoute>
   },
 
   // 코디 결과

@@ -43,7 +43,7 @@ const recommendItems: ClothingItem[] = [
   createRecommendItem('심플 링 귀걸이', '액세서리'),
 ];
 
-const CodyRetouch = () => {
+const CodyRetouchPage = () => {
   const location = useLocation();
   const [result, setResult] = useState<Outfit | undefined>(() => mockOutfits[0]);
   const [selectItem, setSelectItem] = useState<ClothingItem | null>();
@@ -222,4 +222,4 @@ const CodyRetouch = () => {
   );
 };
 
-export default CodyRetouch;
+export default CodyRetouchPage;

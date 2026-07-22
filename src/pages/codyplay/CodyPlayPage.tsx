@@ -7,7 +7,7 @@ import PageLayout from '@/components/layout/PageeLayout';
 import { mockOutfits } from '../../mocks/data/outfit';
 import type { Outfit } from '../../types';
 
-const CodyPlay = () => {
+const CodyPlayPage = () => {
   const [result] = useState<Outfit | undefined>(() => mockOutfits[0]);
 
   const navigate = useNavigate();
@@ -45,4 +45,4 @@ const CodyPlay = () => {
   );
 };
 
-export default CodyPlay;
+export default CodyPlayPage;
