@@ -1,7 +1,22 @@
 import api from '@/lib/axios';
-import type { ApiResponse, SocialProvider } from '@/types';
+import type { ApiResponse, SocialProvider, StylePreference, User } from '@/types';
 
 const MOCK_DELAY_MS = 500;
+
+// ── PROFILE-01 프로필 조회 ──
+interface MyProfileResult {
+  userId: number;
+  email: string;
+  nickname: string;
+  profileImageUrl: string | null;
+  stylePreferences: StylePreference[];
+}
+
+export const getMyProfile = async (): Promise<User> => {
+  const { data } = await api.get<ApiResponse<MyProfileResult>>('/api/v1/users/me');
+  const { userId, ...rest } = data.result;
+  return { id: userId, ...rest };
+};
 
 // ── AUTH-02 이메일 로그인 ──
 export interface LoginRequest {

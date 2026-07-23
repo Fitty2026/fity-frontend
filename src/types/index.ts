@@ -12,15 +12,19 @@ export interface ApiResponse<T> {
 // ============================================================
 // 유저 / 인증
 // ============================================================
+/** 서버가 내려주는 스타일 취향 태그 (PROFILE-01 stylePreferences) */
+export interface StylePreference {
+  tagId: number;
+  tagName: string;
+}
+
+/** 로그인/프로필 조회로 채워지는 사용자 정보 (PROFILE-01 기준) */
 export interface User {
-  id: string;
+  id: number;
   email: string;
   nickname: string;
-  profileImageUrl?: string;
-  stylePreferences: StyleTag[];
-  bodyImageUrl?: string;
-  starCount: number;
-  freeGenerationLeft: number; // 하루 무료 생성 잔여 횟수
+  profileImageUrl: string | null;
+  stylePreferences: StylePreference[];
 }
 
 export type SocialProvider = 'google' | 'apple' | 'kakao' | 'email';
