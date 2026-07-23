@@ -7,7 +7,7 @@ import PageLayout from '@/components/layout/PageeLayout';
 import { mockOutfits } from '../../mocks/data/outfit';
 import type { Outfit } from '../../types';
 
-const CodyPlay = () => {
+const CodyPlayPage = () => {
   const [result] = useState<Outfit | undefined>(() => mockOutfits[0]);
 
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ const CodyPlay = () => {
         </button>
         <button
           onClick={() => {
-            navigate('/outfit/result');
+            navigate('/outfit/share', { state: { animateImage: true } });
           }}
           className="bg-[#1F2124] rounded-[32px] py-[16px] text-[#F6F7F8] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
         >
@@ -45,4 +45,4 @@ const CodyPlay = () => {
   );
 };
 
-export default CodyPlay;
+export default CodyPlayPage;

@@ -46,9 +46,9 @@ import StylingItemSelectPage from '../pages/styling/StylingItemSelectPage';
 import StylingLoadingPage from '../pages/styling/StylingLoadingPage';
 
 // 5. 코디 결과
-import OutfitResultPage from '../pages/outfit/OutfitResultPage';
-import OutfitEditPage from '../pages/outfit/OutfitEditPage';
-import OutfitSharePage from '../pages/outfit/OutfitSharePage';
+import CodyPlayPage from '@/pages/codyplay/CodyPlayPage';
+import CodyRetouchPage from '@/pages/codyplay/CodyRetouchPage';
+import OutfitSharePage from '../pages/codyplay/OutfitSharePage';
 
 // 6. 커머스
 import ProductListPage from '../pages/commerce/ProductListPage';
@@ -65,10 +65,11 @@ import MyPage from '../pages/mypage/MyPage';
 import RouteErrorPage from '../pages/error/RouteErrorPage';
 import NotFoundPage from '../pages/error/NotFoundPage';
 
-import CodyPlay from '@/pages/codyplay/CodyPlay';
-import CodyRetouch from '@/pages/codyplay/CodyRetouch';
+
 import MyOutfitEditPage from '@/pages/myoutfit/MyOutfitEditPage';
 import MyOutfitDeletePage from '@/pages/myoutfit/MyOutfitDeletePage';
+import MyOutfitAddItemPage from '@/pages/myoutfit/MyOutfitAddItemPage';
+import MyOutfitRecentlyDeletedPage from '@/pages/myoutfit/MyOutfitRecentlyDeletedPage';
 
 const router = createBrowserRouter([
 
@@ -213,22 +214,14 @@ const router = createBrowserRouter([
   //코디 플레이
   {
     path: '/codyplay',
-    element: <ProtectedRoute><CodyPlay /></ProtectedRoute>
+    element: <ProtectedRoute><CodyPlayPage /></ProtectedRoute>
   },
   {
     path: '/codyplay/retouch',
-    element: <ProtectedRoute><CodyRetouch /></ProtectedRoute>
+    element: <ProtectedRoute><CodyRetouchPage /></ProtectedRoute>
   },
 
   // 코디 결과
-  {
-    path: '/outfit/result',
-    element: <ProtectedRoute><OutfitResultPage /></ProtectedRoute>,
-  },
-  {
-    path: '/outfit/edit',
-    element: <ProtectedRoute><OutfitEditPage /></ProtectedRoute>,
-  },
   {
     path: '/outfit/share',
     element: <ProtectedRoute><OutfitSharePage /></ProtectedRoute>,
@@ -250,6 +243,10 @@ const router = createBrowserRouter([
     element: <ProtectedRoute><MyOutfitListPage /></ProtectedRoute>,
   },
   {
+    path: '/myoutfit/recently-deleted',
+    element: <ProtectedRoute><MyOutfitRecentlyDeletedPage /></ProtectedRoute>,
+  },
+  {
     path: '/myoutfit/:outfitId',
     element: <ProtectedRoute><MyOutfitDetailPage /></ProtectedRoute>,
   },
@@ -257,10 +254,15 @@ const router = createBrowserRouter([
     path: '/myoutfit/edit/:outfitId',
     element: <ProtectedRoute><MyOutfitEditPage /></ProtectedRoute>,
   },
-   {
+  {
     path: '/myoutfit/delete/:outfitId',
     element: <ProtectedRoute><MyOutfitDeletePage /></ProtectedRoute>,
   },
+  {
+    path: '/myoutfit/additem/:outfitId',
+    element: <ProtectedRoute><MyOutfitAddItemPage /></ProtectedRoute>,
+  },
+
   // 마이페이지
     {
       path: '/mypage',
