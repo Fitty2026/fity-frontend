@@ -9,6 +9,7 @@ import Input from '@/components/ui/Input';
 import PasswordInput from '@/features/auth/components/PasswordInput';
 import SocialLoginButton from '@/features/auth/components/SocialLoginButton';
 import useLogin from '@/features/auth/hooks/useLogin';
+import { getErrorMessage } from '@/lib/apiError';
 
 const loginSchema = z.object({
   email: z.email('올바른 이메일 형식이 아니에요'),
@@ -21,7 +22,7 @@ const SOCIAL_PROVIDERS = ['google', 'apple', 'kakao'] as const;
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { handleLogin, isLoading } = useLogin();
+  const { loginWithEmail, loginWithSocial, isLoading, error } = useLogin();
   // TODO: API 연동 시 "로그인 상태 유지" 여부를 토큰 저장 방식에 반영
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
   const {
@@ -30,7 +31,7 @@ const LoginPage = () => {
     formState: { errors },
   } = useForm<LoginForm>({ resolver: zodResolver(loginSchema) });
 
-  const onSubmit = (data: LoginForm) => handleLogin('email', data.email, data.password);
+  const onSubmit = (data: LoginForm) => loginWithEmail(data.email, data.password);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false}>
@@ -70,6 +71,9 @@ const LoginPage = () => {
             <span className="text-neutral-600">비밀번호 찾기</span>
           </div>
 
+          {/* 로그인 실패 메시지 */}
+          {error && <p className="text-sm text-red-500">{getErrorMessage(error)}</p>}
+
           <Button
             type="submit"
             label={isLoading ? '로그인 중...' : '로그인'}
@@ -94,7 +98,7 @@ const LoginPage = () => {
             <SocialLoginButton
               key={provider}
               provider={provider}
-              onClick={() => handleLogin(provider)}
+              onClick={() => loginWithSocial(provider)}
               disabled={isLoading}
             />
           ))}
