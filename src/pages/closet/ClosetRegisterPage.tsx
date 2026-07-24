@@ -32,7 +32,7 @@ const OPTIONS = [
   { key: 'album', label: '앨범에서 선택', icon: <AlbumIcon />, to: '/closet/register/photo' },
   { key: 'camera', label: '카메라로 촬영', icon: <CameraIcon />, to: '/closet/register/photo' },
   { key: 'platform', label: '쇼핑몰 연동하기', icon: <BagIcon />, to: '/closet/register/platform' },
-  { key: 'receipt', label: '영수증 불러오기', icon: <ReceiptIcon />, to: '/closet/register/platform' },
+  { key: 'receipt', label: '영수증 불러오기', icon: <ReceiptIcon />, to: '/closet/register/receipt' },
 ];
 
 /**
