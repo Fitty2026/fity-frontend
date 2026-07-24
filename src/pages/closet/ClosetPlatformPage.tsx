@@ -214,12 +214,19 @@ const ClosetPlatformPage = () => {
                 centerSelected ? 'bg-[#1F2124]' : 'bg-gray-400',
               ].join(' ')}
             />
+            {/* 중앙 박스 — 선택 시 #1F2124, 미선택 시 회색 */}
             <span
-              className="absolute -translate-y-1/2 w-[72px] h-[72px] rounded-lg bg-[#1F2124]"
+              className={[
+                'absolute -translate-y-1/2 w-[72px] h-[72px] rounded-lg',
+                centerSelected ? 'bg-[#1F2124]' : 'bg-[#B2B8BD]',
+              ].join(' ')}
               style={{ left: 24 }}
             />
             <span
-              className="absolute -translate-y-1/2 whitespace-nowrap text-[32px] font-bold leading-[1.4] tracking-[-0.02em] text-[#1F2124]"
+              className={[
+                'absolute -translate-y-1/2 whitespace-nowrap text-[32px] font-bold leading-[1.4] tracking-[-0.02em]',
+                centerSelected ? 'text-[#1F2124]' : 'text-[#B2B8BD]',
+              ].join(' ')}
               style={{ left: 104 }}
             >
               {selected.name}
