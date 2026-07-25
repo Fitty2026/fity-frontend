@@ -7,12 +7,24 @@ import useClosetStore from '@/store/closetStore';
 
 const FILTERS = ['전체', '상의', '하의', '아우터', '신발', '가방', '액세서리'];
 
-/** 정렬 순서 옵션 (임시 — 시안 미확정) */
-const ORDERS = ['최신순', '오래된순'] as const;
+/** 정렬 순서 옵션 (시안 확정) */
+const ORDERS = ['최신순', '오래된순', '자주 입은 순', '이름순'] as const;
 type OrderKey = (typeof ORDERS)[number];
 
-/** 컬러 후보 — 태그에 색상명이 들어있어 이를 기준으로 분류 (임시 — 시안 미확정) */
-const COLOR_NAMES = ['화이트', '블랙', '그레이', '베이지', '연청', '아이보리'];
+/** 컬러명 → 스와치 hex (시안 팔레트). 실제 노출은 보유 아이템에 있는 색만 (데이터 축적 시 확장) */
+const COLOR_SWATCHES: Record<string, string> = {
+  화이트: '#FFFFFF',
+  블랙: '#1F2124',
+  그레이: '#C4C8CD',
+  베이지: '#E7D5C0',
+  블루: '#5B7FC7',
+  네이비: '#2E3563',
+  핑크: '#EBB7CB',
+};
+const COLOR_NAMES = Object.keys(COLOR_SWATCHES);
+
+/** 드롭다운 옵션 — 값 + 선택형 스와치 */
+type DropOption = { value: string; swatch?: string };
 
 /** 정렬 활성 표시 화살표 — 16×16 (열림 시 위로 회전) */
 const ChevronDown = ({ active, open }: { active: boolean; open: boolean }) => (
@@ -34,6 +46,7 @@ const ChevronDown = ({ active, open }: { active: boolean; open: boolean }) => (
  */
 const DropdownChip = ({
   label,
+  allLabel,
   options,
   value,
   onSelect,
@@ -41,13 +54,17 @@ const DropdownChip = ({
   onToggle,
 }: {
   label: string;
-  options: string[];
+  /** 지정 시 목록 최상단에 "전체 X" 초기화 행 노출 (선택 시 value=null) */
+  allLabel?: string;
+  options: DropOption[];
   value: string | null;
   onSelect: (option: string | null) => void;
   open: boolean;
   onToggle: () => void;
 }) => {
   const active = value !== null;
+  // 행 — h30, 좌우 16, 하단 구분선, B6 SemiBold 14
+  const rowBase = 'flex h-[30px] w-full cursor-pointer items-center whitespace-nowrap border-b border-[#E6E8EA] px-4 text-[14px] font-semibold leading-[1.6] tracking-[-0.02em]';
   return (
     <div className="relative">
       <button
@@ -55,7 +72,7 @@ const DropdownChip = ({
         onClick={onToggle}
         className={[
           'flex h-[30px] cursor-pointer items-center gap-2.5 rounded-[32px] border px-4 py-1 text-[14px] font-semibold leading-[1.6] tracking-[-0.02em]',
-          active ? 'border-[#1F2124] bg-[#1F2124] text-[#F6F7F8]' : 'border-[#E6E8EA] bg-white text-[#1F2124]',
+          active ? 'border-[#1F2124] bg-[#1F2124] text-[#F6F7F8]' : 'border-[#E6E8EA] bg-[#F6F7F8] text-[#1F2124]',
         ].join(' ')}
       >
         {active ? value : label}
@@ -63,18 +80,30 @@ const DropdownChip = ({
       </button>
 
       {open && (
-        <ul className="absolute left-0 top-[34px] z-10 min-w-[104px] overflow-hidden rounded-2xl border border-[#E6E8EA] bg-white py-1 shadow-[0_4px_16px_0_rgba(0,0,0,0.08)]">
-          {options.map((option) => (
-            <li key={option}>
+        <ul className="absolute left-0 top-[34px] z-10 min-w-[88px] overflow-hidden rounded-lg bg-[#F6F7F8] shadow-[0_4px_10px_0_rgba(0,0,0,0.24)]">
+          {/* 헤더(전체 X / 최신순) — 보라 #9D98F0, 중앙. 선택 시 필터 해제 */}
+          {allLabel && (
+            <li>
               <button
                 type="button"
-                onClick={() => onSelect(option === value ? null : option)}
-                className={[
-                  'w-full cursor-pointer px-4 py-2 text-left text-[14px] font-medium leading-[1.6] tracking-[-0.02em]',
-                  option === value ? 'bg-[#F6F7F8] text-[#1F2124]' : 'text-[#5A6169]',
-                ].join(' ')}
+                onClick={() => onSelect(null)}
+                className={[rowBase, 'justify-center text-[#9D98F0]'].join(' ')}
               >
-                {option}
+                {allLabel}
+              </button>
+            </li>
+          )}
+          {options.map((option) => (
+            <li key={option.value}>
+              <button
+                type="button"
+                onClick={() => onSelect(option.value === value ? null : option.value)}
+                className={[rowBase, 'text-[#1F2124]', option.swatch ? 'justify-start gap-2.5' : 'justify-center'].join(' ')}
+              >
+                {option.swatch && (
+                  <span className="h-4 w-4 shrink-0 rounded-full border border-[#E6E8EA]" style={{ background: option.swatch }} />
+                )}
+                {option.value}
               </button>
             </li>
           ))}
@@ -127,9 +156,13 @@ const ClosetItemListPage = () => {
       .filter((item) => !color || item.tags.includes(color))
       .filter((item) => matchesQuery(item, search));
 
-    const sorted = filtered.sort((a, b) =>
-      order === '오래된순' ? a.createdAt.localeCompare(b.createdAt) : b.createdAt.localeCompare(a.createdAt),
-    );
+    const nameOf = (i: (typeof filtered)[number]) => i.subCategory || i.tags[0] || '';
+    const sorted = filtered.sort((a, b) => {
+      if (order === '오래된순') return a.createdAt.localeCompare(b.createdAt);
+      if (order === '이름순') return nameOf(a).localeCompare(nameOf(b), 'ko');
+      // 자주 입은 순: 착용 데이터 미보유 → 최신순 fallback (TODO: wearCount 연동)
+      return b.createdAt.localeCompare(a.createdAt);
+    });
 
     return chunk(sorted, 4);
   }, [items, filter, brand, color, search, order]);
@@ -178,7 +211,8 @@ const ClosetItemListPage = () => {
           <div className="relative z-10 mt-3 flex gap-2 px-6">
             <DropdownChip
               label="최신순"
-              options={[...ORDERS]}
+              allLabel="최신순"
+              options={ORDERS.slice(1).map((o) => ({ value: o }))}
               value={order === '최신순' ? null : order}
               onSelect={(option) => {
                 setOrder((option as OrderKey) ?? '최신순');
@@ -189,7 +223,8 @@ const ClosetItemListPage = () => {
             />
             <DropdownChip
               label="브랜드"
-              options={brandOptions}
+              allLabel="전체 브랜드"
+              options={brandOptions.map((b) => ({ value: b }))}
               value={brand}
               onSelect={(option) => {
                 setBrand(option);
@@ -200,7 +235,8 @@ const ClosetItemListPage = () => {
             />
             <DropdownChip
               label="컬러"
-              options={colorOptions}
+              allLabel="전체 컬러"
+              options={colorOptions.map((c) => ({ value: c, swatch: COLOR_SWATCHES[c] }))}
               value={color}
               onSelect={(option) => {
                 setColor(option);

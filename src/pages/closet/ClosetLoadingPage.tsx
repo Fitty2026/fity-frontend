@@ -4,8 +4,8 @@ import PageLayout from '@/components/layout/PageeLayout';
 import { HangerLoader, OnboardingTopBar } from '@/features/closet/components';
 import type { ClosetLoadingVariant } from '@/features/closet/types';
 
-// 채우기 속도 2cm/s = 75.5906px/s (1cm=37.7953px). 높이 160px → 160/75.5906 ≈ 2.1167s
-const FILL_MS = 2116.7; // TODO: 백엔드 실제 완료 시점과 연결 (지금은 채우기 시간 후 자동 전환)
+// 옷걸이 그리기 시간 — 느리게 (TODO: 백엔드 실제 완료 시점과 연결)
+const FILL_MS = 5500;
 const DONE_HOLD_MS = 1200; // 완료 표시 유지 후 다음 화면으로
 
 const COPY: Record<ClosetLoadingVariant, { loading: string; done: string }> = {
@@ -14,7 +14,7 @@ const COPY: Record<ClosetLoadingVariant, { loading: string; done: string }> = {
 };
 
 /**
- * 옷 등록 로딩 — 옷걸이 채우기 + 안내 문구. 완료 후 태그 확인 화면으로 자동 이동.
+ * 옷 등록 로딩 — 옷걸이 채우기 + 안내 문구. 완료 후 추가 완료 화면으로 자동 이동.
  * variant: import(구매내역 불러오기) / analyze(사진 분석)
  */
 const ClosetLoadingPage = ({ variant = 'analyze' }: { variant?: ClosetLoadingVariant }) => {
@@ -27,7 +27,7 @@ const ClosetLoadingPage = ({ variant = 'analyze' }: { variant?: ClosetLoadingVar
     return () => clearTimeout(t);
   }, []);
 
-  // 완료 표시 후 태그 확인 화면으로 이동 (임시: 추후 백엔드 완료 응답과 연동)
+  // 완료 표시 후 추가 완료 화면으로 이동 (임시: 추후 백엔드 완료 응답과 연동)
   useEffect(() => {
     if (!done) return;
     const t = setTimeout(() => navigate('/closet/register/added'), DONE_HOLD_MS);

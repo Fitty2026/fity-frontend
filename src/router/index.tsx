@@ -24,9 +24,11 @@ import ClosetRegisterPage from '../pages/closet/ClosetRegisterPage';
 import ClosetPlatformPage from '../pages/closet/ClosetPlatformPage';
 import ClosetPermissionPage from '../pages/closet/ClosetPermissionPage';
 import ClosetImportingPage from '../pages/closet/ClosetImportingPage';
+import ClosetReceiptPage from '../pages/closet/ClosetReceiptPage';
 import ClosetPhotoPage from '../pages/closet/ClosetPhotoPage';
+import ClosetUploadPage from '../pages/closet/ClosetUploadPage';
 import ClosetLoadingPage from '../pages/closet/ClosetLoadingPage';
-import ClosetTagEditPage from '../pages/closet/ClosetTagEditPage';
+import ClosetAddedPage from '../pages/closet/ClosetAddedPage';
 import ClosetCompletePage from '../pages/closet/ClosetCompletePage';
 import ClosetItemDetailPage from '../pages/closet/ClosetItemDetailPage';
 import ClosetItemDeletePage from '../pages/closet/ClosetItemDeletePage';
@@ -153,6 +155,14 @@ const router = createBrowserRouter([
     element: <ProtectedRoute><ClosetPhotoPage /></ProtectedRoute>,
   },
   {
+    path: '/closet/register/upload',
+    element: <ProtectedRoute><ClosetUploadPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/receipt',
+    element: <ProtectedRoute><ClosetReceiptPage /></ProtectedRoute>,
+  },
+  {
     path: '/closet/register/importing',
     element: <ProtectedRoute><ClosetImportingPage /></ProtectedRoute>,
   },
@@ -162,7 +172,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/closet/register/added',
-    element: <ProtectedRoute><ClosetTagEditPage /></ProtectedRoute>,
+    element: <ProtectedRoute><ClosetAddedPage /></ProtectedRoute>,
   },
   {
     path: '/closet/register/complete',

@@ -3,21 +3,57 @@ import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
 import useClosetStore from '@/store/closetStore';
-import musinsaLogo from '@/assets/images/closet/platform-musinsa.png';
 
-/** 플랫폼 로고 — 에셋 있는 곳만 이미지, 나머지는 임시 박스 (플랫폼 선택 화면과 동일 처리) */
-const PLATFORM_LOGOS: Record<string, string> = {
-  MUSINSA: musinsaLogo,
-};
+/** 플랫폼 로고 카드 — 72×72 검정 라운드 + 흰 이름 (로고 에셋 확정 시 교체) */
+const PlatformLogo = ({ name, bg }: { name: string; bg: string }) => (
+  <span
+    className="flex h-[72px] w-[72px] items-center justify-center rounded-2xl px-1 text-center text-[12px] font-bold leading-[1.3] tracking-[-0.02em] text-white"
+    style={{ background: bg }}
+  >
+    {name}
+  </span>
+);
 
-const PlatformLogo = ({ name }: { name: string }) => {
-  const logo = PLATFORM_LOGOS[name];
-  return logo ? (
-    <img src={logo} alt={name} className="h-[72px] w-[72px] rounded-2xl object-cover" />
-  ) : (
-    <span className="flex h-[72px] w-[72px] items-center justify-center rounded-2xl bg-[#1F2124] px-1 text-center text-[12px] font-semibold leading-[1.3] tracking-[-0.02em] text-white">
-      {name}
-    </span>
+// 스택 카드 배경 — 앞→뒤로 갈수록 옅어짐 (1번째 solid, 2번째 80%, 3번째 40%)
+const CARD_BG = ['#1F2124', '#000000CC', '#00000066'];
+
+// 앞 카드 기준 누적 오프셋 (Figma 측정: 1→2 +22/-18, 2→3 +19/-13)
+const DX = [0, 22, 41]; // 우측 누적
+const DY = [0, 18, 31]; // 위 누적
+
+/**
+ * 선택 쇼핑몰 로고 스택 — 최대 3장 겹침(앞=완전 노출), 4개 이상은 "+N".
+ * 앞 카드(index 0)가 좌하단·최상단, 뒤로 갈수록 우상단으로 오프셋 (Figma 측정).
+ */
+const PlatformLogoStack = ({ names }: { names: string[] }) => {
+  const visible = names.slice(0, 3);
+  const extra = names.length - visible.length;
+  const last = visible.length - 1;
+  const spanY = DY[last];
+
+  // 컨테이너 폭 = 앞 카드(72)만 → justify-center가 앞 카드를 화면 중앙에 둠.
+  // 뒤 카드·+N은 absolute로 우상단 오버플로우.
+  return (
+    <div className="relative" style={{ width: 72, height: 72 + spanY }}>
+      {visible.map((name, i) => (
+        <div
+          key={name}
+          className="absolute"
+          style={{ left: DX[i], top: spanY - DY[i], zIndex: visible.length - i }}
+        >
+          <PlatformLogo name={name} bg={CARD_BG[i] ?? CARD_BG[CARD_BG.length - 1]} />
+        </div>
+      ))}
+      {/* +N — 최상단 카드 오른쪽 12px, 세로 중앙 (top-back 카드 top=0, (72-26)/2=23) */}
+      {extra > 0 && (
+        <span
+          className="absolute whitespace-nowrap text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#6F7881]"
+          style={{ left: DX[last] + 72 + 12, top: 23 }}
+        >
+          +{extra}
+        </span>
+      )}
+    </div>
   );
 };
 
@@ -86,11 +122,9 @@ const ClosetPermissionPage = () => {
         <OnboardingTopBar progress={300 / 375} showSkip onSkip={() => navigate('/closet')} />
 
         <div className="flex-1 overflow-y-auto px-6">
-          {/* 선택 쇼핑몰 로고 — 복수 선택 시 나란히 표시 (표시 방식 시안 미확정) */}
-          <div className="mt-[52px] flex flex-wrap justify-center gap-3">
-            {selectedPlatforms.map((name) => (
-              <PlatformLogo key={name} name={name} />
-            ))}
+          {/* 선택 쇼핑몰 로고 — 스택(최대 3장 겹침, 4개 이상 +N) */}
+          <div className="mt-[52px] flex justify-center">
+            <PlatformLogoStack names={selectedPlatforms} />
           </div>
 
           {/* 안내 */}
