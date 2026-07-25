@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { HangerLoader, OnboardingTopBar } from '@/features/closet/components';
@@ -30,20 +30,31 @@ const ClosetLoadingPage = ({ variant = 'analyze' }: { variant?: ClosetLoadingVar
   const { file, importType } = (location.state ?? {}) as { file?: File; importType?: ImportType };
   const { addItemAsync, error } = useAddClosetItem();
   const [done, setDone] = useState(false);
+  const submittedRef = useRef(false); // 등록 1회 보장 (StrictMode/재마운트 중복 호출 방지)
 
   const copy = COPY[variant];
 
-  // 등록 실행 — file 있으면 실제 API(업로드→등록), 없으면 시각용 타이머 폴백
+  // 등록 실행 — file 있으면 실제 API(업로드→등록)
   useEffect(() => {
     let alive = true;
 
-    if (variant !== 'analyze' || !file) {
+    // analyze인데 file 없음(새로고침/직접 진입) → 등록 없이 완료 표시하면 안 되므로 업로드부터 다시
+    if (variant === 'analyze' && !file) {
+      navigate('/closet/register/upload', { replace: true });
+      return;
+    }
+
+    // (비-analyze 등 file 없는 경우 방어 — 시각용 타이머 폴백)
+    if (!file) {
       const t = setTimeout(() => alive && setDone(true), FILL_MS);
       return () => {
         alive = false;
         clearTimeout(t);
       };
     }
+
+    if (submittedRef.current) return; // 이미 등록 요청함 → 재실행 무시
+    submittedRef.current = true;
 
     (async () => {
       try {
@@ -61,7 +72,7 @@ const ClosetLoadingPage = ({ variant = 'analyze' }: { variant?: ClosetLoadingVar
     return () => {
       alive = false;
     };
-  }, [variant, file, importType, addItemAsync]);
+  }, [variant, file, importType, addItemAsync, navigate]);
 
   // 완료 표시 후 추가 완료 화면으로 이동
   useEffect(() => {
