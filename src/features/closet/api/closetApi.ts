@@ -165,3 +165,15 @@ export const updateClosetItemTags = async (itemId: string, tagValues: string[]) 
     updatedAt: r.updated_at,
   };
 };
+
+// ── CLOSET-06 아이템 삭제 (DELETE /api/v1/closets/items/:itemId) ──
+
+interface DeleteClosetItemRaw {
+  item_id: number;
+  deleted_at: string;
+}
+
+export const deleteClosetItem = async (itemId: string) => {
+  const { data } = await api.delete<ApiResponse<DeleteClosetItemRaw>>(`/api/v1/closets/items/${itemId}`);
+  return { id: String(data.result.item_id), deletedAt: data.result.deleted_at };
+};
