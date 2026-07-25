@@ -26,6 +26,7 @@ import ClosetPermissionPage from '../pages/closet/ClosetPermissionPage';
 import ClosetImportingPage from '../pages/closet/ClosetImportingPage';
 import ClosetReceiptPage from '../pages/closet/ClosetReceiptPage';
 import ClosetPhotoPage from '../pages/closet/ClosetPhotoPage';
+import ClosetUploadPage from '../pages/closet/ClosetUploadPage';
 import ClosetLoadingPage from '../pages/closet/ClosetLoadingPage';
 import ClosetAddedPage from '../pages/closet/ClosetAddedPage';
 import ClosetCompletePage from '../pages/closet/ClosetCompletePage';
@@ -151,6 +152,10 @@ const router = createBrowserRouter([
   {
     path: '/closet/register/photo',
     element: <ProtectedRoute><ClosetPhotoPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/upload',
+    element: <ProtectedRoute><ClosetUploadPage /></ProtectedRoute>,
   },
   {
     path: '/closet/register/receipt',
