@@ -139,3 +139,29 @@ export const getClosetItem = async (itemId: string): Promise<ClothingItem> => {
     createdAt: r.created_at,
   };
 };
+
+// ── CLOSET-05 아이템 정보·태그 수정 (PATCH /api/v1/closets/items/:itemId) ──
+// 요청 필드명 tag_values, 응답 필드명 tags (다름). category도 수정 가능하나
+// 현재 화면은 태그만 편집 → tag_values만 전송 (category 미확정 enum 역매핑 위험 회피).
+// 메모는 CLOSET-05에 없음 → 저장 안 됨. (참고사항)
+
+interface UpdateClosetItemRaw {
+  item_id: number;
+  category: string;
+  tags: string[];
+  updated_at: string;
+}
+
+export const updateClosetItemTags = async (itemId: string, tagValues: string[]) => {
+  const { data } = await api.patch<ApiResponse<UpdateClosetItemRaw>>(
+    `/api/v1/closets/items/${itemId}`,
+    { tag_values: tagValues },
+  );
+  const r = data.result;
+  return {
+    id: String(r.item_id),
+    category: categoryLabel(r.category),
+    tags: r.tags,
+    updatedAt: r.updated_at,
+  };
+};

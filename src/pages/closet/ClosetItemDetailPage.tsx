@@ -4,6 +4,7 @@ import PageLayout from '@/components/layout/PageeLayout';
 import { ClosetTopBar, CtaButton } from '@/features/closet/components';
 import useClosetStore from '@/store/closetStore';
 import useClosetItem from '@/features/closet/hooks/useClosetItem';
+import useUpdateClosetItem from '@/features/closet/hooks/useUpdateClosetItem';
 
 /** 행 우측 화살표 — 16×16, #959BA7 */
 const ChevronIcon = () => (
@@ -71,6 +72,17 @@ const ClosetItemDetailPage = () => {
   const { data: serverItem, isPending } = useClosetItem(itemId);
   const mockItem = useClosetStore((state) => state.items.find((it) => it.id === itemId));
   const item = serverItem ?? mockItem;
+  const { saveAsync, isSaving, error: saveError } = useUpdateClosetItem(itemId);
+
+  // 수정하기 = 태그 저장(CLOSET-05). 성공 시 목록/상세 최신화 후 뒤로
+  const handleSave = async () => {
+    try {
+      await saveAsync(tags);
+      navigate(-1);
+    } catch {
+      // 실패 메시지는 saveError로 표시
+    }
+  };
 
   // 상세 뷰 이미지 (CLOSET-04 미제공 → 대표 이미지로 대체)
   const views = item?.detailImages ?? (item ? [item.imageUrl, item.imageUrl, item.imageUrl] : []);
@@ -249,15 +261,20 @@ const ClosetItemDetailPage = () => {
             </div>
           </div>
 
-          {/* 하단 버튼 — 화면 하단 고정(mt-auto). 수정하기 동작은 플로우 확정 대기 */}
+          {/* 하단 버튼 — 화면 하단 고정(mt-auto). 수정하기 = 태그 저장(CLOSET-05) */}
           <div className="mt-auto flex flex-col gap-2">
+            {saveError && (
+              <p className="text-center text-[13px] font-medium leading-[1.6] tracking-[-0.02em] text-[#E5484D]">
+                {(saveError as Error).message || '수정에 실패했어요. 다시 시도해주세요.'}
+              </p>
+            )}
             <CtaButton
               label="삭제하기"
               variant="fill"
               height={64}
               onClick={() => navigate(`/closet/items/${item.id}/delete`)}
             />
-            <CtaButton label="수정하기" variant="dark" />
+            <CtaButton label={isSaving ? '저장 중…' : '수정하기'} variant="dark" onClick={handleSave} />
           </div>
         </div>
       </div>
