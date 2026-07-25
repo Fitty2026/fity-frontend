@@ -14,7 +14,7 @@ const COPY: Record<ClosetLoadingVariant, { loading: string; done: string }> = {
 };
 
 /**
- * 옷 등록 로딩 — 옷걸이 채우기 + 안내 문구. 완료 후 태그 확인 화면으로 자동 이동.
+ * 옷 등록 로딩 — 옷걸이 채우기 + 안내 문구. 완료 후 추가 완료 화면으로 자동 이동.
  * variant: import(구매내역 불러오기) / analyze(사진 분석)
  */
 const ClosetLoadingPage = ({ variant = 'analyze' }: { variant?: ClosetLoadingVariant }) => {
@@ -27,7 +27,7 @@ const ClosetLoadingPage = ({ variant = 'analyze' }: { variant?: ClosetLoadingVar
     return () => clearTimeout(t);
   }, []);
 
-  // 완료 표시 후 태그 확인 화면으로 이동 (임시: 추후 백엔드 완료 응답과 연동)
+  // 완료 표시 후 추가 완료 화면으로 이동 (임시: 추후 백엔드 완료 응답과 연동)
   useEffect(() => {
     if (!done) return;
     const t = setTimeout(() => navigate('/closet/register/added'), DONE_HOLD_MS);
