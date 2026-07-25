@@ -114,3 +114,28 @@ export const getClosets = async (): Promise<ClosetList> => {
     })),
   };
 };
+
+// ── CLOSET-04 옷장 아이템 상세 조회 (GET /api/v1/closets/items/:itemId) ──
+// 제공: image_url/category/import_type/tags/created_at.
+// 미제공(화면엔 있음): 세부카테고리·색상·브랜드·메모·세부이미지 → 백엔드 확인 대기(참고사항). 현재 '-'/빈값 폴백.
+
+interface ClosetItemDetailRaw {
+  item_id: number;
+  image_url: string;
+  category: string;
+  import_type: string;
+  tags: string[];
+  created_at: string;
+}
+
+export const getClosetItem = async (itemId: string): Promise<ClothingItem> => {
+  const { data } = await api.get<ApiResponse<ClosetItemDetailRaw>>(`/api/v1/closets/items/${itemId}`);
+  const r = data.result;
+  return {
+    id: String(r.item_id),
+    imageUrl: imageSrc(r.image_url),
+    category: categoryLabel(r.category),
+    tags: r.tags,
+    createdAt: r.created_at,
+  };
+};
