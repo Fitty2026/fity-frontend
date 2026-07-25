@@ -4,6 +4,7 @@ import PageLayout from '@/components/layout/PageeLayout';
 import { ClosetBottomNav, ClosetSearchField, ClosetTopBar } from '@/features/closet/components';
 import { matchesQuery } from '@/features/closet/searchItems';
 import useClosetStore from '@/store/closetStore';
+import useClosets from '@/features/closet/hooks/useClosets';
 
 const FILTERS = ['전체', '상의', '하의', '아우터', '신발', '가방', '액세서리'];
 
@@ -126,7 +127,10 @@ const chunk = <T,>(arr: T[], size: number): T[][] => {
  */
 const ClosetItemListPage = () => {
   const navigate = useNavigate();
-  const items = useClosetStore((state) => state.items);
+  // 서버(CLOSET-03) 우선, 미연결 시 mock 폴백
+  const { data } = useClosets();
+  const mockItems = useClosetStore((state) => state.items);
+  const items = data?.items ?? mockItems;
 
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('전체');

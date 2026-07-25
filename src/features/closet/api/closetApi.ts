@@ -1,5 +1,5 @@
 import api from '@/lib/axios';
-import type { ApiResponse } from '@/types';
+import type { ApiResponse, ClothingCategory, ClothingItem } from '@/types';
 
 // ── IMAGE-01 이미지 업로드 (POST /api/v1/images/upload) ──
 // multipart/form-data. 응답 imageUrl은 상대경로(예: /api/v1/images/12/content).
@@ -64,5 +64,53 @@ export const registerClosetItem = async (
     category: r.category,
     importType: r.import_type,
     createdAt: r.created_at,
+  };
+};
+
+// ── CLOSET-03 옷장 목록 조회 (GET /api/v1/closets) ──
+// 미확정(백엔드 확인 대기, 참고사항 기재): 카테고리 쿼리 파라미터 / 페이지네이션 / category enum 전체.
+// → 현재는 전체를 한 번에 받아 클라이언트에서 필터·검색·정렬. 쿼리/페이지네이션은 답 오면 반영.
+
+/** API 카테고리(영문 enum) → FE 한글 라벨. TODO(BE3): enum 전체 확정 시 보강(액세서리 등) */
+const CATEGORY_LABEL: Record<string, ClothingCategory> = {
+  TOP: '상의',
+  BOTTOM: '하의',
+  OUTER: '아우터',
+  SHOES: '신발',
+  BAG: '가방',
+  ACCESSORY: '액세서리',
+  ETC: '기타',
+};
+export const categoryLabel = (c: string): ClothingCategory => CATEGORY_LABEL[c] ?? '기타';
+
+interface ClosetListRaw {
+  category_count: Record<string, number>;
+  closet_items: {
+    item_id: number;
+    image_url: string;
+    category: string;
+    tags: string[];
+    created_at: string;
+  }[];
+}
+
+export interface ClosetList {
+  /** 원본 category_count (영문 enum 키 + total). 0개 카테고리 포함 여부는 백엔드 확인 대기 */
+  categoryCount: Record<string, number>;
+  items: ClothingItem[];
+}
+
+export const getClosets = async (): Promise<ClosetList> => {
+  const { data } = await api.get<ApiResponse<ClosetListRaw>>('/api/v1/closets');
+  const r = data.result;
+  return {
+    categoryCount: r.category_count,
+    items: r.closet_items.map((it) => ({
+      id: String(it.item_id),
+      imageUrl: imageSrc(it.image_url), // 절대(S3)는 그대로, 상대(/api/..)는 baseURL 조합 → 렌더용 URL
+      category: categoryLabel(it.category),
+      tags: it.tags,
+      createdAt: it.created_at,
+    })),
   };
 };
