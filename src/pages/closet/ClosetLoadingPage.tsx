@@ -4,8 +4,8 @@ import PageLayout from '@/components/layout/PageeLayout';
 import { HangerLoader, OnboardingTopBar } from '@/features/closet/components';
 import type { ClosetLoadingVariant } from '@/features/closet/types';
 
-// 채우기 속도 2cm/s = 75.5906px/s (1cm=37.7953px). 높이 160px → 160/75.5906 ≈ 2.1167s
-const FILL_MS = 2116.7; // TODO: 백엔드 실제 완료 시점과 연결 (지금은 채우기 시간 후 자동 전환)
+// 옷걸이 그리기 시간 — 느리게 (TODO: 백엔드 실제 완료 시점과 연결)
+const FILL_MS = 5500;
 const DONE_HOLD_MS = 1200; // 완료 표시 유지 후 다음 화면으로
 
 const COPY: Record<ClosetLoadingVariant, { loading: string; done: string }> = {
