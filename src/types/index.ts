@@ -55,6 +55,7 @@ export type ClothingCategory = '상의' | '하의' | '아우터' | '신발' | '�
 
 export interface ClothingItem {
   id: string;
+  name?: string;
   imageUrl: string;
   category: ClothingCategory;
   tags: string[];
