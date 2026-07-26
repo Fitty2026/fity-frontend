@@ -24,10 +24,12 @@ const ClosetUploadPage = () => {
   const navigate = useNavigate();
   const fileInput = useRef<HTMLInputElement>(null);
 
-  // 기기 앨범에서 사진 선택 → 임시로 '옷이 추가되었어요' 바로 이동
-  // TODO(API): 업로드/분석 연동 후 /closet/register/analyzing(분석 로딩) 경유로 교체
+  // 사진 선택 → 분석 화면으로 file 전달 (실제 업로드/등록은 분석 화면에서 수행)
   const handlePickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.length) navigate('/closet/register/added');
+    const file = e.target.files?.[0];
+    e.target.value = ''; // 같은 파일 재선택 허용
+    if (!file) return;
+    navigate('/closet/register/analyzing', { state: { file, importType: '앨범' } });
   };
 
   return (
