@@ -12,7 +12,7 @@ const OutfitItem = ({ item, category, index }: OutfitItemProps) => {
       className={`retouch-item-enter rounded-[4px] h-[68px] shrink-0 flex items-center pl-[12px]`}
       style={{ animationDelay: `${120 + index * 90}ms` }}
     >
-      <div className="h-[48px] w-[48px] object-cover flex justify-center">
+      <div className="h-[48px] w-[48px] aspect-1/1 object-cover flex justify-center">
         {item?.imageUrl ? (
           <img className="object-cover h-full" src={item.imageUrl}></img>
         ) : (

@@ -45,10 +45,10 @@ const MyOutfitCard = ({ outfit, deletionDaysRemaining }: ItemCardProps) => {
     <div
       role="button"
       tabIndex={0}
-      onClick={() => navigate(`/myoutfit/:${outfit.id}`)}
+      onClick={() => navigate(`/myoutfit/${outfit.id}`)}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
-          navigate(`/myoutfit/:${outfit.id}`);
+          navigate(`/myoutfit/${outfit.id}`);
         }
       }}
       className={'w-full cursor-pointer text-left rounded-lg overflow-hidden bg-white'}

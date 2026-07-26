@@ -1,11 +1,14 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/features/myoutfit/components/MyOutfitPageLayout';
+import ErrorScreen from '@/components/ui/ErrorScreen';
+import LoadingScreen from '@/components/ui/LoadingScreen';
 import { ClosetSearchField } from '@/features/closet/components';
+import useClosets from '@/features/closet/hooks/useClosets';
 import { matchesQuery } from '@/features/closet/searchItems';
-import { mockOutfits } from '@/mocks/data/outfit';
-import useClosetStore from '@/store/closetStore';
+import useUpdateMyOutfit from '@/features/myoutfit/hooks/useUpdateMyOutfit';
+import { useMyOutfit } from '@/features/myoutfit/hooks/useMyOutfits';
 
 import '@/features/myoutfit/styles/addItemDropdown.css';
 
@@ -146,8 +149,11 @@ const FilterDropdown = ({
 const MyOutfitAddItemPage = () => {
   const navigate = useNavigate();
   const { outfitId } = useParams();
-  const items = useClosetStore((state) => state.items);
-  const outfit = mockOutfits.find((candidate) => candidate.id === outfitId) ?? mockOutfits[0];
+  const outfitQuery = useMyOutfit(outfitId);
+  const closetQuery = useClosets();
+  const updateMutation = useUpdateMyOutfit();
+  const outfit = outfitQuery.data;
+  const items = useMemo(() => closetQuery.data?.items ?? [], [closetQuery.data?.items]);
 
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('전체');
@@ -208,6 +214,62 @@ const MyOutfitAddItemPage = () => {
 
   const toggleDropdown = (dropdown: 'order' | 'brand' | 'color') => {
     setOpenDropdown((current) => (current === dropdown ? null : dropdown));
+  };
+
+  if (outfitQuery.isPending || closetQuery.isPending) {
+    return (
+      <PageLayout
+        showBottomNav={false}
+        showHeader={true}
+        showBack={true}
+        title="아이템 추가"
+      >
+        <LoadingScreen message="코디와 옷장 아이템을 불러오는 중이에요." />
+      </PageLayout>
+    );
+  }
+
+  const queryError = outfitQuery.error ?? closetQuery.error;
+  if (queryError || !outfit) {
+    return (
+      <PageLayout
+        showBottomNav={false}
+        showHeader={true}
+        showBack={true}
+        title="아이템 추가"
+      >
+        <ErrorScreen
+          title="아이템을 불러오지 못했어요."
+          description={queryError?.message ?? '코디 정보를 찾을 수 없어요.'}
+          onRetry={() => {
+            void outfitQuery.refetch();
+            void closetQuery.refetch();
+          }}
+        />
+      </PageLayout>
+    );
+  }
+
+  const addSelectedItems = () => {
+    const itemIds = [
+      ...new Set([...outfit.items.map((item) => item.id), ...selectedItemIds]),
+    ];
+
+    updateMutation.mutate(
+      {
+        savedOutfitId: outfit.id,
+        body: {
+          title: outfit.context ?? '저장한 코디',
+          memo: outfit.memo ?? '',
+          styleTags: outfit.styleTags,
+          itemIds,
+        },
+      },
+      {
+        onSuccess: (updatedOutfit) =>
+          navigate(`/myoutfit/edit/${updatedOutfit.id}`, { replace: true }),
+      },
+    );
   };
 
   return (
@@ -331,15 +393,18 @@ const MyOutfitAddItemPage = () => {
         </div>
 
         <div className="absolute inset-x-[24px] bottom-[40px] z-20">
+          {updateMutation.isError && (
+            <p className="mb-[8px] text-center text-[13px] text-red-500">
+              {updateMutation.error.message || '아이템을 추가하지 못했어요. 다시 시도해 주세요.'}
+            </p>
+          )}
           <button
             type="button"
-            disabled={selectedItemIds.length === 0}
-            onClick={() =>
-              navigate(`/myoutfit/edit/${outfit.id}`, { state: { addedItemIds: selectedItemIds } })
-            }
+            disabled={selectedItemIds.length === 0 || updateMutation.isPending}
+            onClick={addSelectedItems}
             className="w-full rounded-[32px] bg-[#1F2124] py-[16px] text-[16px] font-[600] text-white disabled:bg-[#E6E8EA] disabled:text-[#959BA7]"
           >
-            확인
+            {updateMutation.isPending ? '저장 중...' : '확인'}
           </button>
         </div>
       </div>
