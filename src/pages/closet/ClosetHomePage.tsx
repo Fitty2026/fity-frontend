@@ -4,6 +4,7 @@ import PageLayout from '@/components/layout/PageeLayout';
 import { ClosetBottomNav, ClosetSearchField, ClosetTopBar } from '@/features/closet/components';
 import { matchesQuery } from '@/features/closet/searchItems';
 import useClosetStore from '@/store/closetStore';
+import useClosets from '@/features/closet/hooks/useClosets';
 import type { ClothingItem } from '@/types';
 
 /** 카테고리 행 노출 순서 (해당 카테고리 옷이 있을 때만 표시) */
@@ -92,7 +93,10 @@ const ClothesRow = ({ items, onItemClick }: { items: ClothingItem[]; onItemClick
  */
 const ClosetHomePage = () => {
   const navigate = useNavigate();
-  const items = useClosetStore((state) => state.items);
+  // 서버(CLOSET-03) 우선, 미연결(백엔드 대기) 시 mock 폴백 — 실서버 붙으면 실제 데이터로 표시
+  const { data } = useClosets();
+  const mockItems = useClosetStore((state) => state.items);
+  const items = data?.items ?? mockItems;
   const filled = items.length > 0;
   const [search, setSearch] = useState('');
   const [showAddSheet, setShowAddSheet] = useState(false);
