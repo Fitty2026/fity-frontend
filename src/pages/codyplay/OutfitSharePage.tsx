@@ -1,15 +1,12 @@
-import { useState } from 'react';
-
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import PageLayout from '@/components/layout/PageeLayout';
 import '@/features/codyplay/outfitShare.css';
 
-import { mockOutfits } from '../../mocks/data/outfit';
-import type { Outfit } from '../../types';
+import useStylingStore from '@/store/stylingStore';
 
 const OutfitSharePage = () => {
-  const [result] = useState<Outfit | undefined>(() => mockOutfits[0]);
+  const result = useStylingStore((state) => state.generatedOutfit);
   const location = useLocation();
   const navigate = useNavigate();
 

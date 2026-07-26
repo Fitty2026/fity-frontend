@@ -1,25 +1,35 @@
 import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 import PageLayout from '@/components/layout/PageeLayout';
-import productImage from '@/assets/images/commerce/white-oversized-shirt.png';
-
-const mockProduct = {
-  id: 3,
-  category: '상의',
-  subcategory: '셔츠/블라우스',
-  name: '클래식 오버핏 셔츠',
-  styleTags: ['#데일리', '#출근'],
-  rating: 4.8,
-  price: 59000,
-  discountRate: 30,
-  salePrice: 41300,
-  description:
-    '부드러운 고밀도 코튼 소재로 제작된 클래식한 무드의 오버핏 셔츠입니다. 자연스럽게 떨어지는 숄더 라인과 여유있는 실루엣이 세련된 실루엣을 완성하며, 다양한 하의와 매치하기 좋은 에센셜 아이템입니다.',
-  details: ['면 100%', '오버핏', '#미니멀', '#출근'],
-};
+import LoadingScreen from '@/components/ui/LoadingScreen';
+import ErrorScreen from '@/components/ui/ErrorScreen';
+import { useCommerceProduct } from '@/features/commerce/hooks/useCommerceProducts';
 
 const ProductDetailPage = () => {
   const [isFavorite, setIsFavorite] = useState(false);
+  const { productId } = useParams();
+  const { data: product, error, isPending, refetch } = useCommerceProduct(productId);
+
+  if (isPending) {
+    return (
+      <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="스튜디오">
+        <LoadingScreen message="상품 정보를 불러오는 중이에요." />
+      </PageLayout>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="스튜디오">
+        <ErrorScreen
+          title="상품 정보를 불러오지 못했어요."
+          description={error?.message ?? '상품을 찾을 수 없어요.'}
+          onRetry={() => void refetch()}
+        />
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout
@@ -31,15 +41,15 @@ const ProductDetailPage = () => {
     >
       <div className="mx-6 mt-6 aspect-[327/432] overflow-hidden bg-white">
         <img
-          src={productImage}
-          alt={mockProduct.name}
+          src={product.imageUrl}
+          alt={product.name}
           className="h-full w-full object-cover"
         />
       </div>
 
       <article className="mx-6 mt-7">
         <div className="flex items-center gap-2 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#959BA7]">
-          <span>{mockProduct.category}</span>
+          <span>{product.category}</span>
           <svg width="6" height="10" viewBox="0 0 6 10" fill="none" aria-hidden="true">
             <path
               d="M1 1L5 5L1 9"
@@ -49,15 +59,15 @@ const ProductDetailPage = () => {
               strokeLinejoin="round"
             />
           </svg>
-          <span>{mockProduct.subcategory}</span>
+          <span>{product.subcategory}</span>
         </div>
 
         <h1 className="mt-1 text-[24px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
-          {mockProduct.name}
+          {product.name}
         </h1>
 
         <p className="text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#6F7881]">
-          {mockProduct.styleTags.join('')}
+          {product.styleTags.map((tag) => `#${tag}`).join(' ')}
         </p>
 
         <div className="mt-3 flex items-center gap-1.5">
@@ -68,28 +78,28 @@ const ProductDetailPage = () => {
             />
           </svg>
           <span className="text-[16px] font-medium leading-[1.6] tracking-[-0.02em] text-[#1F2124]">
-            {mockProduct.rating}
+            {product.rating}
           </span>
         </div>
 
         <p className="mt-2 text-[12px] font-medium leading-[1.65] tracking-[-0.02em] text-[#959BA7] line-through">
-          {mockProduct.price.toLocaleString('ko-KR')}원
+          {product.price.toLocaleString('ko-KR')}원
         </p>
         <div className="flex items-baseline gap-2">
           <span className="text-[24px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#F04438]">
-            {mockProduct.discountRate}%
+            {product.discountRate}%
           </span>
           <strong className="text-[24px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
-            {mockProduct.salePrice.toLocaleString('ko-KR')}원
+            {product.salePrice.toLocaleString('ko-KR')}원
           </strong>
         </div>
 
         <p className="mt-5 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#6F7881]">
-          {mockProduct.description}
+          {product.description}
         </p>
 
         <ul className="mt-3 flex flex-wrap gap-2">
-          {mockProduct.details.map((detail) => (
+          {product.details.map((detail) => (
             <li
               key={detail}
               className="rounded-full border border-[#5A6169] px-2.5 py-1 text-[10px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124]"
@@ -121,6 +131,12 @@ const ProductDetailPage = () => {
         </button>
         <button
           type="button"
+          disabled={!product.purchaseUrl}
+          onClick={() => {
+            if (product.purchaseUrl) {
+              window.open(product.purchaseUrl, '_blank', 'noopener,noreferrer');
+            }
+          }}
           className="h-14 flex-1 rounded-full bg-[#1F2124] text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
         >
           구매하러 가기
