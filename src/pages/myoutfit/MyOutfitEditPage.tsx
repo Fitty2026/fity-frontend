@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/features/myoutfit/components/MyOutfitPageLayout';
 import ErrorScreen from '@/components/ui/ErrorScreen';
 import Input from '@/components/ui/Input';
 import LoadingScreen from '@/components/ui/LoadingScreen';

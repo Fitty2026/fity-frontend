@@ -1,4 +1,4 @@
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/features/myoutfit/components/MyOutfitPageLayout';
 import MyOutfitCard from '@/features/myoutfit/components/MyOutfitCard';
 import { mockOutfits } from '@/mocks/data/outfit';
 
