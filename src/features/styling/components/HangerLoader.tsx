@@ -1,18 +1,19 @@
+// 옷걸이 중심선(stroke) — 옷장 '분석하고 있어요' 로더와 동일한 path (viewBox 0 0 64 56 기준)
 const HANGER_PATH =
-  'M187.585 137.751C186.929 136.222 186.174 134.669 185.005 133.603L173.942 123.529L164.496 114.94L156.445 107.64L147.989 99.9986L143.385 95.7814L135.286 88.4278L127.914 81.725L105.174 61.122C105.053 61.083 105.051 60.9404 105.178 60.8645L122.825 44.8535C123.673 44.0832 124.455 43.3198 124.997 42.2138C125.601 40.979 125.982 39.5625 125.98 38.0495C125.963 26.9846 122.038 16.7108 115.249 9.46754C105.169 -1.28921 90.5683 -3.02988 78.9078 5.01584C71.7902 9.92743 66.4733 18.0329 64.2009 27.6722C63.3699 31.1995 62.9193 34.874 63.0391 38.5255C63.1912 43.1497 66.6121 46.3574 70.3069 45.6468C73.3951 45.0536 75.5629 41.9838 75.5952 38.1691C75.6542 31.1926 78.2955 24.5173 82.8479 20.2013C88.391 14.9448 95.9898 13.8871 102.392 17.4374C108.204 20.6612 112.022 26.9524 113.1 34.5291L110.356 37.0286L104.003 42.8162L83.9603 60.9795L43.7931 97.4324L36.877 103.742L29.2745 110.624L24.7563 114.717L11.0288 127.159L4.2458 133.389C2.71692 134.794 1.66154 136.87 0.937036 139.015C-0.335126 142.782 -0.308504 147.02 0.995985 150.742C2.95082 156.316 7.39102 159.947 12.4721 159.959L33.439 160L176.609 159.963C179.527 159.963 182.358 158.567 184.524 156.401C189.046 151.878 190.286 144.06 187.582 137.758L187.585 137.751ZM176.005 144.729H14.9898L12.7288 144.695L28.7668 130.151L39.6857 120.243L50.268 110.64L61.862 100.12L73.1764 89.8581L84.2208 79.8624L94.4913 70.5129L106.855 81.725L135.223 107.446L160.313 130.225L170.631 139.553L176.195 144.573C176.326 144.663 176.227 144.886 176.007 144.729H176.005Z';
+  'M32 10a6 6 0 1 1 6 6c-2.6.8-4 2.4-4 5v2.2L59.5 40A4 4 0 0 1 57 47H7a4 4 0 0 1-2.5-7L29 23.2';
 
 const GRAY = '#CED1D5';
 const ACCENT = '#9D98F0';
 
 interface HangerLoaderProps {
-  /** 채움 진행도 0~1 (위→아래). 1이면 완료(체크 표시) */
+  /** 진행도 0~1 (고리→몸통 순서로 그려짐). 1이면 완료(체크 표시) */
   progress: number;
   className?: string;
 }
 
 /**
- * 코디 생성 — 옷걸이 로더 (Figma 189×160, 회색 #CED1D5)
- * - 회색 옷걸이 위에 보라(#9D98F0) 레이어가 위→아래로 채워짐
+ * 코디 생성 — 옷걸이 로더 (189×160)
+ * - 회색 옷걸이 선 위로 보라(#9D98F0)가 고리부터 stroke로 그려짐 (옷장 분석 로더와 동일 형태)
  * - progress 1 도달 시 체크 표시 (※ 체크 에셋 미수급 — 자작 근사, 에셋 오면 교체)
  */
 const HangerLoader = ({ progress, className = '' }: HangerLoaderProps) => {
@@ -20,32 +21,39 @@ const HangerLoader = ({ progress, className = '' }: HangerLoaderProps) => {
   const done = clamped >= 1;
 
   return (
-    <svg
-      width="189"
-      height="160"
-      viewBox="0 0 189 160"
-      fill="none"
-      className={className}
-      role="img"
-      aria-label={done ? '코디 완성' : '코디 생성 중'}
-    >
-      <defs>
-        <clipPath id="hanger-fill-clip">
-          <rect x="0" y="0" width="189" height={clamped * 160} />
-        </clipPath>
-      </defs>
-      {/* 회색 베이스 */}
-      <path d={HANGER_PATH} fill={GRAY} />
-      {/* 보라 채움 (위→아래) */}
-      <path d={HANGER_PATH} fill={ACCENT} clipPath="url(#hanger-fill-clip)" />
-      {/* 완성 체크 — Figma 48×48, 옷걸이 내 (71, 92) */}
+    <div className={`relative mx-auto h-[160px] w-[189px] ${className}`}>
+      <svg
+        width="189"
+        height="160"
+        viewBox="2 3.5 60 46"
+        fill="none"
+        role="img"
+        aria-label={done ? '코디 완성' : '코디 생성 중'}
+      >
+        {/* 회색 베이스 */}
+        <path d={HANGER_PATH} stroke={GRAY} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+        {/* 보라 — 고리부터 progress만큼 그려짐 */}
+        <path
+          d={HANGER_PATH}
+          stroke={ACCENT}
+          strokeWidth="5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          pathLength={100}
+          strokeDasharray={100}
+          strokeDashoffset={100 * (1 - clamped)}
+        />
+      </svg>
+      {/* 완성 체크 — 48×48, 옷걸이 박스 내 (71, 92) */}
       {done && (
-        <g transform="translate(71 92)">
-          <circle cx="24" cy="24" r="24" fill="#F6F7F8" />
-          <path d="M13 25L21.8 33L35 15" stroke="#1F2124" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-        </g>
+        <div className="absolute" style={{ left: 71, top: 92 }}>
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="24" cy="24" r="24" fill="#F6F7F8" />
+            <path d="M13 25L21.8 33L35 15" stroke="#1F2124" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
       )}
-    </svg>
+    </div>
   );
 };
 

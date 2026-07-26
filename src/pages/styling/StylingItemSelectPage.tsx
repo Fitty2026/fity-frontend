@@ -88,12 +88,11 @@ const StylingItemSelectPage = () => {
                       key={item.id}
                       type="button"
                       onClick={() => toggleItem(item.id)}
-                      className={[
-                        'shrink-0 w-[104px] h-[134px] overflow-hidden rounded-2xl bg-white',
-                        selected ? 'ring-2 ring-inset ring-[#1F2124]' : '',
-                      ].join(' ')}
+                      className="relative shrink-0 w-[104px] h-[134px] overflow-hidden rounded bg-white"
                     >
                       <img src={item.image} alt="" className="w-full h-full object-cover" />
+                      {/* 선택 표시 — 이미지 위 검정 20% 오버레이 */}
+                      {selected && <span className="absolute inset-0 bg-[#00000033]" />}
                     </button>
                   );
                 })}
