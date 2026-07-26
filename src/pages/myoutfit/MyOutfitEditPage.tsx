@@ -1,175 +1,284 @@
 import { useState } from 'react';
+
 import { useNavigate, useParams } from 'react-router-dom';
 
 import PageLayout from '@/components/layout/PageeLayout';
 import ErrorScreen from '@/components/ui/ErrorScreen';
 import Input from '@/components/ui/Input';
 import LoadingScreen from '@/components/ui/LoadingScreen';
-import TagAddBottomSheet, {
-  MAX_TAG_COUNT,
-} from '@/features/myoutfit/components/TagAddBottomSheet';
+import TagAddBottomSheet, { MAX_TAG_COUNT } from '@/features/myoutfit/components/TagAddBottomSheet';
 import useUpdateMyOutfit from '@/features/myoutfit/hooks/useUpdateMyOutfit';
 import { useMyOutfit } from '@/features/myoutfit/hooks/useMyOutfits';
-import type { Outfit } from '@/types';
+import type { ClothingCategory, Outfit } from '../../types';
 
-interface MyOutfitEditFormProps {
-  outfit: Outfit;
-}
+const ITEM_MARKER_TOP: Record<ClothingCategory, number> = {
+  아우터: 30,
+  상의: 42,
+  하의: 64,
+  신발: 88,
+  가방: 48,
+  액세서리: 25,
+  기타: 65,
+};
 
-const MyOutfitEditForm = ({ outfit }: MyOutfitEditFormProps) => {
-  const navigate = useNavigate();
-  const updateMutation = useUpdateMyOutfit();
-  const [title, setTitle] = useState(outfit.context ?? '');
-  const [memo, setMemo] = useState(outfit.memo ?? '');
-  const [styleTags, setStyleTags] = useState(outfit.styleTags);
+const ItemMarker = ({ itemId }: { itemId: string }) => (
+  <svg
+    width="61"
+    height="30"
+    viewBox="0 0 61 30"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <rect width="61" height="24" rx="4" fill="black" fillOpacity="0.6" />
+    <foreignObject x="4" y="0" width="53" height="24">
+      <div className="flex h-full items-center justify-center truncate px-[3px] text-[11px] font-[600] text-white">
+        {itemId || '-'}
+      </div>
+    </foreignObject>
+    <path d="M30.5 30L27.0359 24H33.9641L30.5 30Z" fill="black" fillOpacity="0.6" />
+  </svg>
+);
+
+const Tag = ({ isSelected = false, tag = '', onclick = () => {} }) => {
+  return (
+    <div
+      onClick={onclick}
+      className={`select-none border relative transition-all duration-0.3 ${isSelected ? 'bg-[#B2B8BD] pr-[28px]' : ''} border-[#34363C] rounded-[32px] px-[12px] py-[4px] text-[#34363C] text-[14px] leading-[160%] tracking-[-2%]`}
+    >
+      {tag}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="8"
+        height="8"
+        viewBox="0 0 8 8"
+        fill="none"
+        className={`absolute bottom-1/2 translate-y-1/2 right-[12px] ${isSelected ? 'visible' : 'hidden'}`}
+      >
+        <path d="M0 8L8 0M0 0L8 8" stroke="#34363C" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </div>
+  );
+};
+
+const MyOutfitEditForm = ({ initialOutfit }: { initialOutfit: Outfit }) => {
+  const [outfit, setResult] = useState<Outfit>(initialOutfit);
+  const [title, setTitle] = useState(initialOutfit.context ?? '');
+  const [memo, setMemo] = useState(initialOutfit.memo ?? '');
+  const [selectedTag, setSelectedTag] = useState<number | null>(null);
   const [isTagSheetOpen, setIsTagSheetOpen] = useState(false);
+  const [showItemMarkers, setShowItemMarkers] = useState(false);
 
-  const removeTag = (tagToRemove: string) => {
-    setStyleTags((currentTags) =>
-      currentTags.filter((tag) => tag !== tagToRemove),
+  const clickTag = (index: number) => {
+    if (selectedTag !== index) {
+      setSelectedTag(index);
+      return;
+    }
+
+    setResult((prev) =>
+      prev
+        ? {
+            ...prev,
+            styleTags: prev.styleTags.filter((_, tagIndex) => tagIndex !== index),
+          }
+        : prev,
     );
+    setSelectedTag(null);
   };
 
-  const addTag = (tag: string) => {
-    setStyleTags((currentTags) => {
-      if (
-        currentTags.length >= MAX_TAG_COUNT ||
-        currentTags.includes(tag)
-      ) {
-        return currentTags;
+  const navigate = useNavigate();
+  const updateMutation = useUpdateMyOutfit();
+
+  const handleAddTag = (tag: string) => {
+    setResult((prev) => {
+      if (!prev || prev.styleTags.length >= MAX_TAG_COUNT || prev.styleTags.includes(tag)) {
+        return prev;
       }
-      return [...currentTags, tag];
+
+      return {
+        ...prev,
+        styleTags: [...prev.styleTags, tag],
+      };
     });
   };
 
-  const submit = () => {
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle || updateMutation.isPending) return;
-
-    updateMutation.mutate(
-      {
-        savedOutfitId: outfit.id,
-        body: {
-          title: trimmedTitle,
-          memo: memo.trim(),
-          styleTags,
-          itemIds: outfit.items.map((item) => item.id),
-        },
-      },
-      {
-        onSuccess: (updatedOutfit) =>
-          navigate(`/myoutfit/${updatedOutfit.id}`, { replace: true }),
-      },
-    );
-  };
-
   return (
-    <PageLayout
-      showBottomNav={false}
-      showHeader={true}
-      showBack={true}
-      title="수정하기"
-    >
-      <div className="mx-[24px] mt-[24px] flex gap-[16px]">
-        <img
-          className="aspect-[172/230] min-w-0 flex-1 rounded-[12px] object-cover"
-          src={outfit.imageUrl}
-          alt={`${outfit.context ?? '코디'} 착장`}
-        />
-        <div className="flex w-[104px] flex-col gap-[10px] overflow-y-auto">
-          {outfit.items.map((item) => (
-            <div
+    <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="수정하기">
+      <div className="relative mt-[24px] mx-[24px]">
+        <button
+          type="button"
+          aria-label={showItemMarkers ? '아이템 위치 숨기기' : '아이템 위치 보기'}
+          aria-pressed={showItemMarkers}
+          onClick={() => setShowItemMarkers((isVisible) => !isVisible)}
+          className="relative block w-[calc(77.49196%_-_12.3987px)] text-left"
+        >
+          <img
+            className="block w-full rounded-[8px] aspect-square object-cover"
+            src={outfit?.imageUrl}
+            alt={outfit?.createdAt}
+          />
+          <p className="absolute top-[9px] left-[14px] text-[#474C52] text-[12px] font-[600] leading-[165%] tracking-[-2%]">
+            {outfit?.createdAt.slice(0, 10).split('-').join('.')}
+          </p>
+          {showItemMarkers &&
+            outfit?.items.map((item, index) => {
+              return (
+                <span
+                  key={item.id}
+                  className="pointer-events-none absolute -translate-x-1/2 -translate-y-full"
+                  style={{
+                    left: index % 2 === 0 ? '30%' : '70%',
+                    top: `${ITEM_MARKER_TOP[item.category]}%`,
+                  }}
+                >
+                  <ItemMarker itemId={item.id} />
+                </span>
+              );
+            })}
+        </button>
+        <div className="absolute inset-y-0 right-0 w-[calc(22.50804%_-_3.6013px)] space-y-[22.142857%] overflow-y-auto overscroll-contain touch-pan-y [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {outfit?.items.map((item) => (
+            <img
               key={item.id}
-              className="rounded-[8px] bg-[#F6F7F8] px-[8px] py-[10px]"
-            >
-              <p className="truncate text-[12px] font-[600] text-[#1F2124]">
-                {item.name ?? item.id}
-              </p>
-              <p className="mt-[2px] text-[10px] text-[#6F7881]">
-                {item.category}
-              </p>
-            </div>
-          ))}
+              className="block w-full rounded-[8px] aspect-square object-cover"
+              src={item.imageUrl}
+              alt={item.imageUrl}
+            ></img>
+          ))}{' '}
         </div>
       </div>
-
-      <button
-        type="button"
+      <div
         onClick={() => navigate(`/myoutfit/additem/${outfit.id}`)}
-        className="mx-[24px] mt-[16px] flex w-[calc(100%_-_48px)] items-center justify-center gap-[8px] rounded-[8px] bg-[#E9E9E9] p-[10px] text-[12px] font-[500] text-[#1F2124]"
+        className="mt-[16px] mx-[24px] bg-[#E9E9E9] rounded-[8px] p-[10px] flex justify-center items-center gap-[8px]"
       >
-        <span aria-hidden="true">＋</span>
-        아이템 추가
-      </button>
-
-      <div className="mx-[24px] mt-[27px]">
-        <h2 className="text-[16px] font-[600] text-[#1F2124]">코디 이름</h2>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+        >
+          <g clip-path="url(#clip0_1461_116902)">
+            <circle cx="8" cy="8" r="7.6" stroke="#34363C" stroke-width="0.8" />
+            <path
+              d="M7.99935 4.66699V11.3337M11.3327 8.00033H4.66602"
+              stroke="#34363C"
+              stroke-width="0.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </g>
+          <defs>
+            <clipPath id="clip0_1461_116902">
+              <rect width="16" height="16" fill="white" />
+            </clipPath>
+          </defs>
+        </svg>{' '}
+        <p className="text-[#1F2124] text-[12px] font-[500] leading-[165%] tracking-[-2%]">
+          아이템 추가
+        </p>
+      </div>
+      <div className="mt-[27px] mx-[24px]">
+        <h2 className="text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
+          코디 이름
+        </h2>
         <Input
           className="mt-[8px]"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
-          placeholder="코디 이름을 입력해주세요."
-          errorMessage={!title.trim() ? '코디 이름을 입력해주세요.' : undefined}
+          placeholder="코디 이름을 입력해주세요"
         />
       </div>
-
-      <div className="mx-[24px] mt-[16px]">
-        <h2 className="text-[16px] font-[600] text-[#1F2124]">태그</h2>
-        <div className="mt-[8px] flex flex-wrap items-center gap-[8px]">
-          {styleTags.map((tag) => (
-            <button
+      <div className="mt-[16px] mx-[24px]">
+        <h2 className="text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
+          태그
+        </h2>
+        <div className="mt-[8px] flex flex-wrap gap-[8px] items-center">
+          {outfit.styleTags.map((tag, index) => (
+            <Tag
+              tag={tag}
+              isSelected={selectedTag === index}
               key={tag}
-              type="button"
-              aria-label={`${tag} 태그 삭제`}
-              onClick={() => removeTag(tag)}
-              className="rounded-[32px] border border-[#34363C] px-[12px] py-[4px] text-[14px] text-[#34363C]"
-            >
-              {tag} ×
-            </button>
+              onclick={() => clickTag(index)}
+            />
           ))}
+
           <button
             type="button"
             aria-label="태그 추가"
             onClick={() => setIsTagSheetOpen(true)}
-            className="flex h-[26px] w-[26px] items-center justify-center rounded-full border border-[#34363C] text-[18px]"
+            className="ml-[15px] select-none"
           >
-            +
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
+              <g clipPath="url(#clip0_1461_116923)">
+                <circle cx="12" cy="12" r="11.5" stroke="#34363C" />
+                <path
+                  d="M12 7V17M17 12H7"
+                  stroke="#34363C"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </g>
+              <defs>
+                <clipPath id="clip0_1461_116923">
+                  <rect width="24" height="24" fill="white" />
+                </clipPath>
+              </defs>
+            </svg>
           </button>
         </div>
       </div>
-
-      <div className="mx-[24px] mt-[24px]">
-        <h2 className="text-[16px] font-[600] text-[#1F2124]">메모</h2>
-        <textarea
-          value={memo}
-          onChange={(event) => setMemo(event.target.value)}
-          placeholder="메모를 입력해주세요. (선택)"
-          className="mt-[8px] min-h-[90px] w-full resize-none rounded-[8px] bg-[#F6F7F8] px-[12px] py-[10px] text-[13px] font-[500] text-[#1F2124] outline-none placeholder:text-[#B2B8BD]"
-        />
+      <div className="mt-[24px] mx-[24px] flex">
+        <h2 className="flex-86 text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
+          메모
+        </h2>
+        <div className="flex-241">
+          <textarea
+            value={memo}
+            onChange={(event) => setMemo(event.target.value)}
+            placeholder="메모를 입력해주세요 (선택)"
+            className="w-full min-h-[63px] bg-[#F6F7F8] rounded-[4px] px-[8px] py-[10px] text-[#B2B8BD] text-[12px] font-[500] leading-[165%] tracking-[-2%] outline-none resize-none overflow-hidden "
+          ></textarea>
+        </div>
       </div>
-
-      {updateMutation.error && (
-        <p className="mx-[24px] mt-[12px] text-center text-[13px] text-red-500">
-          {updateMutation.error.message}
-        </p>
-      )}
-
-      <div className="mx-[24px] mt-[20px] pb-[32px]">
+      <div className="mt-[20px] mx-[24px]">
         <button
           type="button"
           disabled={!title.trim() || updateMutation.isPending}
-          onClick={submit}
-          className="w-full rounded-[32px] bg-[#1F2124] py-[16px] text-[16px] font-[600] text-[#F6F7F8] disabled:bg-[#B2B8BD]"
+          onClick={() => {
+            updateMutation.mutate(
+              {
+                savedOutfitId: outfit.id,
+                body: {
+                  title: title.trim(),
+                  memo: memo.trim(),
+                  styleTags: outfit.styleTags,
+                  itemIds: outfit.items.map((item) => item.id),
+                },
+              },
+              {
+                onSuccess: (updatedOutfit) =>
+                  navigate(`/myoutfit/${updatedOutfit.id}`, { replace: true }),
+              },
+            );
+          }}
+          className="w-full mt-[8px] bg-[#1F2124] rounded-[32px] py-[16px] text-[#F6F7F8] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
         >
           {updateMutation.isPending ? '저장 중...' : '확인'}
         </button>
       </div>
-
       <TagAddBottomSheet
         isOpen={isTagSheetOpen}
-        currentTags={styleTags}
+        currentTags={outfit.styleTags}
         onClose={() => setIsTagSheetOpen(false)}
-        onAddTag={addTag}
+        onAddTag={handleAddTag}
       />
     </PageLayout>
   );
@@ -181,12 +290,7 @@ const MyOutfitEditPage = () => {
 
   if (isPending) {
     return (
-      <PageLayout
-        showBottomNav={false}
-        showHeader={true}
-        showBack={true}
-        title="수정하기"
-      >
+      <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="수정하기">
         <LoadingScreen message="수정할 코디를 불러오는 중이에요." />
       </PageLayout>
     );
@@ -194,12 +298,7 @@ const MyOutfitEditPage = () => {
 
   if (error || !outfit) {
     return (
-      <PageLayout
-        showBottomNav={false}
-        showHeader={true}
-        showBack={true}
-        title="수정하기"
-      >
+      <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="수정하기">
         <ErrorScreen
           title="코디를 불러오지 못했어요."
           description={error?.message ?? '코디 정보를 찾을 수 없어요.'}
@@ -209,7 +308,7 @@ const MyOutfitEditPage = () => {
     );
   }
 
-  return <MyOutfitEditForm key={outfit.id} outfit={outfit} />;
+  return <MyOutfitEditForm key={outfit.id} initialOutfit={outfit} />;
 };
 
 export default MyOutfitEditPage;

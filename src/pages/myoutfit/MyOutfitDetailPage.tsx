@@ -51,7 +51,7 @@ const MyOutfitDetailPage = () => {
       title="룩북"
       className="relative"
     >
-      <h1 className="mt-[56px] w-full text-center text-[20px] font-[600] leading-[150%] tracking-[-2%] text-[#1F2124]">
+      <h1 className=" w-full text-[#1F2124] text-[20px] text-center font-[600] leading-[150%] mt-[56px] tracking-[-2%]">
         {outfit.context}
       </h1>
 
@@ -72,19 +72,19 @@ const MyOutfitDetailPage = () => {
         </svg>
       </button>
 
-      <p className="flex w-full justify-center gap-[6px] px-[24px] text-center">
+      <p className="w-full text-center">
         {outfit.styleTags.map((tag) => (
           <span
             key={tag}
             className="text-[14px] font-[500] leading-[160%] tracking-[-2%] text-[#6F7881]"
           >
-            #{tag.replace(/^#/, '')}
+            {tag}
           </span>
         ))}
       </p>
 
-      <div className="mx-[24px] mt-[40px] flex gap-[16px]">
-        <div className="relative aspect-[172/416] flex-172 overflow-hidden rounded-[24px] bg-[#E6E8EA]">
+      <div className="mt-[40px] mx-[24px] flex justify-beteewn gap-[16px] ">
+        <div className="flex-172 relative relative aspect-[172/416] overflow-hidden bg-blue rounded-[24px]">
           <img
             className="absolute inset-0 h-full w-full object-cover"
             src={outfit.imageUrl}
@@ -110,17 +110,10 @@ const MyOutfitDetailPage = () => {
         </div>
       </div>
 
-      {outfit.memo && (
-        <p className="mx-[24px] mt-[24px] rounded-[8px] bg-[#F6F7F8] px-[16px] py-[12px] text-[13px] font-[500] leading-[160%] text-[#5A6169]">
-          {outfit.memo}
-        </p>
-      )}
-
-      <div className="mx-[24px] mt-[24px] pb-[32px]">
+      <div className="mt-[43px] mx-[24px] flex flex-col gap-[6px] ">
         <button
-          type="button"
           onClick={() => navigate(`/myoutfit/edit/${outfit.id}`)}
-          className="w-full rounded-[32px] bg-[#F6F7F8] py-[16px] text-[16px] font-[600] leading-[160%] tracking-[-2%] text-[#1F2124]"
+          className="bg-[#F6F7F8] rounded-[32px] py-[16px] text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
         >
           수정하기
         </button>

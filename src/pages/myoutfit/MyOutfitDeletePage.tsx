@@ -65,21 +65,21 @@ const MyOutfitDeletePage = () => {
               strokeLinejoin="round"
             />
           </svg>
-          <h2 className="mt-[28px] text-[24px] font-[600] text-[#1F2124]">
+          <h2 className="mt-[28px] text-[24px] font-[600] leading-[150%] tracking-[-2%] text-[#1F2124]">
             코디가 삭제되었어요.
           </h2>
           <button
             type="button"
             onClick={() => navigate('/myoutfit/recently-deleted')}
-            className="mt-[12px] text-[16px] font-[500] text-[#5A6169] underline underline-offset-[4px]"
+            className="mt-[12px] text-[16px] font-[500] leading-[160%] tracking-[-2%] text-[#5A6169] underline underline-offset-[4px]"
           >
             최근 삭제한 코디 보러가기
           </button>
         </div>
         <button
           type="button"
-          onClick={() => navigate('/myoutfit', { replace: true })}
-          className="absolute bottom-[40px] left-[24px] right-[24px] rounded-[32px] bg-[#1F2124] py-[16px] text-[16px] font-[600] text-[#F6F7F8]"
+          onClick={() => navigate('/home')}
+          className="absolute bottom-[40px] left-[24px] right-[24px] rounded-[32px] bg-[#1F2124] py-[16px] text-[16px] font-[600] leading-[160%] tracking-[-2%] text-[#F6F7F8]"
         >
           룩북으로 돌아가기
         </button>
@@ -95,14 +95,11 @@ const MyOutfitDeletePage = () => {
       title="룩북"
       className="select-none"
     >
-      <h1 className="mt-[56px] w-full text-center text-[20px] font-[600] text-[#1F2124]">
+      <h1 className=" w-full text-[#1F2124] text-[20px] text-center font-[600] leading-[150%] mt-[56px] tracking-[-2%]">
         코디를 삭제할까요?
       </h1>
-      <p className="mt-[8px] text-center text-[14px] text-[#6F7881]">
-        {outfit.context}
-      </p>
 
-      <div className="relative mx-[40px] mt-[40px] overflow-hidden rounded-[24px]">
+      <div className="mt-[40px] relative mx-[40px] rounded-[24px] overflow-hidden">
         <img
           className="block aspect-[0.754/1] w-full object-cover"
           src={outfit.imageUrl}
@@ -117,11 +114,11 @@ const MyOutfitDeletePage = () => {
         </p>
       )}
 
-      <div className="mx-[24px] mt-[30px] flex flex-col gap-[6px]">
+      <div className="mt-[30px] mx-[24px] flex flex-col gap-[6px] ">
         <button
           type="button"
           onClick={() => navigate(`/myoutfit/${outfit.id}`)}
-          className="rounded-[32px] bg-[#F6F7F8] py-[16px] text-[16px] font-[600] text-[#1F2124]"
+          className="bg-[#F6F7F8] rounded-[32px] py-[16px] text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
         >
           아니요
         </button>
@@ -129,7 +126,7 @@ const MyOutfitDeletePage = () => {
           type="button"
           disabled={deleteMutation.isPending}
           onClick={() => setIsConfirmOpen(true)}
-          className="rounded-[32px] bg-[#1F2124] py-[16px] text-[16px] font-[600] text-[#F6F7F8] disabled:bg-[#B2B8BD]"
+          className="bg-[#1F2124] rounded-[32px] py-[16px] text-[#F6F7F8] text-[16px] font-[600] leading-[160%] tracking-[-2%] disabled:bg-[#B2B8BD]"
         >
           {deleteMutation.isPending ? '삭제 중...' : '삭제하기'}
         </button>
