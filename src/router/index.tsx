@@ -99,6 +99,7 @@ const router = createBrowserRouter([
       element: <ProtectedRoute><StyleConfirmPage /></ProtectedRoute>,
     },
     {
+      
       path: '/onboarding/body',
       element: <ProtectedRoute><BodyTypePage /></ProtectedRoute>,
     },

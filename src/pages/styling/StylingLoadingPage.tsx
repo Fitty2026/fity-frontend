@@ -31,10 +31,10 @@ const StylingLoadingPage = () => {
 
   const done = progress >= 1;
 
-  // 완성 1초 후 코디 결과(코디 플레이)로 이동
+  // 완성 1초 후 코디 플레이로 이동
   useEffect(() => {
     if (!done) return;
-    const timer = setTimeout(() => navigate('/outfit/result'), 1000);
+    const timer = setTimeout(() => navigate('/codyplay'), 1000);
     return () => clearTimeout(timer);
   }, [done, navigate]);
 
