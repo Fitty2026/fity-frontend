@@ -30,6 +30,10 @@ interface SavedOutfitRaw {
   items?: SavedOutfitItemRaw[];
   created_at?: string;
   createdAt?: string;
+  deleted_at?: string;
+  deletedAt?: string;
+  deletion_days_remaining?: number;
+  deletionDaysRemaining?: number;
 }
 
 interface SavedOutfitListRaw {
@@ -41,6 +45,16 @@ interface SavedOutfitListRaw {
 
 export interface MyOutfitList {
   outfits: Outfit[];
+  total: number;
+}
+
+export interface RecentlyDeletedOutfit {
+  outfit: Outfit;
+  deletionDaysRemaining: number;
+}
+
+export interface RecentlyDeletedOutfitList {
+  outfits: RecentlyDeletedOutfit[];
   total: number;
 }
 
@@ -94,6 +108,32 @@ export const getMyOutfits = async (): Promise<MyOutfitList> => {
 
   return {
     outfits: rawOutfits.map(toOutfit),
+    total: data.result.total_count ?? data.result.total ?? rawOutfits.length,
+  };
+};
+
+/** SAVED-06 최근 삭제한 코디 목록 조회 */
+export const getRecentlyDeletedOutfits = async (): Promise<RecentlyDeletedOutfitList> => {
+  const { data } = await api.get<ApiResponse<SavedOutfitListRaw>>(
+    '/api/v1/outfits/recently-deleted',
+  );
+  const rawOutfits = data.result.saved_outfits ?? data.result.outfits ?? [];
+
+  return {
+    outfits: rawOutfits.map((rawOutfit) => {
+      const deletedAt = rawOutfit.deleted_at ?? rawOutfit.deletedAt;
+      const elapsedDays = deletedAt
+        ? Math.floor((Date.now() - new Date(deletedAt).getTime()) / 86_400_000)
+        : 0;
+
+      return {
+        outfit: toOutfit(rawOutfit),
+        deletionDaysRemaining:
+          rawOutfit.deletion_days_remaining ??
+          rawOutfit.deletionDaysRemaining ??
+          Math.max(0, 30 - elapsedDays),
+      };
+    }),
     total: data.result.total_count ?? data.result.total ?? rawOutfits.length,
   };
 };

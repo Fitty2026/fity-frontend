@@ -27,6 +27,9 @@ const useDeleteMyOutfit = () => {
       queryClient.removeQueries({
         queryKey: myOutfitKeys.detail(savedOutfitId),
       });
+      void queryClient.invalidateQueries({
+        queryKey: myOutfitKeys.recentlyDeleted(),
+      });
     },
   });
 };
