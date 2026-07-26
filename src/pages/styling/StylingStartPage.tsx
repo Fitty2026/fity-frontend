@@ -1,15 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import { StudioHeader, StudioBottomNav, SectionHeader, RecentOutfitCard } from '@/features/styling/components';
-import type { RecentOutfit } from '@/features/styling/types';
+import { StudioHeader, StudioBottomNav, SectionHeader } from '@/features/styling/components';
+import MyOutfitCard from '@/features/myoutfit/components/MyOutfitCard';
+import useMyOutfits from '@/features/myoutfit/hooks/useMyOutfits';
 import heroBlob from '@/assets/images/styling/hero-blob.png';
-import lovelyDate from '@/assets/images/styling/recent-lovely-date.png';
-import modernWork from '@/assets/images/styling/recent-modern-work.png';
-
-/** 최근 코디 목업 */
-const RECENT: RecentOutfit[] = [
-  { id: 1, image: lovelyDate, date: '2026.06.27', tags: ['러블리', '데이트'], title: '러블리 데이트룩' },
-  { id: 2, image: modernWork, date: '2026.06.27', tags: ['모던', '출근'], title: '모던 출근룩' },
-];
 
 /**
  * 코디 시작_홈 (스튜디오 진입 홈)
@@ -17,6 +10,10 @@ const RECENT: RecentOutfit[] = [
  */
 const StylingStartPage = () => {
   const navigate = useNavigate();
+  const { data, error, isPending, refetch } = useMyOutfits();
+  const recentOutfits = [...(data?.outfits ?? [])]
+    .sort((first, second) => second.createdAt.localeCompare(first.createdAt))
+    .slice(0, 2);
 
   return (
     <div className="min-h-screen bg-neutral-100 flex justify-center">
@@ -59,14 +56,37 @@ const StylingStartPage = () => {
             onAction={() => navigate('/myoutfit')}
           />
           <div className="mt-4 grid grid-cols-2 gap-[15px]">
-            {RECENT.map((outfit) => (
-              <RecentOutfitCard
-                key={outfit.id}
-                outfit={outfit}
-                onClick={() => navigate(`/myoutfit/${outfit.id}`)}
-              />
-            ))}
+            {isPending &&
+              Array.from({ length: 2 }, (_, index) => (
+                <div
+                  key={index}
+                  className="aspect-[156/247] animate-pulse rounded-lg bg-[#E6E8EA]"
+                />
+              ))}
+            {!isPending &&
+              recentOutfits.map((outfit) => (
+                <MyOutfitCard key={outfit.id} outfit={outfit} />
+              ))}
           </div>
+          {!isPending && error && (
+            <div className="mt-4 text-center">
+              <p className="text-[13px] font-medium text-[#6F7881]">
+                최근 코디를 불러오지 못했어요.
+              </p>
+              <button
+                type="button"
+                onClick={() => void refetch()}
+                className="mt-2 text-[13px] font-semibold text-[#1F2124] underline"
+              >
+                다시 시도
+              </button>
+            </div>
+          )}
+          {!isPending && !error && recentOutfits.length === 0 && (
+            <p className="mt-4 text-center text-[13px] font-medium text-[#6F7881]">
+              최근 저장한 코디가 없어요.
+            </p>
+          )}
         </div>
 
         <StudioBottomNav />

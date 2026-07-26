@@ -1,16 +1,14 @@
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
-import { ClosetBottomNav } from '@/features/closet/components';
-import mock1 from '@/assets/images/closet/tag-mock.png';
-import mock2 from '@/assets/images/closet/tag-mock2.png';
-import mock3 from '@/assets/images/closet/tag-mock3.png';
+import { ClosetBottomNav, ClosetSearchField, ClosetTopBar } from '@/features/closet/components';
+import { matchesQuery } from '@/features/closet/searchItems';
+import useClosetStore from '@/store/closetStore';
+import useClosets from '@/features/closet/hooks/useClosets';
+import type { ClothingItem } from '@/types';
 
-/** 옷 있는 상태 목 데이터 — 카테고리별 이미지 (임시: 태그 화면 목업 재활용) */
-const MOCK_ROWS = [
-  { key: 'top', items: [mock1, mock2, mock3, mock1] },
-  { key: 'bottom', items: [mock3, mock1, mock2, mock3] },
-  { key: 'shoes', items: [mock2, mock3, mock1, mock2] },
-];
+/** 카테고리 행 노출 순서 (해당 카테고리 옷이 있을 때만 표시) */
+const ROW_CATEGORIES = ['아우터', '상의', '하의', '신발', '가방', '액세서리'] as const;
 
 /** 현황 카테고리 아이콘 — 32×32, #5A6169 */
 const StatIcon = ({ kind }: { kind: 'top' | 'bottom' | 'shoes' | 'etc' }) => (
@@ -38,27 +36,6 @@ const PlusSmallIcon = () => (
   </svg>
 );
 
-/** 검색 돋보기 아이콘 — 16×16, #959BA7 */
-const SearchIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M13.9995 13.9995L10.5349 10.5349M10.5349 10.5349C11.4726 9.59716 11.9994 8.32534 11.9994 6.99921C11.9994 5.67308 11.4726 4.40126 10.5349 3.46354C9.59716 2.52583 8.32534 1.99902 6.99921 1.99902C5.67308 1.99902 4.40126 2.52583 3.46354 3.46354C2.52583 4.40126 1.99902 5.67308 1.99902 6.99921C1.99902 8.32534 2.52583 9.59716 3.46354 10.5349C4.40126 11.4726 5.67308 11.9994 6.99921 11.9994C8.32534 11.9994 9.59716 11.4726 10.5349 10.5349Z" stroke="#959BA7" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-/** 뒤로가기 — 24×24 */
-const BackIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M15.75 19.5L8.25 12L15.75 4.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-/** 카운트 옷걸이 — 16×16, #1F2124 */
-const CountIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M15.0982 10.7L8.83321 6L10.2995 4.9C10.3617 4.85349 10.4122 4.79313 10.447 4.7237C10.4818 4.65427 10.5 4.57768 10.5001 4.5C10.5001 3.83696 10.2367 3.20107 9.76785 2.73223C9.29901 2.26339 8.66312 2 8.00008 2C7.33704 2 6.70115 2.26339 6.23231 2.73223C5.76347 3.20107 5.50008 3.83696 5.50008 4.5C5.50008 4.63261 5.55276 4.75979 5.64653 4.85355C5.7403 4.94732 5.86747 5 6.00008 5C6.13269 5 6.25987 4.94732 6.35363 4.85355C6.4474 4.75979 6.50008 4.63261 6.50008 4.5C6.50109 4.12339 6.64374 3.76094 6.89968 3.48466C7.15561 3.20837 7.50612 3.03848 7.88155 3.00872C8.25699 2.97896 8.62988 3.09152 8.92615 3.32403C9.22242 3.55655 9.42038 3.892 9.48071 4.26375L7.70883 5.59312L7.69133 5.60625L0.901955 10.7C0.734177 10.8258 0.610207 11.0012 0.54758 11.2014C0.484953 11.4015 0.48684 11.6163 0.552974 11.8153C0.619107 12.0144 0.74614 12.1876 0.916103 12.3104C1.08607 12.4333 1.29036 12.4996 1.50008 12.5H14.5001C14.71 12.5 14.9145 12.434 15.0848 12.3112C15.2551 12.1885 15.3824 12.0153 15.4488 11.8162C15.5151 11.6171 15.5172 11.4022 15.4546 11.2018C15.392 11.0015 15.268 10.8259 15.1001 10.7H15.0982ZM14.5001 11.5H1.50008L8.00008 6.625L14.5001 11.5Z" fill="#1F2124" />
-  </svg>
-);
-
 /** 빈 옷장 점선 원 — 60×60 */
 const EmptyDashedIcon = () => (
   <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -80,12 +57,29 @@ const BagIcon = () => (
   </svg>
 );
 
-/** 옷 가로 스크롤 행 — 스크롤바 숨김 + 하단 구분선(좌우 24) */
-const ClothesRow = ({ items }: { items: string[] }) => (
+/** 바텀시트 카메라 아이콘 — 32×32, stroke #34363C (Figma) */
+const SheetCameraIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M9.10267 8.23361C8.86265 8.61349 8.54243 8.93625 8.16445 9.17925C7.78647 9.42225 7.3599 9.57961 6.91467 9.64027C6.408 9.71227 5.90533 9.78961 5.40267 9.87361C3.99867 10.1069 3 11.3429 3 12.7656V24.0003C3 24.7959 3.31607 25.559 3.87868 26.1216C4.44129 26.6842 5.20435 27.0003 6 27.0003H26C26.7957 27.0003 27.5587 26.6842 28.1213 26.1216C28.6839 25.559 29 24.7959 29 24.0003V12.7656C29 11.3429 28 10.1069 26.5973 9.87361C26.0943 9.78979 25.5902 9.71201 25.0853 9.64027C24.6403 9.57942 24.214 9.42198 23.8363 9.17899C23.4586 8.936 23.1385 8.61333 22.8987 8.23361L21.8027 6.47894C21.5565 6.07907 21.2176 5.7444 20.8147 5.50325C20.4118 5.26211 19.9567 5.1216 19.488 5.09361C17.1643 4.9688 14.8357 4.9688 12.512 5.09361C12.0433 5.1216 11.5882 5.26211 11.1853 5.50325C10.7824 5.7444 10.4435 6.07907 10.1973 6.47894L9.10267 8.23361Z" stroke="#34363C" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M22 17C22 18.5913 21.3679 20.1174 20.2426 21.2426C19.1174 22.3679 17.5913 23 16 23C14.4087 23 12.8826 22.3679 11.7574 21.2426C10.6321 20.1174 10 18.5913 10 17C10 15.4087 10.6321 13.8826 11.7574 12.7574C12.8826 11.6321 14.4087 11 16 11C17.5913 11 19.1174 11.6321 20.2426 12.7574C21.3679 13.8826 22 15.4087 22 17ZM25 14H25.0107V14.0107H25V14Z" stroke="#34363C" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+/** 바텀시트 앨범 아이콘 — 32×32, stroke #1F2124 (Figma) */
+const SheetAlbumIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M3 21L9.87867 14.1213C10.1572 13.8428 10.488 13.6218 10.8519 13.471C11.2159 13.3202 11.606 13.2426 12 13.2426C12.394 13.2426 12.7841 13.3202 13.1481 13.471C13.512 13.6218 13.8428 13.8428 14.1213 14.1213L21 21M19 19L20.8787 17.1213C21.1572 16.8428 21.488 16.6218 21.8519 16.471C22.2159 16.3202 22.606 16.2426 23 16.2426C23.394 16.2426 23.7841 16.3202 24.1481 16.471C24.512 16.6218 24.8428 16.8428 25.1213 17.1213L29 21M5 26H27C27.5304 26 28.0391 25.7893 28.4142 25.4142C28.7893 25.0391 29 24.5304 29 24V8C29 7.46957 28.7893 6.96086 28.4142 6.58579C28.0391 6.21071 27.5304 6 27 6H5C4.46957 6 3.96086 6.21071 3.58579 6.58579C3.21071 6.96086 3 7.46957 3 8V24C3 24.5304 3.21071 25.0391 3.58579 25.4142C3.96086 25.7893 4.46957 26 5 26ZM19 11H19.0107V11.0107H19V11ZM19.5 11C19.5 11.1326 19.4473 11.2598 19.3536 11.3536C19.2598 11.4473 19.1326 11.5 19 11.5C18.8674 11.5 18.7402 11.4473 18.6464 11.3536C18.5527 11.2598 18.5 11.1326 18.5 11C18.5 10.8674 18.5527 10.7402 18.6464 10.6464C18.7402 10.5527 18.8674 10.5 19 10.5C19.1326 10.5 19.2598 10.5527 19.3536 10.6464C19.4473 10.7402 19.5 10.8674 19.5 11Z" stroke="#1F2124" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+/** 옷 가로 스크롤 행 — 스크롤바 숨김 + 하단 구분선(좌우 24). 아이템 클릭 시 상세 이동 */
+const ClothesRow = ({ items, onItemClick }: { items: ClothingItem[]; onItemClick: (id: string) => void }) => (
   <div>
     <div className="flex gap-2 overflow-x-auto px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {items.map((src, i) => (
-        <img key={i} src={src} alt="" className="h-[134px] w-[104px] shrink-0 rounded-2xl object-cover" />
+      {items.map((item) => (
+        <button key={item.id} type="button" onClick={() => onItemClick(item.id)} className="shrink-0 cursor-pointer">
+          <img src={item.imageUrl} alt={item.tags.join(' ')} loading="lazy" className="h-[134px] w-[104px] rounded-2xl object-cover" />
+        </button>
       ))}
     </div>
     {/* 구분선 — 좌우 24 안쪽 */}
@@ -95,33 +89,41 @@ const ClothesRow = ({ items }: { items: string[] }) => (
 
 /**
  * 내 옷장 홈 — 등록된 옷 없음(빈 상태) / 있음(목록) 두 상태.
- * 백엔드 연결 전: 우하단 임시 토글 버튼으로 상태 전환 (시연용, 추후 제거)
+ * 데이터: mockClosetItems (백엔드 연결 시 API 응답으로 대체)
  */
 const ClosetHomePage = () => {
   const navigate = useNavigate();
-  // 임시: 옷 등록 여부 (백엔드 연결 시 실제 데이터 유무로 대체)
-  const filled = true;
+  // 서버(CLOSET-03) 우선, 미연결(백엔드 대기) 시 mock 폴백 — 실서버 붙으면 실제 데이터로 표시
+  const { data } = useClosets();
+  const mockItems = useClosetStore((state) => state.items);
+  const items = data?.items ?? mockItems;
+  const filled = items.length > 0;
+  const [search, setSearch] = useState('');
+  const [showAddSheet, setShowAddSheet] = useState(false);
+
+  // 현황 카드 카운트 — items 바뀔 때만 재계산 (검색과 무관, 전체 기준)
+  const counts = useMemo(() => {
+    const countOf = (category: string) => items.filter((item) => item.category === category).length;
+    const top = countOf('상의');
+    const bottom = countOf('하의');
+    const shoes = countOf('신발');
+    // 기타 = 상의/하의/신발 외 전부 (아우터·가방·액세서리)
+    return { top, bottom, shoes, etc: items.length - top - bottom - shoes };
+  }, [items]);
+
+  // 검색 결과를 카테고리 행으로 분할 — items·search 바뀔 때만 재계산
+  const rows = useMemo(() => {
+    const visibleItems = items.filter((item) => matchesQuery(item, search));
+    return ROW_CATEGORIES.map((category) => ({
+      category,
+      items: visibleItems.filter((item) => item.category === category),
+    })).filter((row) => row.items.length > 0);
+  }, [items, search]);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
       <div className="relative flex flex-col flex-1 min-h-0 bg-white">
-        {/* 상단바 — back / 옷장 / 카운트 */}
-        <div className="relative flex h-[53px] items-center justify-center border-b border-[#B2B8BD]">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="absolute left-5 cursor-pointer"
-            aria-label="뒤로가기"
-          >
-            <BackIcon />
-          </button>
-          <span className="text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">옷장</span>
-          {/* 카운트 — 12 Medium lh165 −2% #1F2124. 빈 상태 0개 / 옷 있으면 88개 (목) */}
-          <span className="absolute right-5 flex items-center gap-1 text-[12px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124]">
-            <CountIcon />
-            {filled ? '88개' : '0개'}
-          </span>
-        </div>
+        <ClosetTopBar height={53} />
 
         {filled ? (
           /* 옷 있는 상태 (러프 — 세부 스펙 대기) */
@@ -132,9 +134,9 @@ const ClosetHomePage = () => {
                 <span className="text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-black">내 옷장 현황</span>
                 <button
                   type="button"
-                  onClick={() => navigate('/closet/register')}
+                  onClick={() => setShowAddSheet(true)}
                   className="cursor-pointer"
-                  aria-label="옷 추가"
+                  aria-label="아이템 추가"
                 >
                   <PlusSmallIcon />
                 </button>
@@ -142,10 +144,10 @@ const ClosetHomePage = () => {
               <div className="flex items-center justify-between">
                 {(
                   [
-                    { kind: 'top', label: '상의', count: 88 },
-                    { kind: 'bottom', label: '하의', count: 88 },
-                    { kind: 'shoes', label: '신발', count: 88 },
-                    { kind: 'etc', label: '기타', count: 88 },
+                    { kind: 'top', label: '상의', count: counts.top },
+                    { kind: 'bottom', label: '하의', count: counts.bottom },
+                    { kind: 'shoes', label: '신발', count: counts.shoes },
+                    { kind: 'etc', label: '기타', count: counts.etc },
                   ] as const
                 ).map((stat) => (
                   <div key={stat.kind} className="flex h-[42px] w-[70px] items-center justify-between">
@@ -157,7 +159,7 @@ const ClosetHomePage = () => {
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124]">전체 의류 88</p>
+              <p className="text-[10px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124]">전체 의류 {items.length}</p>
             </div>
 
             {/* 카테고리 헤더 — 327×26, 현황 카드 아래 43 */}
@@ -175,23 +177,25 @@ const ClosetHomePage = () => {
               </button>
             </div>
 
-            {/* 검색바 — 327×36, radius32, border #959BA7, 헤더 아래 24 */}
+            {/* 검색바 — 헤더 아래 24 */}
             <div className="mt-6 px-6">
-              <div className="flex h-9 items-center gap-2.5 rounded-[32px] border border-[#959BA7] bg-white py-2 pl-3 pr-3">
-                <SearchIcon />
-                <input
-                  type="text"
-                  placeholder="검색어를 입력해주세요"
-                  className="w-full bg-transparent text-[12px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124] placeholder-[#B2B8BD] outline-none"
-                />
-              </div>
+              <ClosetSearchField value={search} onChange={setSearch} />
             </div>
 
             {/* 카테고리별 옷 가로 스크롤 행 — 134 높이 */}
             <div className="mt-4 flex flex-col gap-4 pb-6">
-              {MOCK_ROWS.map((row) => (
-                <ClothesRow key={row.key} items={row.items} />
+              {rows.map((row) => (
+                <ClothesRow
+                  key={row.category}
+                  items={row.items}
+                  onItemClick={(id) => navigate(`/closet/items/${id}`)}
+                />
               ))}
+              {rows.length === 0 && (
+                <p className="px-6 py-8 text-center text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#959BA7]">
+                  검색 결과가 없어요
+                </p>
+              )}
             </div>
           </div>
         ) : (
@@ -233,6 +237,47 @@ const ClosetHomePage = () => {
         )}
 
         <ClosetBottomNav />
+
+        {/* 아이템 추가하기 바텀시트 — + 버튼으로 오픈. 기기 뷰포트 하단 고정(fixed) */}
+        {showAddSheet && (
+          <div className="fixed inset-0 z-50 flex justify-center">
+            <style>{`@keyframes addSheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}`}</style>
+            <div className="relative h-full w-full max-w-[430px]">
+              {/* 딤 배경 — 탭 시 닫힘 */}
+              <button
+                type="button"
+                aria-label="닫기"
+                onClick={() => setShowAddSheet(false)}
+                className="absolute inset-0 cursor-default bg-black/40"
+              />
+              {/* 시트 — Figma: bg #F6F7F8, radius top 40, padding 40/40, gap 24, shadow 0/-1/16 #000 16% */}
+              <div
+                className="absolute inset-x-0 bottom-0 flex flex-col rounded-t-[40px] bg-[#F6F7F8] pt-10 pb-[calc(40px+env(safe-area-inset-bottom,0px))] shadow-[0_-1px_16px_0_rgba(0,0,0,0.16)]"
+                style={{ animation: 'addSheetUp 250ms ease' }}
+              >
+              <h2 className="mb-6 text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
+                아이템 추가하기
+              </h2>
+              <button
+                type="button"
+                onClick={() => navigate('/closet/register/photo')}
+                className="flex h-20 w-full items-center gap-10 border-b border-[#E6E8EA] pl-6 pr-3.5 text-left cursor-pointer"
+              >
+                <SheetCameraIcon />
+                <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">카메라로 촬영</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/closet/register/upload')}
+                className="flex h-20 w-full items-center gap-10 pl-6 pr-3.5 text-left cursor-pointer"
+              >
+                <SheetAlbumIcon />
+                <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">앨범에서 선택</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        )}
       </div>
     </PageLayout>
   );

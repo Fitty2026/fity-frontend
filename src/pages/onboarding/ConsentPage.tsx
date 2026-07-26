@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import BottomSheet from '@/components/ui/BottomSheet';
 import Button from '@/components/ui/Button';
 import BlobIntro from '@/features/onboarding/components/BlobIntro';
 import OnboardingLayout from '@/features/onboarding/components/OnboardingLayout';
+import TermsDetailView from '@/features/onboarding/components/TermsDetailView';
+import { TERMS_DOCS, type TermsKey } from '@/features/onboarding/termsData';
 import useOnboardingStore from '@/store/onboardingStore';
 
 const INTRO_DURATION_MS = 2500;
@@ -21,10 +22,6 @@ const CONSENT_ITEMS = [
 ] as const;
 
 type ConsentKey = (typeof CONSENT_ITEMS)[number]['key'];
-
-/** 약관 본문은 아직 없어 더미 텍스트를 보여준다 */
-const DUMMY_TERMS_BODY =
-  '약관 본문이 준비 중이에요.\n서비스 오픈 전에 실제 약관 내용으로 교체될 예정입니다.';
 
 /** 원형 체크 아이콘 */
 const CheckCircle = ({ checked }: { checked: boolean }) => (
@@ -49,7 +46,7 @@ const ConsentPage = () => {
     aiImage: false,
     marketing: false,
   });
-  const [openedTerms, setOpenedTerms] = useState<(typeof CONSENT_ITEMS)[number] | null>(null);
+  const [openedTerms, setOpenedTerms] = useState<TermsKey | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowIntro(false), INTRO_DURATION_MS);
@@ -109,16 +106,18 @@ const ConsentPage = () => {
                     <CheckCircle checked={agreed[item.key]} />
                   </button>
                   <span className="flex-1 text-sm text-neutral-700">{item.label}</span>
-                  <button
-                    type="button"
-                    aria-label={`${item.label} 상세 보기`}
-                    onClick={() => setOpenedTerms(item)}
-                    className="px-1 text-neutral-300"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M9 6l6 6-6 6" />
-                    </svg>
-                  </button>
+                  {item.required && (
+                    <button
+                      type="button"
+                      aria-label={`${item.label} 상세 보기`}
+                      onClick={() => setOpenedTerms(item.key as TermsKey)}
+                      className="px-1 text-neutral-300"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 6l6 6-6 6" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
                 {'description' in item && (
                   <p className="pl-9 text-xs text-neutral-400">{item.description}</p>
@@ -137,16 +136,10 @@ const ConsentPage = () => {
             />
           </div>
 
-          {/* 약관 상세 더미 바텀시트 */}
-          <BottomSheet
-            isOpen={openedTerms !== null}
-            onClose={() => setOpenedTerms(null)}
-            title={openedTerms?.label}
-          >
-            <p className="whitespace-pre-line text-sm leading-relaxed text-neutral-600">
-              {DUMMY_TERMS_BODY}
-            </p>
-          </BottomSheet>
+          {/* 약관 상세 풀스크린 오버레이 */}
+          {openedTerms && (
+            <TermsDetailView doc={TERMS_DOCS[openedTerms]} onClose={() => setOpenedTerms(null)} />
+          )}
         </div>
       )}
     </OnboardingLayout>

@@ -1,82 +1,200 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
-import { ClosetBottomNav } from '@/features/closet/components';
-import mock1 from '@/assets/images/closet/tag-mock.png';
-import mock2 from '@/assets/images/closet/tag-mock2.png';
-import mock3 from '@/assets/images/closet/tag-mock3.png';
+import { ClosetBottomNav, ClosetSearchField, ClosetTopBar } from '@/features/closet/components';
+import { matchesQuery } from '@/features/closet/searchItems';
+import useClosetStore from '@/store/closetStore';
+import useClosets from '@/features/closet/hooks/useClosets';
 
-/** 아이템 목록 목 데이터 — 행 3개 (임시) */
-const MOCK_ROWS = [
-  [mock1, mock2, mock3, mock1],
-  [mock3, mock1, mock2, mock3],
-  [mock2, mock3, mock1, mock2],
-];
+const FILTERS = ['전체', '상의', '하의', '아우터', '신발', '가방', '액세서리'];
 
-const FILTERS = ['전체', '상의', '하의', '신발', '악세사리', '기타'];
-const SORTS = ['최신순', '브랜드', '컬러'];
+/** 정렬 순서 옵션 (시안 확정) */
+const ORDERS = ['최신순', '오래된순', '자주 입은 순', '이름순'] as const;
+type OrderKey = (typeof ORDERS)[number];
 
-/** 카운트 옷걸이 — 16×16, #1F2124 */
-const CountIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M15.0982 10.7L8.83321 6L10.2995 4.9C10.3617 4.85349 10.4122 4.79313 10.447 4.7237C10.4818 4.65427 10.5 4.57768 10.5001 4.5C10.5001 3.83696 10.2367 3.20107 9.76785 2.73223C9.29901 2.26339 8.66312 2 8.00008 2C7.33704 2 6.70115 2.26339 6.23231 2.73223C5.76347 3.20107 5.50008 3.83696 5.50008 4.5C5.50008 4.63261 5.55276 4.75979 5.64653 4.85355C5.7403 4.94732 5.86747 5 6.00008 5C6.13269 5 6.25987 4.94732 6.35363 4.85355C6.4474 4.75979 6.50008 4.63261 6.50008 4.5C6.50109 4.12339 6.64374 3.76094 6.89968 3.48466C7.15561 3.20837 7.50612 3.03848 7.88155 3.00872C8.25699 2.97896 8.62988 3.09152 8.92615 3.32403C9.22242 3.55655 9.42038 3.892 9.48071 4.26375L7.70883 5.59312L7.69133 5.60625L0.901955 10.7C0.734177 10.8258 0.610207 11.0012 0.54758 11.2014C0.484953 11.4015 0.48684 11.6163 0.552974 11.8153C0.619107 12.0144 0.74614 12.1876 0.916103 12.3104C1.08607 12.4333 1.29036 12.4996 1.50008 12.5H14.5001C14.71 12.5 14.9145 12.434 15.0848 12.3112C15.2551 12.1885 15.3824 12.0153 15.4488 11.8162C15.5151 11.6171 15.5172 11.4022 15.4546 11.2018C15.392 11.0015 15.268 10.8259 15.1001 10.7H15.0982ZM14.5001 11.5H1.50008L8.00008 6.625L14.5001 11.5Z" fill="#1F2124" />
-  </svg>
-);
+/** 컬러명 → 스와치 hex (시안 팔레트). 실제 노출은 보유 아이템에 있는 색만 (데이터 축적 시 확장) */
+const COLOR_SWATCHES: Record<string, string> = {
+  화이트: '#FFFFFF',
+  블랙: '#1F2124',
+  그레이: '#C4C8CD',
+  베이지: '#E7D5C0',
+  블루: '#5B7FC7',
+  네이비: '#2E3563',
+  핑크: '#EBB7CB',
+};
+const COLOR_NAMES = Object.keys(COLOR_SWATCHES);
 
-/** 검색 돋보기 — 16×16, #959BA7 */
-const SearchIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M13.9995 13.9995L10.5349 10.5349M10.5349 10.5349C11.4726 9.59716 11.9994 8.32534 11.9994 6.99921C11.9994 5.67308 11.4726 4.40126 10.5349 3.46354C9.59716 2.52583 8.32534 1.99902 6.99921 1.99902C5.67308 1.99902 4.40126 2.52583 3.46354 3.46354C2.52583 4.40126 1.99902 5.67308 1.99902 6.99921C1.99902 8.32534 2.52583 9.59716 3.46354 10.5349C4.40126 11.4726 5.67308 11.9994 6.99921 11.9994C8.32534 11.9994 9.59716 11.4726 10.5349 10.5349Z" stroke="#959BA7" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
+/** 드롭다운 옵션 — 값 + 선택형 스와치 */
+type DropOption = { value: string; swatch?: string };
 
-/** 정렬 드롭다운 화살표 — 16×16 */
-const ChevronDown = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M13 5.5L8 10.5L3 5.5" stroke="#1F2124" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+/** 정렬 활성 표시 화살표 — 16×16 (열림 시 위로 회전) */
+const ChevronDown = ({ active, open }: { active: boolean; open: boolean }) => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={open ? 'rotate-180 transition-transform' : 'transition-transform'}
+  >
+    <path d="M13 5.5L8 10.5L3 5.5" stroke={active ? '#F6F7F8' : '#1F2124'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
 /**
- * 아이템 목록 — 옷장 홈 '전체보기' 진입. 필터/정렬 + 전체 아이템 행. (러프 — 세부 스펙 대기)
+ * 정렬/필터 드롭다운 칩 — 라벨 클릭 시 아래로 옵션 목록.
+ * (임시 구현 — 드롭다운 UI/옵션 구성 시안 미확정)
+ */
+const DropdownChip = ({
+  label,
+  allLabel,
+  options,
+  value,
+  onSelect,
+  open,
+  onToggle,
+}: {
+  label: string;
+  /** 지정 시 목록 최상단에 "전체 X" 초기화 행 노출 (선택 시 value=null) */
+  allLabel?: string;
+  options: DropOption[];
+  value: string | null;
+  onSelect: (option: string | null) => void;
+  open: boolean;
+  onToggle: () => void;
+}) => {
+  const active = value !== null;
+  // 행 — h30, 좌우 16, 하단 구분선, B6 SemiBold 14
+  const rowBase = 'flex h-[30px] w-full cursor-pointer items-center whitespace-nowrap border-b border-[#E6E8EA] px-4 text-[14px] font-semibold leading-[1.6] tracking-[-0.02em]';
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={onToggle}
+        className={[
+          'flex h-[30px] cursor-pointer items-center gap-2.5 rounded-[32px] border px-4 py-1 text-[14px] font-semibold leading-[1.6] tracking-[-0.02em]',
+          active ? 'border-[#1F2124] bg-[#1F2124] text-[#F6F7F8]' : 'border-[#E6E8EA] bg-[#F6F7F8] text-[#1F2124]',
+        ].join(' ')}
+      >
+        {active ? value : label}
+        <ChevronDown active={active} open={open} />
+      </button>
+
+      {open && (
+        <ul className="absolute left-0 top-[34px] z-10 min-w-[88px] overflow-hidden rounded-lg bg-[#F6F7F8] shadow-[0_4px_10px_0_rgba(0,0,0,0.24)]">
+          {/* 헤더(전체 X / 최신순) — 보라 #9D98F0, 중앙. 선택 시 필터 해제 */}
+          {allLabel && (
+            <li>
+              <button
+                type="button"
+                onClick={() => onSelect(null)}
+                className={[rowBase, 'justify-center text-[#9D98F0]'].join(' ')}
+              >
+                {allLabel}
+              </button>
+            </li>
+          )}
+          {options.map((option) => (
+            <li key={option.value}>
+              <button
+                type="button"
+                onClick={() => onSelect(option.value === value ? null : option.value)}
+                className={[rowBase, 'text-[#1F2124]', option.swatch ? 'justify-start gap-2.5' : 'justify-center'].join(' ')}
+              >
+                {option.swatch && (
+                  <span className="h-4 w-4 shrink-0 rounded-full border border-[#E6E8EA]" style={{ background: option.swatch }} />
+                )}
+                {option.value}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
+/** 배열을 n개씩 행으로 자르기 */
+const chunk = <T,>(arr: T[], size: number): T[][] => {
+  const rows: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) rows.push(arr.slice(i, i + size));
+  return rows;
+};
+
+/**
+ * 아이템 목록 — 옷장 홈 '전체보기' 진입.
+ * 검색(카테고리/태그/브랜드) + 카테고리 필터 + 정렬(최신순/브랜드/컬러) 적용, 클릭 시 상세 이동.
  */
 const ClosetItemListPage = () => {
+  const navigate = useNavigate();
+  // 서버(CLOSET-03) 우선, 미연결 시 mock 폴백
+  const { data } = useClosets();
+  const mockItems = useClosetStore((state) => state.items);
+  const items = data?.items ?? mockItems;
+
+  const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('전체');
+  const [order, setOrder] = useState<OrderKey>('최신순');
+  const [brand, setBrand] = useState<string | null>(null);
+  const [color, setColor] = useState<string | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<'order' | 'brand' | 'color' | null>(null);
+
+  // 드롭다운 옵션 — 보유 아이템에서 추출. items 바뀔 때만 재계산
+  const brandOptions = useMemo(
+    () =>
+      [...new Set(items.map((item) => item.brand).filter(Boolean) as string[])].sort((a, b) =>
+        a.localeCompare(b, 'ko'),
+      ),
+    [items],
+  );
+  const colorOptions = useMemo(
+    () => COLOR_NAMES.filter((name) => items.some((item) => item.tags.includes(name))),
+    [items],
+  );
+
+  // 필터·정렬·행 분할 — 관련 입력이 바뀔 때만 재계산 (드롭다운 열림 토글 등에는 재실행 안 함)
+  const rows = useMemo(() => {
+    const filtered = items
+      .filter((item) => filter === '전체' || item.category === filter)
+      .filter((item) => !brand || item.brand === brand)
+      .filter((item) => !color || item.tags.includes(color))
+      .filter((item) => matchesQuery(item, search));
+
+    const nameOf = (i: (typeof filtered)[number]) => i.subCategory || i.tags[0] || '';
+    const sorted = filtered.sort((a, b) => {
+      if (order === '오래된순') return a.createdAt.localeCompare(b.createdAt);
+      if (order === '이름순') return nameOf(a).localeCompare(nameOf(b), 'ko');
+      // 자주 입은 순: 착용 데이터 미보유 → 최신순 fallback (TODO: wearCount 연동)
+      return b.createdAt.localeCompare(a.createdAt);
+    });
+
+    return chunk(sorted, 4);
+  }, [items, filter, brand, color, search, order]);
+
+  const toggleDropdown = (key: 'order' | 'brand' | 'color') =>
+    setOpenDropdown((prev) => (prev === key ? null : key));
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
       <div className="relative flex flex-col flex-1 min-h-0 bg-white">
-        {/* 상단바 — back / 옷장 / 카운트 */}
-        <div className="relative flex h-[53px] shrink-0 items-center justify-center border-b border-[#B2B8BD]">
-          <span className="text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">옷장</span>
-          <span className="absolute right-5 flex items-center gap-1 text-[12px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124]">
-            <CountIcon />
-            88개
-          </span>
-        </div>
+        <ClosetTopBar height={53} />
 
         <div className="flex-1 min-h-0 overflow-y-auto">
           {/* 타이틀 — 전체 아이템 + 보유 개수 */}
           <div className="px-6 pt-6">
             <h1 className="text-[20px] font-bold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">전체 아이템</h1>
             <p className="text-[14px] font-medium leading-[1.6] tracking-[-0.02em]">
-              <span className="text-[#1F2124]">88</span>
+              <span className="text-[#1F2124]">{items.length}</span>
               <span className="text-[#5A6169]">개 보유</span>
             </p>
           </div>
 
-          {/* 검색바 — 327×36, '88개 보유' 아래 17 */}
+          {/* 검색바 — '개 보유' 아래 17 */}
           <div className="mt-[17px] px-6">
-            <div className="flex h-9 items-center gap-2.5 rounded-[32px] border border-[#959BA7] bg-white py-2 pl-3 pr-3">
-              <SearchIcon />
-              <input
-                type="text"
-                placeholder="검색어를 입력해주세요"
-                className="w-full bg-transparent text-[12px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124] placeholder-[#B2B8BD] outline-none"
-              />
-            </div>
+            <ClosetSearchField value={search} onChange={setSearch} />
           </div>
 
-          {/* 필터 칩 — 가로 스크롤 */}
+          {/* 필터 칩 — 가로 스크롤, 카테고리 필터 적용 */}
           <div className="mt-3 flex gap-2 overflow-x-auto px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {FILTERS.map((f) => (
               <button
@@ -93,32 +211,70 @@ const ClosetItemListPage = () => {
             ))}
           </div>
 
-          {/* 정렬 드롭다운 (임시 — 동작 없음) */}
-          <div className="mt-3 flex gap-2 px-6">
-            {SORTS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                className="flex h-[30px] cursor-pointer items-center gap-2.5 rounded-[32px] border border-[#E6E8EA] bg-white px-4 py-1 text-[14px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124]"
-              >
-                {s}
-                <ChevronDown />
-              </button>
-            ))}
+          {/* 정렬/필터 드롭다운 (임시 — 옵션 구성 시안 미확정) */}
+          <div className="relative z-10 mt-3 flex gap-2 px-6">
+            <DropdownChip
+              label="최신순"
+              allLabel="최신순"
+              options={ORDERS.slice(1).map((o) => ({ value: o }))}
+              value={order === '최신순' ? null : order}
+              onSelect={(option) => {
+                setOrder((option as OrderKey) ?? '최신순');
+                setOpenDropdown(null);
+              }}
+              open={openDropdown === 'order'}
+              onToggle={() => toggleDropdown('order')}
+            />
+            <DropdownChip
+              label="브랜드"
+              allLabel="전체 브랜드"
+              options={brandOptions.map((b) => ({ value: b }))}
+              value={brand}
+              onSelect={(option) => {
+                setBrand(option);
+                setOpenDropdown(null);
+              }}
+              open={openDropdown === 'brand'}
+              onToggle={() => toggleDropdown('brand')}
+            />
+            <DropdownChip
+              label="컬러"
+              allLabel="전체 컬러"
+              options={colorOptions.map((c) => ({ value: c, swatch: COLOR_SWATCHES[c] }))}
+              value={color}
+              onSelect={(option) => {
+                setColor(option);
+                setOpenDropdown(null);
+              }}
+              open={openDropdown === 'color'}
+              onToggle={() => toggleDropdown('color')}
+            />
           </div>
 
-          {/* 아이템 행 — 가로 스크롤, 구분선 (위아래 20) */}
+          {/* 아이템 행 — 4개씩, 가로 스크롤 + 구분선. 클릭 시 상세 이동 */}
           <div className="mt-5 flex flex-col gap-5 pb-6">
-            {MOCK_ROWS.map((items, r) => (
+            {rows.map((row, r) => (
               <div key={r}>
                 <div className="flex gap-2 overflow-x-auto px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  {items.map((src, i) => (
-                    <img key={i} src={src} alt="" className="h-[134px] w-[104px] shrink-0 rounded-2xl object-cover" />
+                  {row.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => navigate(`/closet/items/${item.id}`)}
+                      className="shrink-0 cursor-pointer"
+                    >
+                      <img src={item.imageUrl} alt={item.tags.join(' ')} loading="lazy" className="h-[134px] w-[104px] rounded-2xl object-cover" />
+                    </button>
                   ))}
                 </div>
                 <div className="mx-6 mt-5 border-b border-[#E6E8EA]" />
               </div>
             ))}
+            {rows.length === 0 && (
+              <p className="px-6 py-10 text-center text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#959BA7]">
+                {search.trim() ? '검색 결과가 없어요' : '조건에 맞는 아이템이 없어요'}
+              </p>
+            )}
           </div>
         </div>
 

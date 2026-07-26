@@ -3,14 +3,17 @@
  * CodyRetouch의 왼쪽 이미지(163×439, x: 0)로 이동한다.
  */
 @keyframes retouch-image-enter {
-  from {
+  0% {
     flex-basis: calc(100% - 56px);
     width: calc(100% - 56px);
     margin-left: 40px;
     aspect-ratio: 0.754 / 1;
     border-radius: 24px;
   }
-  to {
+  35% {
+    margin-left: 0px;
+  }
+  100% {
     flex-basis: calc(48.6567% - 7.785px);
     width: calc(48.6567% - 7.785px);
     margin-left: 0;

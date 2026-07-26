@@ -29,10 +29,10 @@ const ReceiptIcon = () => (
 );
 
 const OPTIONS = [
-  { key: 'album', label: '앨범에서 선택', icon: <AlbumIcon />, to: '/closet/register/photo' },
+  { key: 'album', label: '앨범에서 선택', icon: <AlbumIcon />, to: '/closet/register/upload' },
   { key: 'camera', label: '카메라로 촬영', icon: <CameraIcon />, to: '/closet/register/photo' },
   { key: 'platform', label: '쇼핑몰 연동하기', icon: <BagIcon />, to: '/closet/register/platform' },
-  { key: 'receipt', label: '영수증 불러오기', icon: <ReceiptIcon />, to: '/closet/register/platform' },
+  { key: 'receipt', label: '영수증 불러오기', icon: <ReceiptIcon />, to: '/closet/register/receipt' },
 ];
 
 /**
@@ -61,7 +61,7 @@ const ClosetRegisterPage = () => {
           draggable={false}
         />
 
-        <OnboardingTopBar progress={52 / 375} showSkip onSkip={() => navigate('/closet')} />
+        <OnboardingTopBar progress={300 / 375} showSkip onSkip={() => navigate('/closet')} />
 
         <div className="relative flex-1 overflow-y-auto px-6 pt-[68px]">
           {/* 타이틀 (Figma: Pretendard 700 / 24px / lh150% / -2%) */}

@@ -21,8 +21,8 @@ const ClosetIntroPage = () => {
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
       <div className="flex flex-col flex-1 min-h-0 bg-white">
-        {/* 진행률 = 채움 52 / track 375 (Figma) */}
-        <OnboardingTopBar progress={52 / 375} />
+        {/* 진행률 = 채움 241 / track 375 (Figma) */}
+        <OnboardingTopBar progress={241 / 375} />
         <TransitionBlobScreen message="거의 다 왔어요" image={closetIntroBlob} />
       </div>
     </PageLayout>

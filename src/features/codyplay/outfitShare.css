@@ -1,0 +1,41 @@
+@keyframes outfit-share-image-enter {
+  from {
+    top: 150px;
+    left: 16px;
+    width: calc(100% - 32px);
+    aspect-ratio: 0.754 / 1;
+  }
+  to {
+    top: 0;
+    left: 0;
+    width: 100%;
+    aspect-ratio: 327 / 376;
+  }
+}
+
+.outfit-share-image-enter {
+  animation: outfit-share-image-enter 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: top, left, width, aspect-ratio;
+}
+
+@keyframes outfit-share-content-enter {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.outfit-share-content-enter {
+  animation: outfit-share-content-enter 420ms ease-out 100ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .outfit-share-image-enter,
+  .outfit-share-content-enter {
+    animation: none;
+  }
+}

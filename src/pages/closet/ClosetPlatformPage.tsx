@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
+import useClosetStore from '@/store/closetStore';
 
 const CX = -134; // 원 중심 x (화면 밖 좌측). 선택점(3시) = CX + R
 const R = 244; // arc 라인 반지름
@@ -67,6 +68,7 @@ const SlotBox = ({
  */
 const ClosetPlatformPage = () => {
   const navigate = useNavigate();
+  const setSelectedPlatforms = useClosetStore((state) => state.setSelectedPlatforms);
   const [rotation, setRotation] = useState(0);
   // 선택된 쇼핑몰 집합. 중앙(3시)에 온 쇼핑몰 클릭 시 토글. 하나라도 있으면 '다음' 활성
   const [selectedSet, setSelectedSet] = useState<Set<string>>(new Set());
@@ -212,12 +214,19 @@ const ClosetPlatformPage = () => {
                 centerSelected ? 'bg-[#1F2124]' : 'bg-gray-400',
               ].join(' ')}
             />
+            {/* 중앙 박스 — 선택 시 #1F2124, 미선택 시 회색 */}
             <span
-              className="absolute -translate-y-1/2 w-[72px] h-[72px] rounded-lg bg-[#1F2124]"
+              className={[
+                'absolute -translate-y-1/2 w-[72px] h-[72px] rounded-lg',
+                centerSelected ? 'bg-[#1F2124]' : 'bg-[#B2B8BD]',
+              ].join(' ')}
               style={{ left: 24 }}
             />
             <span
-              className="absolute -translate-y-1/2 whitespace-nowrap text-[32px] font-bold leading-[1.4] tracking-[-0.02em] text-[#1F2124]"
+              className={[
+                'absolute -translate-y-1/2 whitespace-nowrap text-[32px] font-bold leading-[1.4] tracking-[-0.02em]',
+                centerSelected ? 'text-[#1F2124]' : 'text-[#B2B8BD]',
+              ].join(' ')}
               style={{ left: 104 }}
             >
               {selected.name}
@@ -234,7 +243,15 @@ const ClosetPlatformPage = () => {
           <button
             type="button"
             disabled={!nextActive}
-            onClick={nextActive ? () => navigate('/closet/register/permission') : undefined}
+            onClick={
+              nextActive
+                ? () => {
+                    // 선택 순서 대신 휠 노출 순서 유지
+                    setSelectedPlatforms(NAMES.filter((name) => selectedSet.has(name)));
+                    navigate('/closet/register/permission');
+                  }
+                : undefined
+            }
             className={[
               'w-full h-[58px] rounded-[32px] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em]',
               nextActive ? 'text-[#F6F7F8] cursor-pointer' : 'text-[#1F2124] cursor-not-allowed',

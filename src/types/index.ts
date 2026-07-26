@@ -1,24 +1,30 @@
 // ============================================================
 // 공통
 // ============================================================
+/** 서버 공통 응답 래퍼 - 성공/실패 모두 이 형태로 내려온다 */
 export interface ApiResponse<T> {
-  data: T;
+  isSuccess: boolean;
+  code: string;
   message: string;
-  success: boolean;
+  result: T;
 }
 
 // ============================================================
 // 유저 / 인증
 // ============================================================
+/** 서버가 내려주는 스타일 취향 태그 (PROFILE-01 stylePreferences) */
+export interface StylePreference {
+  tagId: number;
+  tagName: string;
+}
+
+/** 로그인/프로필 조회로 채워지는 사용자 정보 (PROFILE-01 기준) */
 export interface User {
-  id: string;
+  id: number;
   email: string;
   nickname: string;
-  profileImageUrl?: string;
-  stylePreferences: StyleTag[];
-  bodyImageUrl?: string;
-  starCount: number;
-  freeGenerationLeft: number; // 하루 무료 생성 잔여 횟수
+  profileImageUrl: string | null;
+  stylePreferences: StylePreference[];
 }
 
 export type SocialProvider = 'google' | 'apple' | 'kakao' | 'email';
@@ -45,16 +51,21 @@ export interface OnboardingState {
 // ============================================================
 // 옷장 (Closet)
 // ============================================================
-export type ClothingCategory = '상의' | '하의' | '아우터' | '신발' | '가방' | '액세서리';
+export type ClothingCategory = '상의' | '하의' | '아우터' | '신발' | '가방' | '액세서리' | '기타';
 
 export interface ClothingItem {
   id: string;
+  name?: string;
   imageUrl: string;
   category: ClothingCategory;
   tags: string[];
   brand?: string;
   purchasedFrom?: string; // 구매 플랫폼
   createdAt: string;
+  subCategory?: string; // 세부 카테고리 (예: 반팔 셔츠)
+  colors?: string[]; // 색상 hex 목록
+  memo?: string;
+  detailImages?: string[]; // 상세 뷰 이미지 [전체, 옆면, 뒷면]
 }
 
 // ============================================================
