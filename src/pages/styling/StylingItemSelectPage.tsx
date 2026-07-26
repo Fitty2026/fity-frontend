@@ -106,7 +106,8 @@ const StylingItemSelectPage = () => {
           <BottomCTA
             label="88 퍼즐로 코디 생성하기"
             disabled={selectedIds.length === 0}
-            onClick={() => navigate('/styling/loading')}
+            // 선택한 아이템 id를 로딩 화면으로 전달 (코디 생성 요청 입력값)
+            onClick={() => navigate('/styling/loading', { state: { closetItemIds: selectedIds } })}
           />
         </div>
       </div>
