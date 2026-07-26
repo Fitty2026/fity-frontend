@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import PageLayout from '@/components/layout/PageeLayout';
@@ -6,8 +6,8 @@ import AddItemBottomSheet from '@/features/codyplay/components/AddItemBottomShee
 import RetouchItem from '@/features/codyplay/components/RetouchItem';
 import '@/features/codyplay/codyRetouch.css';
 
-import { mockOutfits } from '../../mocks/data/outfit';
 import type { ClothingCategory, ClothingItem, Outfit } from '../../types';
+import useStylingStore from '@/store/stylingStore';
 
 const createRecommendItem = (id: string, category: ClothingItem['category']): ClothingItem => ({
   id,
@@ -47,7 +47,9 @@ const isSameItem = (item: ClothingItem, target: ClothingItem) =>
 
 const CodyRetouchPage = () => {
   const location = useLocation();
-  const [result, setResult] = useState<Outfit | undefined>(() => mockOutfits[0]);
+  const generatedOutfit = useStylingStore((state) => state.generatedOutfit);
+  const setGeneratedOutfit = useStylingStore((state) => state.setGeneratedOutfit);
+  const [result, setResult] = useState<Outfit | undefined>(() => generatedOutfit ?? undefined);
   const [selectItem, setSelectItem] = useState<ClothingItem | null>();
   const [selectCategory, setSelectCategory] = useState<string | null>();
   const [changeItem, setChangeItem] = useState<ClothingItem | null>(null);
@@ -57,6 +59,10 @@ const CodyRetouchPage = () => {
   } | null>(null);
   const [isAddItemSheetOpen, setIsAddItemSheetOpen] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (result) setGeneratedOutfit(result);
+  }, [result, setGeneratedOutfit]);
 
   const handleChangeItem = () => {
     if (!selectItem || !changeItem) return;
@@ -130,6 +136,12 @@ const CodyRetouchPage = () => {
   const activeItem = selectItem
     ? result?.items.find((item) => isSameItem(item, selectItem))
     : undefined;
+
+  const finishRetouch = () => {
+    if (!result) return;
+    setGeneratedOutfit(result);
+    navigate('/codyplay');
+  };
 
   return (
     <PageLayout
@@ -295,7 +307,11 @@ const CodyRetouchPage = () => {
           </div>
         ) : (
           <button
-            onClick={() => setSelectCategory(selectItem?.category)}
+            onClick={
+              selectItem
+                ? () => setSelectCategory(selectItem.category)
+                : finishRetouch
+            }
             disabled={!selectItem}
             className="w-full bg-[#1F2124] disabled:bg-[#E6E8EA] rounded-[32px] py-[16px] text-[#F6F7F8] disabled:text-[#959BA7] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
           >
