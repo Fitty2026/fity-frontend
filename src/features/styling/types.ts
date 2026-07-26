@@ -2,7 +2,7 @@
 
 /** 홈 — 최근 코디 카드 */
 export interface RecentOutfit {
-  id: string;
+  id: number;
   image: string;
   /** 예: '2026.06.27' */
   date: string;

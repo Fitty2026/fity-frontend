@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { StudioHeader, StudioBottomNav, SectionHeader, RecentOutfitCard } from '@/features/styling/components';
-import type { RecentOutfit } from '@/features/styling/types';
+import { StudioHeader, StudioBottomNav, SectionHeader } from '@/features/styling/components';
+import MyOutfitCard from '@/features/myoutfit/components/MyOutfitCard';
 import useMyOutfits from '@/features/myoutfit/hooks/useMyOutfits';
 import heroBlob from '@/assets/images/styling/hero-blob.png';
 
@@ -11,16 +11,9 @@ import heroBlob from '@/assets/images/styling/hero-blob.png';
 const StylingStartPage = () => {
   const navigate = useNavigate();
   const { data, error, isPending, refetch } = useMyOutfits();
-  const recentOutfits: RecentOutfit[] = [...(data?.outfits ?? [])]
+  const recentOutfits = [...(data?.outfits ?? [])]
     .sort((first, second) => second.createdAt.localeCompare(first.createdAt))
-    .slice(0, 2)
-    .map((outfit) => ({
-      id: outfit.id,
-      image: outfit.imageUrl,
-      date: outfit.createdAt.slice(0, 10).split('-').join('.'),
-      tags: outfit.styleTags,
-      title: outfit.context ?? '저장한 코디',
-    }));
+    .slice(0, 2);
 
   return (
     <div className="min-h-screen bg-neutral-100 flex justify-center">
@@ -72,11 +65,7 @@ const StylingStartPage = () => {
               ))}
             {!isPending &&
               recentOutfits.map((outfit) => (
-              <RecentOutfitCard
-                key={outfit.id}
-                outfit={outfit}
-                onClick={() => navigate(`/myoutfit/${outfit.id}`)}
-              />
+                <MyOutfitCard key={outfit.id} outfit={outfit} />
               ))}
           </div>
           {!isPending && error && (
