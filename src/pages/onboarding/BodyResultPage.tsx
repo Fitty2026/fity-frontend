@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import Button from '@/components/ui/Button';
 import { BODY_TYPES } from '@/features/onboarding/bodyConstants';
 import OnboardingLayout from '@/features/onboarding/components/OnboardingLayout';
+import { toBodyResultView } from '@/features/onboarding/bodyProfileView';
+import useSaveBodyProfile from '@/features/onboarding/hooks/useSaveBodyProfile';
+import { ApiError, getErrorMessage } from '@/lib/apiError';
 import useAuthStore from '@/store/authStore';
 import useOnboardingStore from '@/store/onboardingStore';
 
@@ -15,6 +18,7 @@ const BodyResultPage = () => {
   const bodyType = useOnboardingStore((s) => s.bodyType);
   const bodyPhotoUrls = useOnboardingStore((s) => s.bodyPhotoUrls);
   const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
+  const { mutate: saveBodyProfile, isPending, error } = useSaveBodyProfile();
   const [phase, setPhase] = useState<Phase>('measurements');
 
   // 분석 결과 없이 직접 진입하면 체형 단계 처음으로
@@ -24,14 +28,32 @@ const BodyResultPage = () => {
 
   if (!result) return null;
 
+  const view = toBodyResultView(result);
   const typeIllustration =
     BODY_TYPES.find((option) => option.type === bodyType)?.imageSrc ?? BODY_TYPES[0].imageSrc;
 
   const handleRetry = () => navigate('/onboarding/body/photo');
 
-  const handleFinish = () => {
+  const finishOnboarding = () => {
     completeOnboarding();
     navigate('/home', { replace: true });
+  };
+
+  const handleFinish = () => {
+    // PROFILE-03 저장 성공 시 온보딩 완료. 이미 등록된 경우(409)도 완료로 진행
+    saveBodyProfile(
+      {
+        analysisId: result.analysisId,
+        measurements: result.measurements,
+        bodyType: result.bodyTypeResult.bodyType,
+      },
+      {
+        onSuccess: finishOnboarding,
+        onError: (err) => {
+          if (err instanceof ApiError && err.code === 'PROFILE409_1') finishOnboarding();
+        },
+      },
+    );
   };
 
   return (
@@ -43,7 +65,7 @@ const BodyResultPage = () => {
           {/* 사진 + 좌우 치수 라벨 */}
           <div className="mt-8 flex flex-1 items-center justify-center gap-3">
             <div className="flex flex-col gap-6">
-              {result.measurements
+              {view.measurements
                 .filter((m) => m.side === 'left')
                 .map((m) => (
                   <div key={m.label} className="text-right">
@@ -64,7 +86,7 @@ const BodyResultPage = () => {
             </div>
 
             <div className="flex flex-col gap-10">
-              {result.measurements
+              {view.measurements
                 .filter((m) => m.side === 'right')
                 .map((m) => (
                   <div key={m.label}>
@@ -91,7 +113,7 @@ const BodyResultPage = () => {
           <h2 className="text-center text-lg font-semibold leading-relaxed">
             {nickname}님의 체형은
             <br />
-            {result.typeName} 체형이에요
+            {view.typeName} 체형이에요
           </h2>
 
           {/* 유형 카드 */}
@@ -101,12 +123,12 @@ const BodyResultPage = () => {
             </div>
             <div className="flex flex-col justify-center gap-1">
               <p className="text-xs text-neutral-400">체형 유형</p>
-              <p className="text-base font-bold">{result.typeName}</p>
-              <p className="text-xs leading-relaxed text-neutral-500">{result.typeDescription}</p>
+              <p className="text-base font-bold">{view.typeName}</p>
+              <p className="text-xs leading-relaxed text-neutral-500">{view.typeDescription}</p>
               <p className="mt-2 text-[11px] text-neutral-400">
                 이 유형과 같은 체형의 연예인
                 <br />
-                <span className="text-neutral-500">{result.celebrities.join(', ')}</span>
+                <span className="text-neutral-500">{view.celebrities.join(', ')}</span>
               </p>
             </div>
           </div>
@@ -115,7 +137,7 @@ const BodyResultPage = () => {
           <div className="mt-6">
             <h3 className="text-sm font-semibold">체형 특징</h3>
             <div className="mt-3 flex flex-col gap-3">
-              {result.traits.map((trait) => (
+              {view.traits.map((trait) => (
                 <div key={trait.label} className="flex items-center gap-3 text-xs">
                   <span className="w-16 shrink-0 text-neutral-500">{trait.label}</span>
                   <div className="h-1.5 flex-1 rounded-full bg-neutral-100">
@@ -138,7 +160,16 @@ const BodyResultPage = () => {
             >
               다시 분석하기
             </button>
-            <Button label="분석 결과 저장하고 시작하기" shape="pill" fullWidth onClick={handleFinish} />
+            {error && (
+              <p className="text-center text-sm text-red-500">{getErrorMessage(error)}</p>
+            )}
+            <Button
+              label={isPending ? '저장 중...' : '분석 결과 저장하고 시작하기'}
+              shape="pill"
+              fullWidth
+              disabled={isPending}
+              onClick={handleFinish}
+            />
           </div>
         </div>
       )}

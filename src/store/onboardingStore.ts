@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { BodyAnalysisResult } from '../features/onboarding/api/bodyAnalysisApi';
+import type { BodyAnalyzeResult } from '../features/onboarding/api/bodyProfileApi';
 import type { StyleTag } from '../types';
 
 export type BodyType = 'straight' | 'wave' | 'natural';
@@ -10,14 +10,14 @@ interface OnboardingState {
   bodyType: BodyType | null;
   /** 촬영/업로드한 체형 사진 objectURL - 세션 한정이라 persist 제외 */
   bodyPhotoUrls: string[];
-  analysisResult: BodyAnalysisResult | null;
+  analysisResult: BodyAnalyzeResult | null;
   isOnboardingComplete: boolean;
   marketingAgreed: boolean;
 
   toggleStyle: (style: StyleTag) => void;
   setBodyType: (type: BodyType) => void;
   setBodyPhotoUrls: (urls: string[]) => void;
-  setAnalysisResult: (result: BodyAnalysisResult) => void;
+  setAnalysisResult: (result: BodyAnalyzeResult) => void;
   setMarketingAgreed: (agreed: boolean) => void;
   completeOnboarding: () => void;
   reset: () => void;
