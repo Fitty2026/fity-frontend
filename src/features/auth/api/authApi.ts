@@ -55,15 +55,23 @@ export const socialLogin = async (provider: SocialProvider): Promise<SocialLogin
   };
 };
 
-// ── AUTH-01 회원가입: 요청의 agreements 처리 방식을 백엔드와 조율 중이라 mock 유지 ──
+// ── AUTH-01 이메일 회원가입 (POST /api/v1/auth/signup) ──
 export interface SignupParams {
   name: string;
-  username: string;
+  loginId: string;
   email: string;
   password: string;
 }
 
-export const signup = async (params: SignupParams): Promise<void> => {
-  void params; // mock에서는 입력값을 사용하지 않는다
-  await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
+export interface SignupResult {
+  userId: number;
+  loginId: string;
+  email: string;
+  name: string;
+  createdAt: string;
+}
+
+export const signup = async (params: SignupParams): Promise<SignupResult> => {
+  const { data } = await api.post<ApiResponse<SignupResult>>('/api/v1/auth/signup', params);
+  return data.result;
 };
