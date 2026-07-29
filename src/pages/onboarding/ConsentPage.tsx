@@ -5,6 +5,8 @@ import BlobIntro from '@/features/onboarding/components/BlobIntro';
 import OnboardingLayout from '@/features/onboarding/components/OnboardingLayout';
 import TermsDetailView from '@/features/onboarding/components/TermsDetailView';
 import { TERMS_DOCS, type TermsKey } from '@/features/onboarding/termsData';
+import useSaveAgreements from '@/features/onboarding/hooks/useSaveAgreements';
+import { ApiError, getErrorMessage } from '@/lib/apiError';
 import useOnboardingStore from '@/store/onboardingStore';
 
 const INTRO_DURATION_MS = 2500;
@@ -39,6 +41,7 @@ const CheckCircle = ({ checked }: { checked: boolean }) => (
 const ConsentPage = () => {
   const navigate = useNavigate();
   const setMarketingAgreed = useOnboardingStore((s) => s.setMarketingAgreed);
+  const { mutate: saveAgreements, isPending, error } = useSaveAgreements();
   const [showIntro, setShowIntro] = useState(true);
   const [agreed, setAgreed] = useState<Record<ConsentKey, boolean>>({
     terms: false,
@@ -65,9 +68,25 @@ const ConsentPage = () => {
     setAgreed((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const goNext = () => navigate('/onboarding/style');
+
   const handleNext = () => {
     setMarketingAgreed(agreed.marketing);
-    navigate('/onboarding/style');
+    // 약관 동의 저장(USER-01) 성공 시 다음으로. 이미 동의 완료한 회원(409)도 통과
+    saveAgreements(
+      {
+        termsOfService: agreed.terms,
+        privacyPolicy: agreed.privacy,
+        aiUsage: agreed.aiImage,
+        marketing: agreed.marketing,
+      },
+      {
+        onSuccess: goNext,
+        onError: (err) => {
+          if (err instanceof ApiError && err.code === 'USER409_01') goNext();
+        },
+      },
+    );
   };
 
   return (
@@ -127,11 +146,14 @@ const ConsentPage = () => {
           </div>
 
           <div className="mt-auto pt-8">
+            {error && (
+              <p className="mb-2 text-center text-sm text-red-500">{getErrorMessage(error)}</p>
+            )}
             <Button
-              label="다음"
+              label={isPending ? '저장 중...' : '다음'}
               shape="pill"
               fullWidth
-              disabled={!requiredAgreed}
+              disabled={!requiredAgreed || isPending}
               onClick={handleNext}
             />
           </div>

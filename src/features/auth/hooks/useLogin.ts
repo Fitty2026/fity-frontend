@@ -5,13 +5,15 @@ import useOnboardingStore from '@/store/onboardingStore';
 import type { SocialProvider, User } from '@/types';
 import { getMyProfile, login, socialLogin } from '../api/authApi';
 
-/** 로그인 응답(최소 정보)으로 임시 User를 구성 - 이어지는 프로필 조회로 완성한다 */
-const buildUser = (userId: number, email: string, nickname: string): User => ({
+/** 로그인 응답(최소 정보)으로 임시 User를 구성 - 이어지는 프로필/마이홈 조회로 완성한다 */
+const buildUser = (userId: number, nickname: string): User => ({
   id: userId,
-  email,
   nickname,
   profileImageUrl: null,
-  stylePreferences: [],
+  starBalance: 0,
+  bodyTypeName: null,
+  styleTags: [],
+  stats: { month: 0, registeredClothesCount: 0, generatedOutfitsCount: 0, savedOutfitsCount: 0 },
 });
 
 /** 이메일/소셜 로그인 + 인증 상태 저장 + 온보딩/홈 분기 */
@@ -20,14 +22,9 @@ const useLogin = () => {
   const setUser = useAuthStore((s) => s.setUser);
   const setToken = useAuthStore((s) => s.setToken);
 
-  const afterLogin = async (
-    userId: number,
-    email: string,
-    nickname: string,
-    accessToken: string,
-  ) => {
+  const afterLogin = async (userId: number, nickname: string, accessToken: string) => {
     setToken(accessToken);
-    setUser(buildUser(userId, email, nickname)); // 임시 User (즉시 표시용)
+    setUser(buildUser(userId, nickname)); // 임시 User (즉시 표시용)
     // 프로필(PROFILE-01)로 실제 정보 완성 - 실패해도 로그인은 유지
     try {
       setUser(await getMyProfile());
@@ -41,14 +38,12 @@ const useLogin = () => {
 
   const emailMutation = useMutation({
     mutationFn: login,
-    onSuccess: (result, variables) =>
-      afterLogin(result.userId, variables.email, result.nickname, result.accessToken),
+    onSuccess: (result) => afterLogin(result.userId, result.nickname, result.accessToken),
   });
 
   const socialMutation = useMutation({
     mutationFn: socialLogin,
-    onSuccess: (result) =>
-      afterLogin(result.userId, result.email, result.nickname, result.accessToken),
+    onSuccess: (result) => afterLogin(result.userId, result.nickname, result.accessToken),
   });
 
   return {
