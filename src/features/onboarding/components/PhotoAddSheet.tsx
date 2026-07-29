@@ -4,8 +4,10 @@ import BottomSheet from '@/components/ui/BottomSheet';
 interface PhotoAddSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  /** 촬영/선택한 파일의 objectURL을 전달 */
+  /** 앨범에서 선택한 파일의 objectURL을 전달 */
   onSelect: (url: string) => void;
+  /** 카메라 촬영 시작 (웹캠 오버레이 오픈) */
+  onCamera: () => void;
 }
 
 const CameraIcon = () => (
@@ -24,8 +26,7 @@ const AlbumIcon = () => (
 );
 
 /** 체형 사진 추가 바텀시트 — 카메라 촬영 / 앨범 선택으로 한 장 선택 */
-const PhotoAddSheet = ({ isOpen, onClose, onSelect }: PhotoAddSheetProps) => {
-  const cameraInputRef = useRef<HTMLInputElement>(null);
+const PhotoAddSheet = ({ isOpen, onClose, onSelect, onCamera }: PhotoAddSheetProps) => {
   const albumInputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,7 +43,7 @@ const PhotoAddSheet = ({ isOpen, onClose, onSelect }: PhotoAddSheetProps) => {
       <div className="flex flex-col">
         <button
           type="button"
-          onClick={() => cameraInputRef.current?.click()}
+          onClick={onCamera}
           className="flex h-14 w-full items-center gap-4 text-left text-neutral-800"
         >
           <CameraIcon />
@@ -58,15 +59,6 @@ const PhotoAddSheet = ({ isOpen, onClose, onSelect }: PhotoAddSheetProps) => {
         </button>
       </div>
 
-      {/* 카메라: 모바일에서 후면 카메라 직접 실행 (데스크톱은 파일창) */}
-      <input
-        ref={cameraInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={handleFile}
-      />
       <input ref={albumInputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
     </BottomSheet>
   );

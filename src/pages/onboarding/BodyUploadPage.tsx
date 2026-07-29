@@ -6,6 +6,7 @@ import mannequinBack from '@/assets/images/body/back.png';
 import mannequinFront from '@/assets/images/body/front.png';
 import mannequinSide from '@/assets/images/body/side.png';
 import Button from '@/components/ui/Button';
+import CameraCapture from '@/features/onboarding/components/CameraCapture';
 import OnboardingLayout from '@/features/onboarding/components/OnboardingLayout';
 import PhotoAddSheet from '@/features/onboarding/components/PhotoAddSheet';
 import PhotoSlotGrid from '@/features/onboarding/components/PhotoSlotGrid';
@@ -61,6 +62,7 @@ const BodyUploadPage = () => {
   const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
   const [phase, setPhase] = useState<Phase>('select');
   const [sheetTarget, setSheetTarget] = useState<SheetTarget>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
 
   const count = bodyPhotoUrls.length;
   const hasPhotos = count > 0;
@@ -84,10 +86,20 @@ const BodyUploadPage = () => {
     e.target.value = '';
   };
 
-  // 바텀시트 선택: 새 슬롯 추가 또는 해당 슬롯 교체
-  const handleSheetSelect = (url: string) => {
+  // 앨범/카메라 선택 결과를 대상 슬롯에 반영 (새 슬롯 추가 또는 해당 슬롯 교체)
+  const applyPhoto = (url: string) => {
     if (typeof sheetTarget === 'number') replaceBodyPhotoUrl(sheetTarget, url);
     else addBodyPhotoUrl(url);
+  };
+
+  const closeAll = () => {
+    setCameraOpen(false);
+    setSheetTarget(null);
+  };
+
+  const handleCapture = (url: string) => {
+    applyPhoto(url);
+    closeAll();
   };
 
   return (
@@ -212,10 +224,13 @@ const BodyUploadPage = () => {
       </div>
 
       <PhotoAddSheet
-        isOpen={sheetTarget !== null}
+        isOpen={sheetTarget !== null && !cameraOpen}
         onClose={() => setSheetTarget(null)}
-        onSelect={handleSheetSelect}
+        onSelect={applyPhoto}
+        onCamera={() => setCameraOpen(true)}
       />
+
+      {cameraOpen && <CameraCapture onClose={closeAll} onCapture={handleCapture} />}
     </OnboardingLayout>
   );
 };
