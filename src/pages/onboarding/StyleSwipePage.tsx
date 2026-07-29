@@ -7,6 +7,8 @@ import Button from '@/components/ui/Button';
 import BlobIntro from '@/features/onboarding/components/BlobIntro';
 import OnboardingLayout from '@/features/onboarding/components/OnboardingLayout';
 import { STYLE_TILES } from '@/features/onboarding/constants';
+import useSaveOnboardingStyle from '@/features/onboarding/hooks/useSaveOnboardingStyle';
+import { getErrorMessage } from '@/lib/apiError';
 import useOnboardingStore from '@/store/onboardingStore';
 
 const INTRO_DURATION_MS = 2500;
@@ -19,6 +21,17 @@ const StyleSwipePage = () => {
   const navigate = useNavigate();
   const selectedStyles = useOnboardingStore((s) => s.selectedStyles);
   const toggleStyle = useOnboardingStore((s) => s.toggleStyle);
+  const { mutate: saveStyle, isPending, error } = useSaveOnboardingStyle();
+
+  const handleNext = () => {
+    // 선택한 태그를 서버 tagId로 변환해 저장, 성공 시에만 다음 화면으로 이동
+    const styleTagIds = STYLE_TILES.filter((tile) => selectedStyles.includes(tile.tag)).map(
+      (tile) => tile.tagId,
+    );
+    saveStyle(styleTagIds, {
+      onSuccess: () => navigate('/onboarding/style/confirm'),
+    });
+  };
 
   const [showIntro, setShowIntro] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -144,12 +157,15 @@ const StyleSwipePage = () => {
           </div>
 
           <div className="mt-6 px-6">
+            {error && (
+              <p className="mb-2 text-center text-sm text-red-500">{getErrorMessage(error)}</p>
+            )}
             <Button
-              label="다음"
+              label={isPending ? '저장 중...' : '다음'}
               shape="pill"
               fullWidth
-              disabled={selectedStyles.length === 0}
-              onClick={() => navigate('/onboarding/style/confirm')}
+              disabled={selectedStyles.length === 0 || isPending}
+              onClick={handleNext}
             />
           </div>
         </div>
