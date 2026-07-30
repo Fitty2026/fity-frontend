@@ -18,6 +18,12 @@ interface OnboardingState {
   setBodyType: (type: BodyType) => void;
   setBodyPhotoUrls: (urls: string[]) => void;
   setAnalysisResult: (result: BodyAnalyzeResult) => void;
+  
+  /** 체형 사진 한 장 추가 (최대 3장) */
+  addBodyPhotoUrl: (url: string) => void;
+  /** 특정 슬롯(index)의 체형 사진 교체 */
+  replaceBodyPhotoUrl: (index: number, url: string) => void;
+  
   setMarketingAgreed: (agreed: boolean) => void;
   completeOnboarding: () => void;
   reset: () => void;
@@ -44,6 +50,14 @@ const useOnboardingStore = create<OnboardingState>()(
       setBodyType: (type) => set({ bodyType: type }),
 
       setBodyPhotoUrls: (urls) => set({ bodyPhotoUrls: urls }),
+
+      addBodyPhotoUrl: (url) =>
+        set((state) => ({ bodyPhotoUrls: [...state.bodyPhotoUrls, url].slice(0, 3) })),
+
+      replaceBodyPhotoUrl: (index, url) =>
+        set((state) => ({
+          bodyPhotoUrls: state.bodyPhotoUrls.map((u, i) => (i === index ? url : u)),
+        })),
 
       setAnalysisResult: (result) => set({ analysisResult: result }),
 
