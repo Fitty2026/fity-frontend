@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/ui/Button';
+import type { ServerBodyType } from '@/features/onboarding/api/bodyProfileApi';
 import BlobIntro from '@/features/onboarding/components/BlobIntro';
 import OnboardingLayout from '@/features/onboarding/components/OnboardingLayout';
 import { BODY_TYPES, type BodyTypeOption } from '@/features/onboarding/bodyConstants';
+import useSaveBodyType from '@/features/onboarding/hooks/useSaveBodyType';
+import { getErrorMessage } from '@/lib/apiError';
 import useOnboardingStore from '@/store/onboardingStore';
 
 const INTRO_DURATION_MS = 2500;
@@ -12,6 +15,7 @@ const BodyTypePage = () => {
   const navigate = useNavigate();
   const setBodyType = useOnboardingStore((s) => s.setBodyType);
   const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
+  const { mutate: saveBodyType, isPending, error } = useSaveBodyType();
   const [showIntro, setShowIntro] = useState(true);
   const [selected, setSelected] = useState<BodyTypeOption | null>(null);
   const [showDescription, setShowDescription] = useState(false);
@@ -34,7 +38,10 @@ const BodyTypePage = () => {
   const handleConfirm = () => {
     if (!selected) return;
     setBodyType(selected.type);
-    navigate('/onboarding/body/photo');
+    // 서버 저장(PROFILE-01) 성공 시에만 다음 화면으로
+    saveBodyType(selected.type.toUpperCase() as ServerBodyType, {
+      onSuccess: () => navigate('/onboarding/body/photo'),
+    });
   };
 
   return (
@@ -63,11 +70,14 @@ const BodyTypePage = () => {
           </div>
 
           <div className="mt-auto pt-8">
+            {error && (
+              <p className="mb-2 text-center text-sm text-red-500">{getErrorMessage(error)}</p>
+            )}
             <Button
-              label="확인"
+              label={isPending ? '저장 중...' : '확인'}
               shape="pill"
               fullWidth
-              disabled={!selected}
+              disabled={!selected || isPending}
               onClick={handleConfirm}
             />
           </div>
