@@ -127,7 +127,7 @@ const ClosetPlatformPage = () => {
         </div>
 
         <p className="relative z-20 mt-[52px] text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
-          연동할 쇼핑몰을 선택해주세요
+          등록할 쇼핑몰을 선택해주세요
         </p>
 
         {/* 휠 영역 */}

@@ -72,14 +72,47 @@ const SheetAlbumIcon = () => (
   </svg>
 );
 
+/** 좋아요 하트 — 16×16, stroke #1F2124. 누르면 채워진다 */
+const HeartIcon = ({ liked }: { liked: boolean }) => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M14 5.5C14 3.84333 12.6007 2.5 10.8747 2.5C9.58467 2.5 8.47667 3.25067 8 4.322C7.52333 3.25067 6.41533 2.5 5.12467 2.5C3.4 2.5 2 3.84333 2 5.5C2 10.3133 8 13.5 8 13.5C8 13.5 14 10.3133 14 5.5Z"
+      fill={liked ? '#1F2124' : 'none'}
+      stroke="#1F2124"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+interface ClothesRowProps {
+  items: ClothingItem[];
+  onItemClick: (id: string) => void;
+  likedIds: Set<string>;
+  onToggleLike: (id: string) => void;
+}
+
 /** 옷 가로 스크롤 행 — 스크롤바 숨김 + 하단 구분선(좌우 24). 아이템 클릭 시 상세 이동 */
-const ClothesRow = ({ items, onItemClick }: { items: ClothingItem[]; onItemClick: (id: string) => void }) => (
+const ClothesRow = ({ items, onItemClick, likedIds, onToggleLike }: ClothesRowProps) => (
   <div>
     <div className="flex gap-2 overflow-x-auto px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {items.map((item) => (
-        <button key={item.id} type="button" onClick={() => onItemClick(item.id)} className="shrink-0 cursor-pointer">
-          <img src={item.imageUrl} alt={item.tags.join(' ')} loading="lazy" className="h-[134px] w-[104px] rounded-2xl object-cover" />
-        </button>
+        <div key={item.id} className="relative shrink-0">
+          <button type="button" onClick={() => onItemClick(item.id)} className="block cursor-pointer">
+            <img src={item.imageUrl} alt={item.tags.join(' ')} loading="lazy" className="h-[134px] w-[104px] rounded-2xl object-cover" />
+          </button>
+          {/* 좋아요 — 카드 우상단, 위·오른쪽 8 */}
+          <button
+            type="button"
+            onClick={() => onToggleLike(item.id)}
+            className="absolute right-2 top-2 cursor-pointer"
+            aria-label={likedIds.has(item.id) ? '좋아요 취소' : '좋아요'}
+            aria-pressed={likedIds.has(item.id)}
+          >
+            <HeartIcon liked={likedIds.has(item.id)} />
+          </button>
+        </div>
       ))}
     </div>
     {/* 구분선 — 좌우 24 안쪽 */}
@@ -100,6 +133,16 @@ const ClosetHomePage = () => {
   const filled = items.length > 0;
   const [search, setSearch] = useState('');
   const [showAddSheet, setShowAddSheet] = useState(false);
+  // 좋아요 — 저장 API가 없어 화면 안에서만 유지 (TODO: 옷장 API에 좋아요 붙으면 연동)
+  const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+
+  const toggleLike = (id: string) =>
+    setLikedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
 
   // 현황 카드 카운트 — items 바뀔 때만 재계산 (검색과 무관, 전체 기준)
   const counts = useMemo(() => {
@@ -189,6 +232,8 @@ const ClosetHomePage = () => {
                   key={row.category}
                   items={row.items}
                   onItemClick={(id) => navigate(`/closet/items/${id}`)}
+                  likedIds={likedIds}
+                  onToggleLike={toggleLike}
                 />
               ))}
               {rows.length === 0 && (

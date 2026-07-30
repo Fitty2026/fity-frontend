@@ -4,6 +4,9 @@ interface OnboardingTopBarProps {
   /** 우측 "건너뛰기" 노출 여부 */
   showSkip?: boolean;
   onSkip?: () => void;
+  /** 좌측 뒤로가기 노출 여부 */
+  showBack?: boolean;
+  onBack?: () => void;
 }
 
 /**
@@ -11,10 +14,29 @@ interface OnboardingTopBarProps {
  * Figma: Fitty = Instrument Sans 700 / 23px / #1F2124.
  * 진행 바 = 375×4, 채움 #9D98F0 / 트랙 #E6E8EA.
  */
-const OnboardingTopBar = ({ progress, showSkip = false, onSkip }: OnboardingTopBarProps) => {
+const OnboardingTopBar = ({
+  progress,
+  showSkip = false,
+  onSkip,
+  showBack = false,
+  onBack,
+}: OnboardingTopBarProps) => {
   return (
     <div className="w-full bg-white pt-[env(safe-area-inset-top,0px)]">
       <div className="relative flex items-center justify-center h-[53px] px-4">
+        {showBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="absolute left-6 flex h-6 w-6 cursor-pointer items-center justify-center"
+            aria-label="뒤로"
+          >
+            {/* 뒤로 — 24×24 */}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 19L8 12L15 5" stroke="#1F2124" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        )}
         <span className="font-['Instrument_Sans'] font-bold text-[23px] leading-none text-[#1F2124]">
           Fitty
         </span>

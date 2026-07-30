@@ -151,11 +151,13 @@ const ClosetAddedPage = () => {
           >
             옷장 보러가기
           </button>
-          {/* 코디 시작하기 — 코디 생성 시작 화면(타 파트)으로 이동 */}
+          {/* 코디 시작하기 — 체크 반전과 함께 검정으로 전환. 코디 생성 시작 화면(타 파트)으로 이동 */}
           <button
             type="button"
             onClick={() => navigate('/styling')}
-            className="w-full h-[58px] rounded-[32px] bg-[#F6F7F8] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124] cursor-pointer"
+            className={`w-full h-[58px] rounded-[32px] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] cursor-pointer transition-colors duration-300 ${
+              filledCheck ? 'bg-[#1F2124] text-[#F6F7F8]' : 'bg-[#F6F7F8] text-[#1F2124]'
+            }`}
           >
             코디 시작하기
           </button>

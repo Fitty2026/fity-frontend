@@ -31,13 +31,14 @@ const ReceiptIcon = () => (
 const OPTIONS = [
   { key: 'album', label: '앨범에서 선택', icon: <AlbumIcon />, to: '/closet/register/upload' },
   { key: 'camera', label: '카메라로 촬영', icon: <CameraIcon />, to: '/closet/register/photo' },
-  { key: 'platform', label: '쇼핑몰 연동하기', icon: <BagIcon />, to: '/closet/register/platform' },
+  // OCR(구매내역) 방식으로 전환 예정 — 라벨은 임시, 라우트는 화면 확정 후 변경
+  { key: 'platform', label: '구매내역으로 등록하기', icon: <BagIcon />, to: '/closet/register/platform' },
   { key: 'receipt', label: '영수증 불러오기', icon: <ReceiptIcon />, to: '/closet/register/receipt' },
 ];
 
 /**
  * 옷장 등록 방식 선택 (자동/직접).
- * 타이틀 + 4가지 등록 방식(앨범/카메라/쇼핑몰/영수증) 그룹 카드.
+ * 타이틀 + 4가지 등록 방식(앨범/카메라/구매내역/영수증) 그룹 카드.
  */
 const ClosetRegisterPage = () => {
   const navigate = useNavigate();
