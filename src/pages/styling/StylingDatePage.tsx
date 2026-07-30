@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { StudioHeader, ScreenTitle, DateField, StudioCalendar, WheelDatePicker, BottomCTA } from '@/features/styling/components';
 
+/** OUTFIT-01 selectedDate 형식 (YYYY-MM-DD) */
+const toApiDate = (year: number, month: number, day: number) =>
+  `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
 /**
  * 날짜 선택 (상황별 추천 플로우)
  * - 헤더(뒤로·스튜디오·건너뛰기) + 안내 + 날짜 필드 + 캘린더 + 다음 CTA
@@ -96,7 +100,9 @@ const StylingDatePage = () => {
 
         <BottomCTA
           label="다음"
-          onClick={() => navigate('/styling/weather', { state: { year, month, day: selectedDay } })}
+          onClick={() => navigate('/styling/weather', {
+                state: { year, month, day: selectedDay, selectedDate: toApiDate(year, month, selectedDay) },
+              })}
         />
       </div>
     </div>

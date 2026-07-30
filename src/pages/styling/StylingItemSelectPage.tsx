@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { StudioHeader, ScreenTitle, SearchField, FilterChips, SortChip, BottomCTA } from '@/features/styling/components';
 import useClosets from '@/features/closet/hooks/useClosets';
+import type { OutfitJobInput } from '@/features/styling/types';
 import type { ClothingCategory } from '@/types';
 
 const CATEGORIES = ['전체', '상의', '하의', '신발', '악세사리', '기타'];
@@ -27,6 +28,8 @@ const ROW_CHIPS = ['상의', '하의', '신발', '악세사리', '기타'];
  */
 const StylingItemSelectPage = () => {
   const navigate = useNavigate();
+  // 앞 화면(날짜·날씨·상황)에서 넘어온 값을 그대로 실어 보낸다
+  const { state } = useLocation() as { state: Partial<OutfitJobInput> | null };
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('전체');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -122,7 +125,9 @@ const StylingItemSelectPage = () => {
             disabled={selectedIds.length === 0}
             // 선택한 아이템 id를 로딩 화면으로 전달 (OUTFIT-01은 숫자 배열을 받는다)
             onClick={() =>
-              navigate('/styling/loading', { state: { closetItemIds: selectedIds.map(Number) } })
+              navigate('/styling/loading', {
+                state: { ...state, closetItemIds: selectedIds.map(Number) },
+              })
             }
           />
         </div>

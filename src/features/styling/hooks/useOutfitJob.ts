@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getOutfitJob } from '../api/stylingApi';
 import { TERMINAL_JOB_STATUSES } from '../types';
 
-/** 폴링 주기 — 백엔드 권장값 없어 임시 (확정되면 교체) */
+/** 폴링 주기 — 백엔드 권장값 */
 const POLL_INTERVAL_MS = 2000;
 
 /**
@@ -31,6 +31,8 @@ const useOutfitJob = (jobId: number | null) => {
   return {
     job,
     status,
+    /** 서버가 주는 진행률 0~100 (FE에서 따로 계산하지 않는다) */
+    progress: job?.progress ?? 0,
     isCompleted: status === 'completed',
     isFailed: status === 'failed' || status === 'expired',
     isLoading: query.isLoading,
