@@ -4,7 +4,7 @@ import { OnboardingTopBar } from '@/features/closet/components';
 import completeBgBlob from '@/assets/images/closet/complete-bg-blob.png';
 
 /**
- * 디지털 옷장 온보딩 완료 — "Fitty를 이용할 준비가 다 됐어요" + blob + 시작하기.
+ * 디지털 옷장 온보딩 완료 — "Fitty를 이용할 준비가 다 되었어요" + blob + 시작하기.
  */
 const ClosetCompletePage = () => {
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ const ClosetCompletePage = () => {
 
           {/* 타이틀 — 로딩바 아래 152 (Figma Top 259) */}
           <p className="absolute top-[152px] left-1/2 -translate-x-1/2 w-full px-6 text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
-            Fitty를 이용할 준비가 다 됐어요
+            Fitty를 이용할 준비가 다 되었어요
           </p>
         </div>
 

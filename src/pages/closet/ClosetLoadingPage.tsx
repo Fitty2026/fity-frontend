@@ -14,9 +14,27 @@ const DONE_HOLD_MS = 1200;
 // TODO(스펙): category enum·선택 UI 미확정 → 임시 기본값 (BE3 확인 후 교체)
 const DEFAULT_CATEGORY: ApiClosetCategory = 'TOP';
 
-const COPY: Record<ClosetLoadingVariant, { loading: string; done: string }> = {
-  import: { loading: '구매내역을 불러 오는 중이에요', done: '구매내역을 불러왔어요' },
-  analyze: { loading: '사진을 분석하는 중이에요', done: '사진 분석이 끝났어요' },
+/** 진행률(0~1) 구간별 문구. until = 이 값 이하일 때 쓰는 문구 */
+type LoadingStage = { until: number; text: string };
+
+// 진행률에 따라 문구가 바뀐다. import 전환 지점(0.5)은 미확정 — 기준 받으면 교체
+const LOADING_STAGES: Record<ClosetLoadingVariant, LoadingStage[]> = {
+  import: [
+    { until: 0.5, text: '정보를 인식하는 중이에요' },
+    { until: 1, text: '구매내역을 불러오는 중이에요' },
+  ],
+  analyze: [{ until: 1, text: '사진을 분석하는 중이에요' }],
+};
+
+const DONE_COPY: Record<ClosetLoadingVariant, string> = {
+  import: '구매내역을 불러왔어요',
+  analyze: '사진 분석이 끝났어요',
+};
+
+/** 진행률에 해당하는 문구 */
+const stageText = (variant: ClosetLoadingVariant, progress: number) => {
+  const stages = LOADING_STAGES[variant];
+  return (stages.find((stage) => progress <= stage.until) ?? stages[stages.length - 1]).text;
 };
 
 /**
@@ -30,9 +48,19 @@ const ClosetLoadingPage = ({ variant = 'analyze' }: { variant?: ClosetLoadingVar
   const { file, importType } = (location.state ?? {}) as { file?: File; importType?: ImportType };
   const { addItemAsync, error } = useAddClosetItem();
   const [done, setDone] = useState(false);
+  const [progress, setProgress] = useState(0);
   const submittedRef = useRef(false); // 등록 1회 보장 (StrictMode/재마운트 중복 호출 방지)
 
-  const copy = COPY[variant];
+  // 진행률 — 옷걸이 채우기와 같은 속도로 흐르게 한다.
+  // (OCR 작업 상태 폴링이 붙으면 서버 진행률로 교체)
+  useEffect(() => {
+    if (done) return;
+    const start = performance.now();
+    const timer = setInterval(() => {
+      setProgress(Math.min(1, (performance.now() - start) / FILL_MS));
+    }, 100);
+    return () => clearInterval(timer);
+  }, [done]);
 
   // 등록 실행 — file 있으면 실제 API(업로드→등록)
   useEffect(() => {
@@ -74,12 +102,13 @@ const ClosetLoadingPage = ({ variant = 'analyze' }: { variant?: ClosetLoadingVar
     };
   }, [variant, file, importType, addItemAsync, navigate]);
 
-  // 완료 표시 후 추가 완료 화면으로 이동
+  // 완료 표시 후 다음 화면으로 이동 — import는 인식 결과 확인을 거친다
   useEffect(() => {
     if (!done) return;
-    const t = setTimeout(() => navigate('/closet/register/added'), DONE_HOLD_MS);
+    const next = variant === 'import' ? '/closet/register/tags' : '/closet/register/added';
+    const t = setTimeout(() => navigate(next), DONE_HOLD_MS);
     return () => clearTimeout(t);
-  }, [done, navigate]);
+  }, [done, navigate, variant]);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
@@ -88,7 +117,7 @@ const ClosetLoadingPage = ({ variant = 'analyze' }: { variant?: ClosetLoadingVar
 
         {/* 안내 문구 — 로딩바 아래 156px */}
         <h1 className="mt-[156px] text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
-          {error ? '등록에 실패했어요' : done ? copy.done : copy.loading}
+          {error ? '등록에 실패했어요' : done ? DONE_COPY[variant] : stageText(variant, progress)}
         </h1>
 
         {/* 옷걸이 — 타이틀 아래 72px */}
