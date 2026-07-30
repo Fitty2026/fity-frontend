@@ -160,7 +160,7 @@ const ClosetPermissionPage = () => {
           <button
             type="button"
             disabled={!allChecked}
-            onClick={allChecked ? () => navigate('/closet/register/importing') : undefined}
+            onClick={allChecked ? () => navigate('/closet/register/capture-guide') : undefined}
             className={[
               'w-full h-[58px] rounded-[32px] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em]',
               allChecked ? 'text-[#F6F7F8] cursor-pointer' : 'text-[#959BA7] cursor-not-allowed',
