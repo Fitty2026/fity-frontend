@@ -15,11 +15,14 @@ export interface BodyMeasurements {
   legLength: number;
 }
 
-/**
- * 체형 유형 분석 결과.
- * bodyBalance/boneStructure/muscleMass는 PROFILE-02(분석)는 enum(BALANCED 등),
- * PROFILE-04(조회)는 한글(균형형 등)로 내려와 값이 섞임 → 표시 시 매퍼가 흡수.
- */
+/** 체형 밸런스 enum */
+export type BodyBalance = 'UPPER_BODY_DEVELOPED' | 'BALANCED' | 'LOWER_BODY_DEVELOPED';
+/** 어깨너비 enum */
+export type ShoulderWidth = 'NARROW' | 'AVERAGE' | 'WIDE';
+/** 체격 enum */
+export type FrameSize = 'SMALL' | 'MEDIUM' | 'LARGE';
+
+/** 체형 유형 분석 결과 (PROFILE-02·04 공통, 체형 특징은 영어 enum) */
 export interface BodyTypeResult {
   bodyType: string; // 예: SLIM_STRAIGHT
   bodyTypeName: string; // 예: 슬림 스트레이트
@@ -27,9 +30,9 @@ export interface BodyTypeResult {
   celebrities: string[];
   upperBodyRatio: number;
   lowerBodyRatio: number;
-  bodyBalance: string;
-  boneStructure: string;
-  muscleMass: string;
+  bodyBalance: BodyBalance;
+  shoulderWidth: ShoulderWidth;
+  frameSize: FrameSize;
 }
 
 /** PROFILE-02 분석 응답 */

@@ -22,10 +22,14 @@ export interface BodyResultView {
   traits: BodyTraitView[];
 }
 
-// enum(분석) → 한글. 이미 한글(조회)이거나 미확정 값이면 그대로 통과.
-const balanceKo: Record<string, string> = { BALANCED: '균형형' };
-const boneKo: Record<string, string> = { SMALL: '가는', MEDIUM: '중간', LARGE: '굵은' };
-const muscleKo: Record<string, string> = { LOW: '적음', NORMAL: '보통', HIGH: '많음' };
+// 서버 enum → 화면 표시용 한글 (온보딩 체형 특징 표 기준). 미매핑 값은 그대로 통과.
+const balanceKo: Record<string, string> = {
+  UPPER_BODY_DEVELOPED: '상체 발달형',
+  BALANCED: '균형형',
+  LOWER_BODY_DEVELOPED: '하체 발달형',
+};
+const shoulderKo: Record<string, string> = { NARROW: '좁음', AVERAGE: '보통', WIDE: '넓음' };
+const frameKo: Record<string, string> = { SMALL: '작음', MEDIUM: '보통', LARGE: '큼' };
 const ko = (map: Record<string, string>, value: string) => map[value] ?? value;
 
 const toMeasurementViews = (m: BodyMeasurements): BodyMeasurementView[] => [
@@ -42,8 +46,8 @@ const toTraitViews = (t: BodyTypeResult): BodyTraitView[] => [
   { label: '상체 비율', value: `${t.upperBodyRatio}%`, percent: t.upperBodyRatio },
   { label: '하체 비율', value: `${t.lowerBodyRatio}%`, percent: t.lowerBodyRatio },
   { label: '체형 밸런스', value: ko(balanceKo, t.bodyBalance), percent: 50 },
-  { label: '골격', value: ko(boneKo, t.boneStructure), percent: 50 },
-  { label: '근육량', value: ko(muscleKo, t.muscleMass), percent: 50 },
+  { label: '어깨너비', value: ko(shoulderKo, t.shoulderWidth), percent: 50 },
+  { label: '체격', value: ko(frameKo, t.frameSize), percent: 50 },
 ];
 
 /** 분석/조회 응답을 결과 화면 표시용 형태로 변환 */
