@@ -40,9 +40,6 @@ import ClosetItemDeletePage from '../pages/closet/ClosetItemDeletePage';
 import ClosetItemListPage from '../pages/closet/ClosetItemListPage';
 import ClosetIntroPage from '../pages/closet/ClosetIntroPage';
 
-// 3. 홈
-import HomePage from '../pages/home/HomePage';
-
 // 4. 코디 생성
 import StylingStartPage from '../pages/styling/StylingStartPage';
 import StylingMethodPage from '../pages/styling/StylingMethodPage';
@@ -131,8 +128,9 @@ const router = createBrowserRouter([
 
     // ── 메인 (로그인 필요) ────────────────────────
     {
+      // 홈 탭 = 코디 시작 홈 (Figma '코디 시작_홈')
       path: '/home',
-      element: <ProtectedRoute><HomePage /></ProtectedRoute>,
+      element: <ProtectedRoute><StylingStartPage /></ProtectedRoute>,
     },
 
     // 옷장
