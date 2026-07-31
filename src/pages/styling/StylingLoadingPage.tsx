@@ -26,9 +26,9 @@ const StylingLoadingPage = () => {
   const { state } = useLocation() as { state: LoadingLocationState | null };
   const { closetItemIds, situation, selectedDate, weather } = state ?? {};
 
-  // 스타일 태그는 온보딩에서 고른 값 — PROFILE-01의 stylePreferences[].tagId를 그대로 보낸다
+  // 스타일 태그는 온보딩에서 고른 값 — /users/me의 styleTagIds를 그대로 보낸다
   const { data: profile, isLoading: profileLoading } = useMyProfile();
-  const styleTagIds = state?.styleTagIds ?? profile?.stylePreferences?.map((p) => p.tagId);
+  const styleTagIds = state?.styleTagIds ?? profile?.styleTagIds ?? undefined;
 
   // 옷장 아이템만 필수 — 나머지는 선택값이라 없으면 빼고 보낸다.
   // 프로필 조회가 끝난 뒤 요청해야 스타일 태그가 빠지지 않는다.
