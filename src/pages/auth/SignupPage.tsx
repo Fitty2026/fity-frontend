@@ -11,7 +11,7 @@ import { getErrorMessage } from '@/lib/apiError';
 
 const signupSchema = z.object({
   name: z.string().min(1, '이름을 입력해주세요'),
-  loginId: z.string().regex(/^[a-z0-9]{4,20}$/, '아이디는 영문 소문자와 숫자 4~20자여야 해요'),
+  loginId: z.string().regex(/^[a-zA-Z0-9]{4,30}$/, '아이디는 영문과 숫자 4~30자여야 해요'),
   email: z.email('올바른 이메일 형식이 아니에요'),
   password: z
     .string()
