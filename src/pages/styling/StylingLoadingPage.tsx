@@ -1,14 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { StudioHeader, HangerLoader } from '@/features/styling/components';
 import useGenerateOutfit from '@/features/styling/hooks/useGenerateOutfit';
 import useOutfitJob from '@/features/styling/hooks/useOutfitJob';
+import useActiveOutfitJob from '@/features/styling/hooks/useActiveOutfitJob';
 import useMyProfile from '@/features/auth/hooks/useMyProfile';
 import type { OutfitJobInput } from '@/features/styling/types';
-
-/** 채움 속도: 1초에 2cm ≈ 75.6px (96dpi), 옷걸이 높이 160px → 약 2.1초 */
-const FILL_SPEED_PX_PER_SEC = 75.6;
-const HANGER_HEIGHT_PX = 160;
 
 /** 이전 화면에서 넘어오는 코디 생성 입력값 (체형 프로필은 서버가 JWT로 조회) */
 type LoadingLocationState = Partial<OutfitJobInput>;
@@ -17,6 +14,9 @@ type LoadingLocationState = Partial<OutfitJobInput>;
  * 코디 생성 (로딩 → 완료)
  * - 헤더(뒤로·88개) + 문구(헤더↔156) + 옷걸이(문구↔76, 189×160 중앙)
  * - 옷걸이가 고리부터 보라색으로 그려지고, 완료 시 체크 + 문구 변경
+ * - 입력값이 있으면 OUTFIT-01로 생성 요청 후 OUTFIT-02를 폴링
+ * - 입력값이 없으면(새로고침·재진입으로 jobId 유실) 진행 중인 job을 조회해 폴링을 이어받고,
+ *   그것도 없으면 실패로 처리한다 (예전 목업 타이머는 가짜 완료를 만들어서 제거)
  * - 실패 시 문구만 남기고 옷걸이는 숨긴다 (재시도 수단은 시안 미수급)
  * - 입력값이 모두 있으면 OUTFIT-01로 생성 요청 후 OUTFIT-02를 폴링,
  *   없으면 기존 목업 타이머로 진행 (입력값 확정 전까지 화면 확인용)
@@ -32,12 +32,20 @@ const StylingLoadingPage = () => {
 
   // 옷장 아이템만 필수 — 나머지는 선택값이라 없으면 빼고 보낸다.
   // 프로필 조회가 끝난 뒤 요청해야 스타일 태그가 빠지지 않는다.
-  const canRequest = !!closetItemIds?.length && !profileLoading;
+  const hasInput = !!closetItemIds?.length;
+  const canRequest = hasInput && !profileLoading;
 
-  const { generate, accepted, jobId, error: generateError } = useGenerateOutfit();
+  const { generate, accepted, jobId: newJobId, error: generateError } = useGenerateOutfit();
+
+  // 입력값이 없으면 새로고침·재진입으로 jobId를 잃은 경우 — 진행 중인 job을 찾아 폴링을 이어받는다
+  const {
+    data: activeJob,
+    isPending: activePending,
+    error: activeError,
+  } = useActiveOutfitJob(!hasInput);
+
+  const jobId = newJobId ?? activeJob?.jobId ?? null;
   const { job, progress: jobProgress, isCompleted, isFailed, error: jobError } = useOutfitJob(jobId);
-
-  const [mockProgress, setMockProgress] = useState(0);
 
   // 생성 요청 — 입력값이 갖춰진 경우에만 1회
   useEffect(() => {
@@ -47,26 +55,15 @@ const StylingLoadingPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canRequest]);
 
-  // 목업 진행 — 요청을 못 보내는 경우에만 타이머로 채운다
-  useEffect(() => {
-    if (canRequest) return;
-    let raf: number;
-    const start = performance.now();
-    const tick = (now: number) => {
-      const filled = ((now - start) / 1000) * FILL_SPEED_PX_PER_SEC;
-      const next = Math.min(1, filled / HANGER_HEIGHT_PX);
-      setMockProgress(next);
-      if (next < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [canRequest]);
+  // 진행 중인 job 조회가 끝났는데 아무것도 없으면 이어받을 게 없다
+  const noJobToResume = !hasInput && !activePending && !activeJob;
+  const failed = isFailed || !!generateError || !!jobError || !!activeError || noJobToResume;
 
-  const failed = isFailed || !!generateError || !!jobError;
-  // 서버 progress(0~100) → 옷걸이 채움 비율(0~1). 접수 응답의 progress를 먼저 쓰고 폴링값으로 갱신
-  const serverProgress = jobProgress || accepted?.progress || 0;
-  const progress = canRequest ? serverProgress / 100 : mockProgress;
-  const done = canRequest ? isCompleted : mockProgress >= 1;
+  // 서버 progress(0~100) → 옷걸이 채움 비율(0~1).
+  // 접수 응답 / 이어받은 job의 값을 먼저 쓰고 폴링값으로 갱신
+  const serverProgress = jobProgress || accepted?.progress || activeJob?.progress || 0;
+  const progress = serverProgress / 100;
+  const done = isCompleted;
 
   // 완성 1초 후 코디 플레이로 이동 (결과는 state로 전달)
   useEffect(() => {
