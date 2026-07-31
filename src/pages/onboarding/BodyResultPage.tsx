@@ -13,7 +13,7 @@ type Phase = 'measurements' | 'final';
 
 const BodyResultPage = () => {
   const navigate = useNavigate();
-  const nickname = useAuthStore((s) => s.user?.nickname) ?? '회원';
+  const nickname = useAuthStore((s) => s.user?.name) ?? '회원';
   const result = useOnboardingStore((s) => s.analysisResult);
   const bodyType = useOnboardingStore((s) => s.bodyType);
   const bodyPhotoUrls = useOnboardingStore((s) => s.bodyPhotoUrls);
@@ -36,7 +36,8 @@ const BodyResultPage = () => {
 
   const finishOnboarding = () => {
     completeOnboarding();
-    navigate('/home', { replace: true });
+    // 체형 분석 완료 → 디지털 옷장 온보딩으로 이어짐
+    navigate('/closet/intro', { replace: true });
   };
 
   const handleFinish = () => {

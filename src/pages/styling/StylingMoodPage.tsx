@@ -1,19 +1,24 @@
 import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { StudioHeader, ScreenTitle, BottomCTA } from '@/features/styling/components';
-import type { SituationOption } from '@/features/styling/types';
+import { SITUATION_VALUE, type SituationOption, type OutfitJobInput } from '@/features/styling/types';
 import dateImg from '@/assets/images/styling/situation-date.png';
 import workImg from '@/assets/images/styling/situation-work.png';
 import travelImg from '@/assets/images/styling/situation-travel.png';
+import schoolImg from '@/assets/images/styling/situation-school.jpg';
 
-/** 상황 목록 — 목 이미지 3종. 와이어프레임 순서: 좌 여행 / 중앙 출근 / 우 데이트 */
+/** 상황 목록 — 좌 여행 / 중앙 출근 / 우 데이트 순은 와이어프레임 기준, 학교는 뒤에 추가 */
 const SITUATIONS: SituationOption[] = [
   { id: 'travel', label: '여행', image: travelImg },
   { id: 'work', label: '출근', image: workImg },
   { id: 'date', label: '데이트', image: dateImg },
+  { id: 'school', label: '학교', image: schoolImg },
 ];
 
 const SWIPE_THRESHOLD = 50;
+
+/** 앞 화면(날짜·날씨)에서 넘어오는 값 */
+type StylingRequestState = Partial<OutfitJobInput>;
 
 /**
  * 상황 선택 (데이트/출근/학교/여행)
@@ -24,9 +29,16 @@ const SWIPE_THRESHOLD = 50;
  */
 const StylingMoodPage = () => {
   const navigate = useNavigate();
+  const { state } = useLocation() as { state: StylingRequestState | null };
   const [active, setActive] = useState(1);
   const [confirming, setConfirming] = useState(false);
   const dragStartX = useRef<number | null>(null);
+
+  /** 앞 화면에서 받은 날짜·날씨에 상황을 얹어 넘긴다 (건너뛰면 상황 없이) */
+  const goItems = (situationId?: string) =>
+    navigate('/styling/items', {
+      state: { ...state, situation: situationId ? SITUATION_VALUE[situationId] : undefined },
+    });
 
   const clamp = (i: number) => Math.max(0, Math.min(SITUATIONS.length - 1, i));
 
@@ -48,7 +60,7 @@ const StylingMoodPage = () => {
       <div className="relative w-full max-w-[430px] min-h-screen bg-white flex flex-col overflow-hidden">
         <StudioHeader
           onBack={() => (confirming ? setConfirming(false) : navigate(-1))}
-          onSkip={() => navigate('/styling/items')}
+          onSkip={() => goItems()}
         />
 
         <div className="flex-1 pt-14">
@@ -110,7 +122,7 @@ const StylingMoodPage = () => {
 
         <BottomCTA
           label={confirming ? '확인' : '다음'}
-          onClick={() => (confirming ? navigate('/styling/items') : setConfirming(true))}
+          onClick={() => (confirming ? goItems(selected.id) : setConfirming(true))}
         />
       </div>
     </div>

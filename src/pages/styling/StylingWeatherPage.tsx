@@ -1,7 +1,10 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { StudioHeader } from '@/features/styling/components';
+import { WEATHER_CONDITION } from '@/features/styling/types';
+import useWeather from '@/features/styling/hooks/useWeather';
+import type { WeatherType } from '@/features/styling/api/weatherApi';
 import rainBg from '@/assets/images/styling/weather-rain.png';
 import snowBg from '@/assets/images/styling/weather-snow.png';
 import sunBg from '@/assets/images/styling/weather-sun.png';
@@ -40,8 +43,6 @@ const CloudIcon = () => (
 );
 
 /** 날씨 종류 — 배경/문구/아이콘 매핑 */
-type WeatherType = 'rain' | 'snow' | 'sun' | 'wind' | 'cloud';
-
 const WEATHER: Record<WeatherType, { bg: string; phrase: string; icon: ReactNode }> = {
   rain: { bg: rainBg, phrase: '비가 오네요', icon: <RainIcon /> },
   snow: { bg: snowBg, phrase: '눈이 와요', icon: <SnowIcon /> },
@@ -54,33 +55,84 @@ interface WeatherLocationState {
   year?: number;
   month?: number;
   day?: number;
+  /** 날씨 강제 지정 — 조회를 건너뛰고 이 값으로 표시 (화면 확인·캡처용) */
   weather?: WeatherType;
+  /** YYYY-MM-DD (날짜 화면에서 계산해 전달) */
+  selectedDate?: string;
 }
 
 /**
  * 날짜 기준_일정 (날씨 안내)
  * - 날씨별 전면 배경 + 헤더(뒤로·스튜디오) + "{날짜}에 {문구}" + 아이콘
- * - 날짜/날씨는 이전 화면에서 넘어온 router state 기준 (없으면 비 기본)
+ * - 선택한 날짜의 날씨를 OpenWeatherMap에서 조회해 표시하고, 그 값을 코디 생성 요청에 실어 보낸다
+ *   (백엔드는 날씨를 조회하지 않는다)
+ * - 조회 불가(위치 거부·키 없음·예보 범위 밖)면 화면을 건너뛰고 weather 필드를 생략한다
  * - 화면 탭하면 상황 선택으로 이동
- * ※ 실제 날씨는 추후 날짜 기준 날씨 API로 결정 (현재 state/기본값)
  */
 const StylingWeatherPage = () => {
   const navigate = useNavigate();
   const { state } = useLocation() as { state: WeatherLocationState | null };
-  const { year = 2026, month = 6, day = 28, weather = 'rain' } = state ?? {};
-  const w = WEATHER[weather] ?? WEATHER.rain;
+  const { year = 2026, month = 6, day = 28, weather: override, selectedDate } = state ?? {};
 
-  // 1초 후 상황 선택으로 자동 이동 (탭하면 즉시 이동)
+  const canFetch = !override && !!selectedDate;
+  const { data: fetched, isPending } = useWeather(canFetch ? selectedDate : undefined);
+  const loading = canFetch && isPending;
+
+  // 강제 지정이면 기온을 알 수 없어 condition만 보낸다 (기온은 선택값)
+  // useMemo 없이 두면 매 렌더 새 객체가 되어 아래 자동 이동 타이머가 계속 리셋된다
+  const result = useMemo(
+    () =>
+      override
+        ? { type: override, condition: WEATHER_CONDITION[override] ?? 'UNKNOWN', temperature: undefined }
+        : fetched ?? null,
+    [override, fetched],
+  );
+
+  const w = result ? WEATHER[result.type] : null;
+
+  const goNext = useCallback(() => {
+    navigate('/styling/mood', {
+      state: {
+        selectedDate,
+        // 날씨를 모르면 필드를 아예 넣지 않는다 (백엔드가 선택값으로 처리)
+        ...(result
+          ? {
+              weather: {
+                condition: result.condition,
+                ...(result.temperature !== undefined ? { temperature: result.temperature } : {}),
+              },
+            }
+          : {}),
+      },
+    });
+  }, [navigate, selectedDate, result]);
+
+  // 조회가 끝나면 1초 노출 후 자동 이동. 날씨를 못 받았으면 이 화면을 건너뛴다
   useEffect(() => {
-    const timer = setTimeout(() => navigate('/styling/mood'), 1000);
+    if (loading) return;
+    const timer = setTimeout(goNext, result ? 1000 : 0);
     return () => clearTimeout(timer);
-  }, [navigate]);
+  }, [loading, result, goNext]);
+
+  // 위치 허가 응답을 기다리는 동안 (최대 8초) — 안내 문구는 시안 미수급으로 임시
+  if (loading || !w) {
+    return (
+      <div className="min-h-screen bg-neutral-100 flex justify-center">
+        <div className="relative w-full max-w-[430px] min-h-screen bg-white flex flex-col">
+          <StudioHeader onBack={() => navigate(-1)} />
+          <p className="mt-14 px-6 text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
+            날씨를 확인하고 있어요
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-neutral-100 flex justify-center">
       <div
         className="relative w-full max-w-[430px] min-h-screen flex flex-col overflow-hidden"
-        onClick={() => navigate('/styling/mood')}
+        onClick={goNext}
       >
         {/* 전면 날씨 배경 */}
         <img src={w.bg} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover" />

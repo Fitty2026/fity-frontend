@@ -301,6 +301,8 @@ const router = createBrowserRouter([
   },
 
   // 마이페이지
+  // TODO(담당자): 시안이 2026-07-29에 추가됨. 화면 구현·API 연동 미착수 — 연동 보류
+  // 프로필(이름·체형·취향), 스타일 통계(옷 등록/코디 생성/코디 저장), 좋아요·최근 삭제된 코디·스타 충전 등
     {
       path: '/mypage',
       element: <ProtectedRoute><MyPage /></ProtectedRoute>,

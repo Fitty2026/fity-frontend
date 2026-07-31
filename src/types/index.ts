@@ -12,23 +12,14 @@ export interface ApiResponse<T> {
 // ============================================================
 // 유저 / 인증
 // ============================================================
-/** 마이홈 활동 통계 (USER-04 stats) */
-export interface UserStats {
-  month: number;
-  registeredClothesCount: number;
-  generatedOutfitsCount: number;
-  savedOutfitsCount: number;
-}
-
-/** 로그인/프로필·마이홈 조회로 채워지는 사용자 정보 (USER-04 GET /users/me 기준) */
+/** 로그인/프로필 조회로 채워지는 사용자 정보 (GET /users/me 기준) */
 export interface User {
   id: number;
-  nickname: string;
-  profileImageUrl: string | null;
-  starBalance: number;
-  bodyTypeName: string | null;
-  styleTags: string[];
-  stats: UserStats;
+  username: string;
+  email: string;
+  name: string;
+  styleTags: string[] | null;
+  styleTagIds: number[];
 }
 
 export type SocialProvider = 'google' | 'apple' | 'kakao' | 'email';

@@ -10,7 +10,7 @@ import useOnboardingStore from '@/store/onboardingStore';
 
 const StyleConfirmPage = () => {
   const navigate = useNavigate();
-  const nickname = useAuthStore((s) => s.user?.nickname) ?? '회원';
+  const nickname = useAuthStore((s) => s.user?.name) ?? '회원';
   const selectedStyles = useOnboardingStore((s) => s.selectedStyles);
 
   const collected = STYLE_TILES.filter((tile) => selectedStyles.includes(tile.tag));

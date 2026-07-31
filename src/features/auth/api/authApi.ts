@@ -1,23 +1,22 @@
 import api from '@/lib/axios';
-import type { ApiResponse, SocialProvider, User, UserStats } from '@/types';
+import type { ApiResponse, SocialProvider, User } from '@/types';
 
 const MOCK_DELAY_MS = 500;
 
-// ── USER-04 프로필/마이홈 정보 조회 (GET /api/v1/users/me) ──
+// ── USER-04 프로필 정보 조회 (GET /api/v1/users/me) ──
 interface MyProfileResult {
-  userId: number;
-  nickname: string;
-  profileImageUrl: string | null;
-  starBalance: number;
-  bodyTypeName: string | null;
-  styleTags: string[];
-  stats: UserStats;
+  id: number;
+  username: string;
+  email: string;
+  name: string;
+  styleTags: string[] | null;
+  styleTagIds: number[];
 }
 
 export const getMyProfile = async (): Promise<User> => {
   const { data } = await api.get<ApiResponse<MyProfileResult>>('/api/v1/users/me');
-  const { userId, ...rest } = data.result;
-  return { id: userId, ...rest };
+  const { id, username, email, name, styleTags, styleTagIds } = data.result;
+  return { id, username, email, name, styleTags, styleTagIds };
 };
 
 // ── AUTH-02 이메일 로그인 ──
@@ -26,10 +25,17 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface LoginUser {
+  id: number;
+  username: string;
+  email: string;
+  name: string;
+}
+
 export interface LoginResult {
   accessToken: string;
-  userId: number;
-  nickname: string;
+  tokenType: string;
+  user: LoginUser;
 }
 
 export const login = async (body: LoginRequest): Promise<LoginResult> => {
@@ -43,17 +49,12 @@ export const logout = async (): Promise<void> => {
 };
 
 // ── 소셜 로그인: 아직 API 미제공이라 mock 유지 (추후 실제 연동) ──
-export interface SocialLoginResult extends LoginResult {
-  email: string;
-}
-
-export const socialLogin = async (provider: SocialProvider): Promise<SocialLoginResult> => {
+export const socialLogin = async (provider: SocialProvider): Promise<LoginResult> => {
   await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
   return {
     accessToken: `mock-token-${provider}`,
-    userId: 1,
-    nickname: '피티',
-    email: `${provider}@fitty.mock`,
+    tokenType: 'Bearer',
+    user: { id: 1, username: `${provider}_user`, email: `${provider}@fitty.mock`, name: '피티' },
   };
 };
 
