@@ -3,17 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import useAuthStore from '@/store/authStore';
 import useOnboardingStore from '@/store/onboardingStore';
 import type { SocialProvider, User } from '@/types';
-import { getMyProfile, login, socialLogin } from '../api/authApi';
+import { getMyProfile, login, socialLogin, type LoginUser } from '../api/authApi';
 
-/** 로그인 응답(최소 정보)으로 임시 User를 구성 - 이어지는 프로필/마이홈 조회로 완성한다 */
-const buildUser = (userId: number, nickname: string): User => ({
-  id: userId,
-  nickname,
-  profileImageUrl: null,
-  starBalance: 0,
-  bodyTypeName: null,
-  styleTags: [],
-  stats: { month: 0, registeredClothesCount: 0, generatedOutfitsCount: 0, savedOutfitsCount: 0 },
+/** 로그인 응답의 user로 임시 User를 구성 - 이어지는 프로필 조회로 완성한다 */
+const buildUser = (user: LoginUser): User => ({
+  ...user,
+  styleTags: null,
+  styleTagIds: [],
 });
 
 /** 이메일/소셜 로그인 + 인증 상태 저장 + 온보딩/홈 분기 */
@@ -22,10 +18,10 @@ const useLogin = () => {
   const setUser = useAuthStore((s) => s.setUser);
   const setToken = useAuthStore((s) => s.setToken);
 
-  const afterLogin = async (userId: number, nickname: string, accessToken: string) => {
+  const afterLogin = async (user: LoginUser, accessToken: string) => {
     setToken(accessToken);
-    setUser(buildUser(userId, nickname)); // 임시 User (즉시 표시용)
-    // 프로필(PROFILE-01)로 실제 정보 완성 - 실패해도 로그인은 유지
+    setUser(buildUser(user)); // 임시 User (즉시 표시용)
+    // 프로필(USER-04)로 실제 정보 완성 - 실패해도 로그인은 유지
     try {
       setUser(await getMyProfile());
     } catch {
@@ -38,12 +34,12 @@ const useLogin = () => {
 
   const emailMutation = useMutation({
     mutationFn: login,
-    onSuccess: (result) => afterLogin(result.userId, result.nickname, result.accessToken),
+    onSuccess: (result) => afterLogin(result.user, result.accessToken),
   });
 
   const socialMutation = useMutation({
     mutationFn: socialLogin,
-    onSuccess: (result) => afterLogin(result.userId, result.nickname, result.accessToken),
+    onSuccess: (result) => afterLogin(result.user, result.accessToken),
   });
 
   return {
