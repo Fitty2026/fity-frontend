@@ -20,6 +20,20 @@ const CHIP_CATEGORIES: Record<string, ClothingCategory[]> = {
 /** 아이템 행 노출 순서 (해당 옷이 있을 때만 행 표시) */
 const ROW_CHIPS = ['상의', '하의', '신발', '악세사리', '기타'];
 
+/** 좋아요 하트 — 16×16, stroke #1F2124. 누르면 채워진다 (옷장 홈과 동일) */
+const HeartIcon = ({ liked }: { liked: boolean }) => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M14 5.5C14 3.84333 12.6007 2.5 10.8747 2.5C9.58467 2.5 8.47667 3.25067 8 4.322C7.52333 3.25067 6.41533 2.5 5.12467 2.5C3.4 2.5 2 3.84333 2 5.5C2 10.3133 8 13.5 8 13.5C8 13.5 14 10.3133 14 5.5Z"
+      fill={liked ? '#1F2124' : 'none'}
+      stroke="#1F2124"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 /**
  * 기준 아이템 선택
  * - 헤더(뒤로·보유 개수) + 타이틀 + 검색 + 카테고리/정렬 칩 + 아이템 행(가로 스크롤) + 생성 CTA
@@ -33,6 +47,8 @@ const StylingItemSelectPage = () => {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('전체');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  // 좋아요 — 저장 API가 없어 화면 안에서만 유지 (TODO: 옷장 API에 좋아요 붙으면 연동)
+  const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
 
   const { data } = useClosets();
   const items = useMemo(() => data?.items ?? [], [data]);
@@ -40,6 +56,14 @@ const StylingItemSelectPage = () => {
 
   const toggleItem = (id: string) =>
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]));
+
+  const toggleLike = (id: string) =>
+    setLikedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
 
   // 검색(카테고리·태그·브랜드) → 칩 필터 → 카테고리 행으로 분할
   const rows = useMemo(() => {
@@ -100,17 +124,29 @@ const StylingItemSelectPage = () => {
               >
                 {row.items.map((item) => {
                   const selected = selectedIds.includes(item.id);
+                  const liked = likedIds.has(item.id);
                   return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => toggleItem(item.id)}
-                      className="relative shrink-0 w-[104px] h-[134px] overflow-hidden rounded bg-white"
-                    >
-                      <img src={item.imageUrl} alt="" className="w-full h-full object-cover" />
-                      {/* 선택 표시 — 이미지 위 검정 20% 오버레이 */}
-                      {selected && <span className="absolute inset-0 bg-[#00000033]" />}
-                    </button>
+                    <div key={item.id} className="relative shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => toggleItem(item.id)}
+                        className="relative block w-[104px] h-[134px] overflow-hidden rounded bg-white"
+                      >
+                        <img src={item.imageUrl} alt="" className="w-full h-full object-cover" />
+                        {/* 선택 표시 — 이미지 위 검정 20% 오버레이 */}
+                        {selected && <span className="absolute inset-0 bg-[#00000033]" />}
+                      </button>
+                      {/* 좋아요 — 카드 우상단, 위·오른쪽 8 (하트 16×16) */}
+                      <button
+                        type="button"
+                        onClick={() => toggleLike(item.id)}
+                        className="absolute right-2 top-2 cursor-pointer"
+                        aria-label={liked ? '좋아요 취소' : '좋아요'}
+                        aria-pressed={liked}
+                      >
+                        <HeartIcon liked={liked} />
+                      </button>
+                    </div>
                   );
                 })}
               </div>
