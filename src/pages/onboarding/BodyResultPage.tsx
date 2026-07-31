@@ -36,7 +36,8 @@ const BodyResultPage = () => {
 
   const finishOnboarding = () => {
     completeOnboarding();
-    navigate('/home', { replace: true });
+    // 체형 분석 완료 → 디지털 옷장 온보딩으로 이어짐
+    navigate('/closet/intro', { replace: true });
   };
 
   const handleFinish = () => {
