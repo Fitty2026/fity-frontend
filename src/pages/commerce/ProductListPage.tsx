@@ -1,53 +1,12 @@
-import { useState } from 'react';
-
 import { Link } from 'react-router-dom';
 
 import PageLayout from '@/components/layout/PageeLayout';
-import blackTurtleneckImage from '@/assets/images/commerce/black-turtleneck.png';
-import coatImage from '@/assets/images/commerce/coat.png';
-import ivoryKnitImage from '@/assets/images/commerce/ivory-knit.png';
-import wideDenimImage from '@/assets/images/commerce/wide-denim.png';
-
-const mockProductList = [
-  {
-    id: 1,
-    name: '울 오버핏 코트',
-    description: '전체적인 톤을 맞춰줘요',
-    price: '190000',
-    imgUrl: coatImage,
-  },
-  {
-    id: 2,
-    name: '아이보리 크루넥 니트',
-    description: '부드러운 인상을 만들어요',
-    price: '90000',
-    imgUrl: ivoryKnitImage,
-  },
-  {
-    id: 3,
-    name: '흑청 와이드 데님',
-    description: '균형감을 더해줘요',
-    price: '19000',
-    imgUrl: wideDenimImage,
-  },
-  {
-    id: 4,
-    name: '블랙 터틀넥',
-    description: '세련된 분위기를 완성해요',
-    price: '39000',
-    imgUrl: blackTurtleneckImage,
-  },
-];
+import LoadingScreen from '@/components/ui/LoadingScreen';
+import ErrorScreen from '@/components/ui/ErrorScreen';
+import { useRecommendedProducts } from '@/features/commerce/hooks/useCommerceProducts';
 
 const ProductListPage = () => {
-  const [products, setProducts] = useState(() => mockProductList);
-
-  const handleRefresh = () => {
-    setProducts((currentProducts) => [
-      ...currentProducts.slice(1),
-      currentProducts[0],
-    ]);
-  };
+  const { data, error, isPending, isFetching, refetch } = useRecommendedProducts();
 
   return (
     <PageLayout
@@ -66,8 +25,21 @@ const ProductListPage = () => {
           </p>
         </header>
 
-        <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-8">
-          {products.map((product) => (
+        {isPending ? (
+          <LoadingScreen message="추천 상품을 불러오는 중이에요." />
+        ) : error ? (
+          <ErrorScreen
+            title="추천 상품을 불러오지 못했어요."
+            description={error.message}
+            onRetry={() => void refetch()}
+          />
+        ) : data.products.length === 0 ? (
+          <p className="mt-10 text-center text-[14px] font-medium text-[#6F7881]">
+            추천 상품이 없어요.
+          </p>
+        ) : (
+          <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-8">
+          {data.products.map((product) => (
             <Link
               to={`/commerce/${product.id}`}
               key={product.id}
@@ -76,7 +48,7 @@ const ProductListPage = () => {
             >
               <div className="aspect-[156/158] overflow-hidden bg-[#F3F4F5]">
                 <img
-                  src={product.imgUrl}
+                  src={product.imageUrl}
                   alt={product.name}
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                 />
@@ -86,17 +58,20 @@ const ProductListPage = () => {
                   {product.name}
                 </h2>
                 <p className="max-w-full truncate text-[10px] font-medium leading-[1.65] tracking-[-0.02em] text-[#B2B8BD]">
-                  {product.description}
+                  {product.recommendation}
                 </p>
               </div>
             </Link>
           ))}
-        </div>
+          </div>
+        )}
 
-        <div className="mt-8 flex justify-end">
+        {!isPending && !error && data.products.length > 0 && (
+          <div className="mt-8 flex justify-end">
           <button
             type="button"
-            onClick={handleRefresh}
+            disabled={isFetching}
+            onClick={() => void refetch()}
             className="flex items-center gap-2 py-2 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#5A6169]"
           >
             <svg
@@ -114,9 +89,10 @@ const ProductListPage = () => {
                 strokeLinejoin="round"
               />
             </svg>
-            다른 추천 아이템
+            {isFetching ? '추천 아이템 불러오는 중' : '다른 추천 아이템'}
           </button>
-        </div>
+          </div>
+        )}
       </section>
     </PageLayout>
   );

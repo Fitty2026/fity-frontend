@@ -23,7 +23,12 @@ import ClosetHomePage from '../pages/closet/ClosetHomePage';
 import ClosetRegisterPage from '../pages/closet/ClosetRegisterPage';
 import ClosetPlatformPage from '../pages/closet/ClosetPlatformPage';
 import ClosetPermissionPage from '../pages/closet/ClosetPermissionPage';
-import ClosetImportingPage from '../pages/closet/ClosetImportingPage';
+import ClosetCaptureGuidePage from '../pages/closet/ClosetCaptureGuidePage';
+import ClosetCapturePage from '../pages/closet/ClosetCapturePage';
+import ClosetTagConfirmPage from '../pages/closet/ClosetTagConfirmPage';
+import ClosetPhotoEditPage from '../pages/closet/ClosetPhotoEditPage';
+import ClosetTagEditPage from '../pages/closet/ClosetTagEditPage';
+import ClosetRecognizingPage from '../pages/closet/ClosetRecognizingPage';
 import ClosetReceiptPage from '../pages/closet/ClosetReceiptPage';
 import ClosetPhotoPage from '../pages/closet/ClosetPhotoPage';
 import ClosetUploadPage from '../pages/closet/ClosetUploadPage';
@@ -152,6 +157,14 @@ const router = createBrowserRouter([
     element: <ProtectedRoute><ClosetPermissionPage /></ProtectedRoute>,
   },
   {
+    path: '/closet/register/capture-guide',
+    element: <ProtectedRoute><ClosetCaptureGuidePage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/capture',
+    element: <ProtectedRoute><ClosetCapturePage /></ProtectedRoute>,
+  },
+  {
     path: '/closet/register/photo',
     element: <ProtectedRoute><ClosetPhotoPage /></ProtectedRoute>,
   },
@@ -164,12 +177,25 @@ const router = createBrowserRouter([
     element: <ProtectedRoute><ClosetReceiptPage /></ProtectedRoute>,
   },
   {
-    path: '/closet/register/importing',
-    element: <ProtectedRoute><ClosetImportingPage /></ProtectedRoute>,
+    path: '/closet/register/recognizing',
+    element: <ProtectedRoute><ClosetRecognizingPage /></ProtectedRoute>,
   },
   {
     path: '/closet/register/analyzing',
     element: <ProtectedRoute><ClosetLoadingPage variant="analyze" /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/tags',
+    element: <ProtectedRoute><ClosetTagConfirmPage /></ProtectedRoute>,
+  },
+  {
+    // 옷 사진 수정 — 시안 대기(빈 화면)
+    path: '/closet/register/tags/photo',
+    element: <ProtectedRoute><ClosetPhotoEditPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/tags/edit',
+    element: <ProtectedRoute><ClosetTagEditPage /></ProtectedRoute>,
   },
   {
     path: '/closet/register/added',

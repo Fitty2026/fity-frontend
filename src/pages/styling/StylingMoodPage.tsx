@@ -5,12 +5,14 @@ import { SITUATION_VALUE, type SituationOption, type OutfitJobInput } from '@/fe
 import dateImg from '@/assets/images/styling/situation-date.png';
 import workImg from '@/assets/images/styling/situation-work.png';
 import travelImg from '@/assets/images/styling/situation-travel.png';
+import schoolImg from '@/assets/images/styling/situation-school.jpg';
 
-/** 상황 목록 — 목 이미지 3종. 와이어프레임 순서: 좌 여행 / 중앙 출근 / 우 데이트 */
+/** 상황 목록 — 좌 여행 / 중앙 출근 / 우 데이트 순은 와이어프레임 기준, 학교는 뒤에 추가 */
 const SITUATIONS: SituationOption[] = [
   { id: 'travel', label: '여행', image: travelImg },
   { id: 'work', label: '출근', image: workImg },
   { id: 'date', label: '데이트', image: dateImg },
+  { id: 'school', label: '학교', image: schoolImg },
 ];
 
 const SWIPE_THRESHOLD = 50;

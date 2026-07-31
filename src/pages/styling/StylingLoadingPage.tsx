@@ -17,6 +17,9 @@ type LoadingLocationState = Partial<OutfitJobInput>;
  * - 입력값이 있으면 OUTFIT-01로 생성 요청 후 OUTFIT-02를 폴링
  * - 입력값이 없으면(새로고침·재진입으로 jobId 유실) 진행 중인 job을 조회해 폴링을 이어받고,
  *   그것도 없으면 실패로 처리한다 (예전 목업 타이머는 가짜 완료를 만들어서 제거)
+ * - 실패 시 문구만 남기고 옷걸이는 숨긴다 (재시도 수단은 시안 미수급)
+ * - 입력값이 모두 있으면 OUTFIT-01로 생성 요청 후 OUTFIT-02를 폴링,
+ *   없으면 기존 목업 타이머로 진행 (입력값 확정 전까지 화면 확인용)
  */
 const StylingLoadingPage = () => {
   const navigate = useNavigate();
@@ -89,8 +92,8 @@ const StylingLoadingPage = () => {
             {failed ? '코디 생성에 실패했어요' : done ? '코디가 완성되었어요' : '코디를 만들고 있어요'}
           </p>
 
-          {/* 옷걸이 189×160 중앙, 문구↔옷걸이 76 */}
-          <HangerLoader progress={progress} className="mt-[76px]" />
+          {/* 옷걸이 189×160 중앙, 문구↔옷걸이 76. 실패 시엔 진행 표시가 의미 없어 숨긴다 */}
+          {!failed && <HangerLoader progress={progress} className="mt-[76px]" />}
         </div>
       </div>
     </div>

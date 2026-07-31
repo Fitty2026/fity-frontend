@@ -1,0 +1,70 @@
+import { useEffect, useRef } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+
+import {
+  createGenerationJob,
+  getGenerationJob,
+} from '@/features/codyplay/api/codyPlayApi';
+import useStylingStore from '@/store/stylingStore';
+
+const useGeneratedOutfit = () => {
+  const hasRequestedRef = useRef(false);
+  const selectedDate = useStylingStore((state) => state.selectedDate);
+  const selectedContext = useStylingStore((state) => state.selectedContext);
+  const selectedMood = useStylingStore((state) => state.selectedMood);
+  const selectedBaseItem = useStylingStore((state) => state.selectedBaseItem);
+  const generatedOutfit = useStylingStore((state) => state.generatedOutfit);
+  const setGeneratedOutfit = useStylingStore((state) => state.setGeneratedOutfit);
+  const createJobMutation = useMutation({ mutationFn: createGenerationJob });
+  const jobId = createJobMutation.data?.jobId;
+  const jobQuery = useQuery({
+    queryKey: ['outfit-generation-job', jobId],
+    queryFn: () => getGenerationJob(jobId as string),
+    enabled: Boolean(jobId) && !generatedOutfit,
+    refetchInterval: (query) =>
+      query.state.data?.status === 'COMPLETED' || query.state.data?.status === 'FAILED'
+        ? false
+        : 1000,
+  });
+
+  useEffect(() => {
+    if (generatedOutfit || hasRequestedRef.current) return;
+    hasRequestedRef.current = true;
+    createJobMutation.mutate({
+      date: selectedDate ?? undefined,
+      context: selectedContext ?? undefined,
+      mood: selectedMood ?? undefined,
+      baseItemId: selectedBaseItem?.id,
+    });
+  }, [
+    createJobMutation,
+    generatedOutfit,
+    selectedBaseItem?.id,
+    selectedContext,
+    selectedDate,
+    selectedMood,
+  ]);
+
+  const completedOutfit = jobQuery.data?.result;
+  useEffect(() => {
+    if (jobQuery.data?.status === 'COMPLETED' && completedOutfit) {
+      setGeneratedOutfit(completedOutfit);
+    }
+  }, [completedOutfit, jobQuery.data?.status, setGeneratedOutfit]);
+
+  return {
+    outfit: generatedOutfit ?? completedOutfit,
+    isPending: !generatedOutfit && (createJobMutation.isPending || jobQuery.isPending),
+    error:
+      createJobMutation.error ??
+      jobQuery.error ??
+      (jobQuery.data?.status === 'FAILED' ? new Error('코디 생성에 실패했습니다.') : null),
+    retry: () => {
+      hasRequestedRef.current = false;
+      createJobMutation.reset();
+      void jobQuery.refetch();
+    },
+  };
+};
+
+export default useGeneratedOutfit;

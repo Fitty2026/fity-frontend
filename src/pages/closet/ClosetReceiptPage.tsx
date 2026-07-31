@@ -73,7 +73,7 @@ const CARD_MASK = {
 
 /**
  * 영수증 불러오기 — 무신사 구매 영수증 확인 화면 (Figma 스펙 기준).
- * 하단 CTA로 구매내역 불러오는 중 화면(importing)으로 이동.
+ * 하단 CTA로 구매내역 인식 로딩 화면(recognizing)으로 이동.
  * 다음 화면 이동 트리거는 와이어프레임 미정 → 임시 "불러오기" 버튼.
  */
 const ClosetReceiptPage = () => {
@@ -185,7 +185,7 @@ const ClosetReceiptPage = () => {
         <div className="w-full px-6 pt-3 pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
           <button
             type="button"
-            onClick={() => navigate('/closet/register/importing')}
+            onClick={() => navigate('/closet/register/recognizing')}
             className="h-[58px] w-full cursor-pointer rounded-[32px] bg-[#1F2124] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
           >
             불러오기
