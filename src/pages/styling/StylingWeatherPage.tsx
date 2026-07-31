@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { StudioHeader } from '@/features/styling/components';
+import { WEATHER_CONDITION } from '@/features/styling/types';
 import rainBg from '@/assets/images/styling/weather-rain.png';
 import snowBg from '@/assets/images/styling/weather-snow.png';
 import sunBg from '@/assets/images/styling/weather-sun.png';
@@ -55,6 +56,8 @@ interface WeatherLocationState {
   month?: number;
   day?: number;
   weather?: WeatherType;
+  /** YYYY-MM-DD (날짜 화면에서 계산해 전달) */
+  selectedDate?: string;
 }
 
 /**
@@ -67,20 +70,29 @@ interface WeatherLocationState {
 const StylingWeatherPage = () => {
   const navigate = useNavigate();
   const { state } = useLocation() as { state: WeatherLocationState | null };
-  const { year = 2026, month = 6, day = 28, weather = 'rain' } = state ?? {};
+  const { year = 2026, month = 6, day = 28, weather = 'rain', selectedDate } = state ?? {};
   const w = WEATHER[weather] ?? WEATHER.rain;
+
+  // 코디 생성 요청에 실어 보낼 값 — 화면에 기온 표기가 없어 condition만 전달
+  const goNext = useCallback(
+    () =>
+      navigate('/styling/mood', {
+        state: { selectedDate, weather: { condition: WEATHER_CONDITION[weather] ?? 'UNKNOWN' } },
+      }),
+    [navigate, selectedDate, weather],
+  );
 
   // 1초 후 상황 선택으로 자동 이동 (탭하면 즉시 이동)
   useEffect(() => {
-    const timer = setTimeout(() => navigate('/styling/mood'), 1000);
+    const timer = setTimeout(goNext, 1000);
     return () => clearTimeout(timer);
-  }, [navigate]);
+  }, [goNext]);
 
   return (
     <div className="min-h-screen bg-neutral-100 flex justify-center">
       <div
         className="relative w-full max-w-[430px] min-h-screen flex flex-col overflow-hidden"
-        onClick={() => navigate('/styling/mood')}
+        onClick={goNext}
       >
         {/* 전면 날씨 배경 */}
         <img src={w.bg} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover" />

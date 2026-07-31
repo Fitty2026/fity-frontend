@@ -1,10 +1,8 @@
 interface DateFieldProps {
   /** 예: '2026년 6월 28일' */
   label: string;
-  /** 필드 본문 클릭 (연/월/일 피커 열기) */
+  /** 연/월/일 휠 피커 열기 — 필드 본문·우측 보라 화살표 버튼 공통 */
   onClick?: () => void;
-  /** 우측 보라 화살표 버튼 클릭 */
-  onNext?: () => void;
   className?: string;
 }
 
@@ -18,8 +16,9 @@ const CalendarIcon = () => (
 /**
  * 날짜 선택 — 상단 날짜 필드 (Figma: 327×42, radius32, bg #F6F7F8, pad-left 10, gap 10)
  * - 캘린더 아이콘 + 날짜 텍스트 / 우측 보라 알약 화살표 버튼
+ * - 보라 화살표는 다음 화면 이동이 아니라 날짜 다이얼을 여는 버튼 (디자이너 확인)
  */
-const DateField = ({ label, onClick, onNext, className = '' }: DateFieldProps) => {
+const DateField = ({ label, onClick, className = '' }: DateFieldProps) => {
   return (
     <div className={['flex items-center gap-2.5 h-[42px] rounded-[32px] bg-[#F6F7F8] pl-2.5', className].filter(Boolean).join(' ')}>
       <button type="button" onClick={onClick} className="flex flex-1 items-center gap-2 min-w-0 text-left">
@@ -30,8 +29,8 @@ const DateField = ({ label, onClick, onNext, className = '' }: DateFieldProps) =
       {/* Figma: 64×42, radius21, bg #9D98F0(Color/Point/2), 흰 체브론 */}
       <button
         type="button"
-        onClick={onNext}
-        aria-label="다음"
+        onClick={onClick}
+        aria-label="날짜 선택"
         className="shrink-0 flex items-center justify-center w-16 h-[42px] rounded-[21px] bg-[#9D98F0] active:brightness-95"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
