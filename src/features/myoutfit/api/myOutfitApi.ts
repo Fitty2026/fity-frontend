@@ -115,7 +115,7 @@ export const getMyOutfits = async (): Promise<MyOutfitList> => {
 /** SAVED-06 최근 삭제한 코디 목록 조회 */
 export const getRecentlyDeletedOutfits = async (): Promise<RecentlyDeletedOutfitList> => {
   const { data } = await api.get<ApiResponse<SavedOutfitListRaw>>(
-    '/api/v1/outfits/recently-deleted',
+    '/api/v1/outfits/saved/deleted',
   );
   const rawOutfits = data.result.saved_outfits ?? data.result.outfits ?? [];
 
@@ -168,4 +168,14 @@ export const updateMyOutfit = async (
 /** SAVED-05 저장한 코디 삭제 */
 export const deleteMyOutfit = async (savedOutfitId: string): Promise<void> => {
   await api.delete(`/api/v1/outfits/${savedOutfitId}`);
+};
+
+/** SAVED-07 최근 삭제 코디 복구 */
+export const restoreRecentlyDeletedOutfit = async (savedOutfitId: string): Promise<void> => {
+  await api.post(`/api/v1/outfits/saved/${savedOutfitId}/restore`);
+};
+
+/** SAVED-08 최근 삭제 코디 영구 삭제 */
+export const permanentlyDeleteOutfit = async (savedOutfitId: string): Promise<void> => {
+  await api.delete(`/api/v1/outfits/saved/${savedOutfitId}/permanent`);
 };

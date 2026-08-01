@@ -37,6 +37,7 @@ const MyOutfitRecentlyDeletedPage = () => {
             key={outfit.id}
             outfit={outfit}
             deletionDaysRemaining={deletionDaysRemaining}
+            isRecentlyDeleted={true}
           />
         ))}
       </div>

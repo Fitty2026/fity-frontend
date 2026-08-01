@@ -6,13 +6,23 @@ import type { Outfit } from '../../../types/index';
 interface ItemCardProps {
   outfit: Outfit;
   deletionDaysRemaining?: number;
+  isRecentlyDeleted?: boolean;
 }
 
-const MyOutfitCard = ({ outfit, deletionDaysRemaining }: ItemCardProps) => {
+const MyOutfitCard = ({
+  outfit,
+  deletionDaysRemaining,
+  isRecentlyDeleted = false,
+}: ItemCardProps) => {
   const navigate = useNavigate();
   const tagScrollRef = useRef<HTMLSpanElement>(null);
   const tagDragRef = useRef({ isDragging: false, startX: 0, scrollLeft: 0 });
   const [isTagScrolled, setIsTagScrolled] = useState(false);
+
+  const openDetail = () =>
+    navigate(`/myoutfit/${outfit.id}`, {
+      state: isRecentlyDeleted ? { recentlyDeletedOutfit: outfit } : undefined,
+    });
 
   const handleTagPointerDown = (event: React.PointerEvent<HTMLSpanElement>) => {
     if (event.pointerType !== 'mouse' || !tagScrollRef.current) return;
@@ -45,10 +55,10 @@ const MyOutfitCard = ({ outfit, deletionDaysRemaining }: ItemCardProps) => {
     <div
       role="button"
       tabIndex={0}
-      onClick={() => navigate(`/myoutfit/${outfit.id}`)}
+      onClick={openDetail}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
-          navigate(`/myoutfit/${outfit.id}`);
+          openDetail();
         }
       }}
       className={'w-full cursor-pointer text-left rounded-lg overflow-hidden bg-white'}
