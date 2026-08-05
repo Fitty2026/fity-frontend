@@ -28,6 +28,11 @@ import ClosetCapturePage from '../pages/closet/ClosetCapturePage';
 import ClosetOcrConfirmPage from '../pages/closet/ClosetOcrConfirmPage';
 import ClosetOcrEditPage from '../pages/closet/ClosetOcrEditPage';
 import ClosetOcrCompletePage from '../pages/closet/ClosetOcrCompletePage';
+import ClosetReceiptUploadPage from '../pages/closet/ClosetReceiptUploadPage';
+import ClosetReceiptCheckPage from '../pages/closet/ClosetReceiptCheckPage';
+import ClosetReceiptRecognizingPage from '../pages/closet/ClosetReceiptRecognizingPage';
+import ClosetReceiptDonePage from '../pages/closet/ClosetReceiptDonePage';
+import ClosetReceiptFailedPage from '../pages/closet/ClosetReceiptFailedPage';
 import ClosetImportingPage from '../pages/closet/ClosetImportingPage';
 import ClosetReceiptPage from '../pages/closet/ClosetReceiptPage';
 import ClosetPhotoPage from '../pages/closet/ClosetPhotoPage';
@@ -175,6 +180,30 @@ const router = createBrowserRouter([
   {
     path: '/closet/register/ocr-complete',
     element: <ProtectedRoute><ClosetOcrCompletePage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/ocr-manual',
+    element: <ProtectedRoute><ClosetOcrEditPage mode="manual" /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/receipt-upload',
+    element: <ProtectedRoute><ClosetReceiptUploadPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/receipt-check',
+    element: <ProtectedRoute><ClosetReceiptCheckPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/receipt-recognizing',
+    element: <ProtectedRoute><ClosetReceiptRecognizingPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/receipt-done',
+    element: <ProtectedRoute><ClosetReceiptDonePage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/receipt-failed',
+    element: <ProtectedRoute><ClosetReceiptFailedPage /></ProtectedRoute>,
   },
   {
     path: '/closet/register/photo',

@@ -32,6 +32,8 @@ interface ClosetState {
   selectedPlatforms: string[];
   /** 영수증 인식 결과 — 확인 화면이 읽고 수정 화면이 덮어쓴다 */
   ocrResult: OcrResult;
+  /** 업로드한 영수증 이미지 미리보기 URL (등록 플로우에서 화면 간 전달) */
+  receiptImages: string[];
 
   // 액션 (API 연동 시 내부 구현만 서버 요청으로 교체)
   setItems: (items: ClothingItem[]) => void;
@@ -40,6 +42,7 @@ interface ClosetState {
   removeItem: (id: string) => void;
   setSelectedPlatforms: (platforms: string[]) => void;
   setOcrResult: (result: OcrResult) => void;
+  setReceiptImages: (images: string[]) => void;
   reset: () => void;
 }
 
@@ -48,6 +51,7 @@ const useClosetStore = create<ClosetState>((set) => ({
   items: mockClosetItems,
   selectedPlatforms: [],
   ocrResult: mockOcrResult,
+  receiptImages: [],
 
   setItems: (items) => set({ items }),
   addItem: (item) => set((state) => ({ items: [...state.items, item] })),
@@ -58,7 +62,8 @@ const useClosetStore = create<ClosetState>((set) => ({
   removeItem: (id) => set((state) => ({ items: state.items.filter((item) => item.id !== id) })),
   setSelectedPlatforms: (platforms) => set({ selectedPlatforms: platforms }),
   setOcrResult: (result) => set({ ocrResult: result }),
-  reset: () => set({ items: mockClosetItems, selectedPlatforms: [], ocrResult: mockOcrResult }),
+  setReceiptImages: (images) => set({ receiptImages: images }),
+  reset: () => set({ items: mockClosetItems, selectedPlatforms: [], ocrResult: mockOcrResult, receiptImages: [] }),
 }));
 
 export default useClosetStore;
