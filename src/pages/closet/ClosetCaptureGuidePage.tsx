@@ -95,11 +95,20 @@ const ClosetCaptureGuidePage = () => {
 
         {/* 예시 이미지 — 188×250, radius 4, 타이틀 아래 40 (Figma) */}
         <div className="mt-10 flex justify-center">
-          <img
-            src={receiptGuide}
-            alt="영수증 촬영 예시"
-            className="h-[250px] w-[188px] rounded-[4px] object-cover"
-          />
+          <div className="relative h-[250px] w-[188px]">
+            <img
+              src={receiptGuide}
+              alt="영수증 촬영 예시"
+              className="h-full w-full rounded-[4px] object-cover"
+            />
+            {/* 결제 정보 강조 — 91×37, r4, 1px dashed(2,2) #9D98F0.
+                ※ 위치(Top/Left) 시안 미수급이라 추정값 */}
+            <span
+              aria-hidden
+              className="absolute h-[27px] w-[76px] rounded-[4px] border border-dashed border-[#9D98F0]"
+              style={{ left: 32, top: 61, borderStyle: 'dashed' }}
+            />
+          </div>
         </div>
 
         <div className="flex-1 min-h-0" />
