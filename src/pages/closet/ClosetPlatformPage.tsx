@@ -4,17 +4,23 @@ import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
 import useClosetStore from '@/store/closetStore';
 
-const CX = -134; // 원 중심 x (화면 밖 좌측). 선택점(3시) = CX + R
-const R = 244; // arc 라인 반지름
-const DOT_R = 248; // 점 반지름
-const BOX_R = 286; // 박스 중심 반지름
-const LABEL_R = BOX_R + 24 + 8; // 라벨 왼쪽 모서리 = 박스 바깥(반지름+반) + 8px 간격
+// Figma 박스 3개 좌표에서 역산한 원 (중심 x -66.7 / 박스 중심 반지름 236.7 / 슬롯 간 43.5°)
+const CX = -66.7; // 원 중심 x (화면 밖 좌측)
+const BOX_R = 236.7; // 박스 중심 반지름
+// 점 반지름 = 중앙 박스 왼쪽 모서리(-66.7+236.7-36) - 간격 16 - 점 반지름 8
+const DOT_R = 176.7;
+const R = DOT_R; // arc 라인은 점 위를 지난다
+const BOX = 48; // 일반 박스 한 변
+const CENTER_BOX = 72; // 중앙(선택 위치) 박스 한 변
+const LABEL_GAP = 8; // 박스 바깥 ~ 이름 간격
 const SENS = 0.3; // 드래그 px당 회전(deg)
 
-const NAMES = ['ABLY', 'ZIGZAG', 'MUSINSA', '29CM', 'W-CONCEPT'];
-const SPACING = 21.7; // 슬롯 간 각도
+// OCR이 지원하는 쇼핑몰 3곳. 위에서 아래 순서
+const NAMES = ['ABLY', 'MUSINSA', 'ZIGZAG'];
+const CENTER = Math.floor(NAMES.length / 2); // 처음 3시(선택 위치)에 오는 항목
+const SPACING = 43.5; // 슬롯 간 각도
 const PERIOD = SPACING * NAMES.length; // 무한 루프 주기
-const VISIBLE = 58; // 이 각도 이내만 렌더
+const VISIBLE = 70; // 이 각도 이내만 렌더 (주기 절반보다 커야 드래그 중 튀지 않음)
 
 const pos = (radius: number, angleDeg: number) => {
   const a = (angleDeg * Math.PI) / 180;
@@ -79,13 +85,13 @@ const ClosetPlatformPage = () => {
   type Item = { key: string; name: string; angle: number };
   const items: Item[] = [];
   NAMES.forEach((name, i) => {
-    const base = (i - 2) * SPACING + rotation;
+    const base = (i - CENTER) * SPACING + rotation;
     const angle = base - PERIOD * Math.round(base / PERIOD);
     if (Math.abs(angle) <= VISIBLE) items.push({ key: name, name, angle });
   });
   const selected = items.reduce(
     (best, it) => (Math.abs(it.angle) < Math.abs(best.angle) ? it : best),
-    { key: '', name: NAMES[2], angle: 999 } as Item,
+    { key: '', name: NAMES[CENTER], angle: 999 } as Item,
   );
 
   const onPointerDown = (e: React.PointerEvent) => {
@@ -117,7 +123,10 @@ const ClosetPlatformPage = () => {
     setRotation((r) => r - selected.angle); // 선택 로고 3시로 스냅
   };
 
-  const selPos = pos(R, selected.angle); // 선택 점은 arc 라인(R) 위 = 스펙(중심 110)
+  // 중앙(선택 위치) 요소 좌표 — 박스는 다른 슬롯과 같은 반지름, 점은 점 반지름
+  const selBox = pos(BOX_R, selected.angle);
+  const selDot = pos(DOT_R, selected.angle);
+  const selLabel = pos(BOX_R + CENTER_BOX / 2 + LABEL_GAP, selected.angle);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
@@ -149,7 +158,8 @@ const ClosetPlatformPage = () => {
             if (it.key === selected.key) return null;
             const isSel = selectedSet.has(it.name); // 선택된 쇼핑몰 → 검정 표시
             const slot = Math.round(it.angle / SPACING);
-            const edge = Math.abs(slot) >= 2;
+            // 3개뿐이라 중앙 외에는 전부 위·아래 끝 → 그라데이션 처리
+            const edge = Math.abs(slot) >= 1;
             const kind: 'gray' | 'top' | 'bottom' | 'dark' = isSel
               ? 'dark'
               : edge
@@ -160,7 +170,7 @@ const ClosetPlatformPage = () => {
             const dotColor = isSel ? '#1F2124' : edge ? '#CED1D5' : '#959BA7';
             const dot = pos(DOT_R, it.angle);
             const box = pos(BOX_R, it.angle);
-            const label = pos(LABEL_R, it.angle);
+            const label = pos(BOX_R + BOX / 2 + LABEL_GAP, it.angle);
             const labelStyle = isSel
               ? { color: '#1F2124' }
               : edge
@@ -202,32 +212,29 @@ const ClosetPlatformPage = () => {
           })}
 
           {/* 선택 로고 크게 (실제 위치, 업라이트) — 클릭 시 선택 토글 */}
-          <div
-            className="absolute cursor-pointer"
-            style={{ left: `${selPos.x}px`, top: `calc(50% + ${selPos.y}px)` }}
-            onClick={toggleSelect}
-          >
+          <div className="absolute inset-0 cursor-pointer" onClick={toggleSelect}>
             {/* 중앙 점 — 선택 시 #1F2124, 미선택 시 gray-400 */}
             <span
               className={[
-                'absolute -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full',
+                'absolute w-4 h-4 rounded-full',
                 centerSelected ? 'bg-[#1F2124]' : 'bg-gray-400',
               ].join(' ')}
+              style={{ left: `${selDot.x}px`, top: `calc(50% + ${selDot.y}px)`, transform: 'translate(-50%,-50%)' }}
             />
-            {/* 중앙 박스 — 선택 시 #1F2124, 미선택 시 회색 */}
+            {/* 중앙 박스 72×72 — 선택 시 #1F2124, 미선택 시 회색 */}
             <span
               className={[
-                'absolute -translate-y-1/2 w-[72px] h-[72px] rounded-lg',
+                'absolute w-[72px] h-[72px] rounded-lg',
                 centerSelected ? 'bg-[#1F2124]' : 'bg-[#B2B8BD]',
               ].join(' ')}
-              style={{ left: 24 }}
+              style={{ left: `${selBox.x}px`, top: `calc(50% + ${selBox.y}px)`, transform: 'translate(-50%,-50%)' }}
             />
             <span
               className={[
-                'absolute -translate-y-1/2 whitespace-nowrap text-[32px] font-bold leading-[1.4] tracking-[-0.02em]',
+                'absolute whitespace-nowrap text-[32px] font-bold leading-[1.4] tracking-[-0.02em]',
                 centerSelected ? 'text-[#1F2124]' : 'text-[#B2B8BD]',
               ].join(' ')}
-              style={{ left: 104 }}
+              style={{ left: `${selLabel.x}px`, top: `calc(50% + ${selLabel.y}px)`, transform: 'translateY(-50%)' }}
             >
               {selected.name}
             </span>
