@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
 import useClosetStore from '@/store/closetStore';
@@ -26,7 +26,10 @@ const ValueBox = ({ children }: { children: React.ReactNode }) => (
  */
 const ClosetOcrConfirmPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const result = useClosetStore((state) => state.ocrResult);
+  // 여러 장을 인식한 목록에서 들어왔는지 (촬영 플로우는 1장이라 바로 완료로 간다)
+  const fromList = (location.state as { from?: string } | null)?.from === 'list';
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
@@ -40,7 +43,7 @@ const ClosetOcrConfirmPage = () => {
         >
           {/* 타이틀 — 375×30 (Title/T3) */}
           <h1 className="mt-[52px] text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
-            영수증 정보가 다음과 같아요?
+            영수증 정보가 다음과 같나요?
           </h1>
 
           {/* 결과 폼 — 327 Hug(시안 656), 타이틀 아래 40. 감싸는 테두리 없음 */}
@@ -89,18 +92,38 @@ const ClosetOcrConfirmPage = () => {
         <div className="flex flex-col gap-2 px-6 pt-4 pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
           <button
             type="button"
-            onClick={() => navigate('/closet/register/ocr-edit')}
+            onClick={() => navigate('/closet/register/ocr-edit', { state: location.state })}
             className="h-[58px] w-full cursor-pointer rounded-[32px] bg-[#F6F7F8] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124]"
           >
             수정하기
           </button>
-          <button
-            type="button"
-            onClick={() => navigate('/closet/register/ocr-complete')}
-            className="h-[58px] w-full cursor-pointer rounded-[32px] bg-[#1F2124] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
-          >
-            확인
-          </button>
+          {/* 업로드 플로우는 목록으로 돌아갈 수단이 필요해 확인 줄을 둘로 나눈다 (임시 — 시안 대기) */}
+          {fromList ? (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => navigate('/closet/register/receipt-done')}
+                className="h-[58px] flex-1 cursor-pointer rounded-[32px] bg-[#F6F7F8] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124]"
+              >
+                다른 영수증
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/closet/register/ocr-complete')}
+                className="h-[58px] flex-1 cursor-pointer rounded-[32px] bg-[#1F2124] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
+              >
+                확인
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => navigate('/closet/register/ocr-complete')}
+              className="h-[58px] w-full cursor-pointer rounded-[32px] bg-[#1F2124] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
+            >
+              확인
+            </button>
+          )}
         </div>
       </div>
     </PageLayout>

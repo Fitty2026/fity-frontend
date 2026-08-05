@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
 // 코디 생성 날짜 선택과 동일한 휠 피커를 재사용한다
@@ -97,16 +97,35 @@ const TextField = ({
   </Field>
 );
 
+/** 인식 실패로 처음부터 입력할 때 쓰는 빈 값 */
+const EMPTY_VALUES = {
+  brand: '',
+  name: '',
+  quantity: '',
+  size: '',
+  color: { label: '', hex: '' },
+  price: '',
+  store: '',
+  purchasedAt: '',
+};
+
+interface ClosetOcrEditPageProps {
+  /** edit = 인식된 값 수정 / manual = 인식 실패분 직접 입력 */
+  mode?: 'edit' | 'manual';
+}
+
 /**
- * OCR 결과 수정 — 인식된 값을 직접 고친다.
+ * OCR 결과 수정 / 직접 입력 — 필드 구성이 같아 한 화면으로 쓴다.
  * ※ 색상 선택·캘린더 화면은 시안 미수급이라 아직 열리지 않는다.
  */
-const ClosetOcrEditPage = () => {
+const ClosetOcrEditPage = ({ mode = 'edit' }: ClosetOcrEditPageProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const ocrResult = useClosetStore((state) => state.ocrResult);
   const setOcrResult = useClosetStore((state) => state.setOcrResult);
+  const manual = mode === 'manual';
   // 진입 시점의 값을 편집하고, 확인을 눌러야 스토어에 반영한다
-  const [values, setValues] = useState(ocrResult);
+  const [values, setValues] = useState(manual ? EMPTY_VALUES : ocrResult);
 
   type FieldKey = Exclude<keyof typeof values, 'color'>;
   const update = (key: FieldKey, value: string) => setValues((prev) => ({ ...prev, [key]: value }));
@@ -125,7 +144,13 @@ const ClosetOcrEditPage = () => {
   const handleConfirm = () => {
     if (!canConfirm) return;
     setOcrResult(values);
-    navigate('/closet/register/ocr-confirm');
+    // 목록에서 온 직접 입력은 목록으로, 그 외에는 확인 화면으로 (from을 그대로 넘겨 CTA 유지)
+    const fromList = (location.state as { from?: string } | null)?.from === 'list';
+    if (manual && fromList) {
+      navigate('/closet/register/receipt-done');
+      return;
+    }
+    navigate('/closet/register/ocr-confirm', { state: location.state });
   };
 
   return (
@@ -140,7 +165,7 @@ const ClosetOcrEditPage = () => {
         >
           {/* 타이틀 — 375×30 (Title/T3) */}
           <h1 className="mt-[52px] text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
-            잘못된 정보를 수정해주세요
+            {manual ? '정보를 직접 입력해주세요' : '잘못된 정보를 수정해주세요'}
           </h1>
 
           {/* 하단 여백 — 마지막 필드(구매일)에서 캘린더를 열어도 잘리지 않게 */}
