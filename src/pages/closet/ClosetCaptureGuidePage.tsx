@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
 import receiptGuide from '@/assets/images/closet/receipt-guide.png';
@@ -40,6 +41,9 @@ const NoticeIcon = () => (
   </svg>
 );
 
+/** 카메라 권한 안내 토스트 노출 시간 — 임시값 (문구·형태 디자이너 확인 대기) */
+const TOAST_MS = 3000;
+
 /** 촬영 주의사항 — 시안 3줄 */
 const NOTICES = [
   '영수증 전체가 보이도록 해주세요',
@@ -53,11 +57,34 @@ const NOTICES = [
  */
 const ClosetCaptureGuidePage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // 촬영 화면에서 카메라 권한이 막혀 되돌아온 경우
+  const [showDeniedToast, setShowDeniedToast] = useState(
+    Boolean((location.state as { cameraDenied?: boolean } | null)?.cameraDenied),
+  );
+
+  useEffect(() => {
+    if (!showDeniedToast) return;
+    const timer = setTimeout(() => setShowDeniedToast(false), TOAST_MS);
+    return () => clearTimeout(timer);
+  }, [showDeniedToast]);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
-      <div className="flex flex-col flex-1 min-h-0 bg-white">
+      <div className="relative flex flex-col flex-1 min-h-0 bg-white">
         <OnboardingTopBar progress={300 / 375} showSkip onSkip={() => navigate('/closet')} />
+
+        {/* 카메라 권한 거부 안내 — 임시 토스트 (시안 미수급) */}
+        {showDeniedToast && (
+          <div
+            role="status"
+            className="absolute inset-x-6 bottom-[120px] z-10 rounded-lg bg-black/80 px-4 py-3 text-center text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-white"
+          >
+            카메라 권한이 거부되어 촬영할 수 없어요
+            <br />
+            브라우저 설정에서 카메라를 허용해주세요
+          </div>
+        )}
 
         {/* 타이틀 — 진행 바 아래 52px, Title/T3 (다른 등록 화면과 동일) */}
         <h1 className="mt-[52px] text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
@@ -96,7 +123,7 @@ const ClosetCaptureGuidePage = () => {
         <div className="w-full px-6 pt-6 pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
           <button
             type="button"
-            onClick={() => navigate('/closet/register/importing')}
+            onClick={() => navigate('/closet/register/capture')}
             className="flex h-[58px] w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#1F2124] text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
           >
             <CameraIcon />
