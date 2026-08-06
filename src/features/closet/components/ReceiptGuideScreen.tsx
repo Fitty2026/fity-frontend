@@ -21,18 +21,16 @@ const NoticeIcon = () => (
   </svg>
 );
 
-/** 촬영·업로드 공통 주의사항 — 시안 3줄 */
-const NOTICES = [
-  '영수증 전체가 보이도록 해주세요',
-  '영수증이 구겨지지 않게 해주세요',
-  '밝은 곳에서 영수증을 업로드해주세요',
-];
+/** 촬영·업로드 공통 주의사항 앞 2줄 (마지막 줄은 화면마다 다름) */
+const COMMON_NOTICES = ['영수증 전체가 보이도록 해주세요', '영수증이 구겨지지 않게 해주세요'];
 
 interface ReceiptGuideScreenProps {
   /** 타이틀 두 번째 줄 (첫 줄은 '결제 정보가 잘 보이도록' 고정) */
   titleSecondLine: string;
   /** 예시 이미지 alt */
   imageAlt: string;
+  /** 주의사항 마지막 줄 (촬영/업로드 문구가 다름) */
+  lastNotice: string;
   /** 예시 이미지 아래 보조 안내 (없으면 미노출) */
   hint?: ReactNode;
   /** CTA 좌측 아이콘 */
@@ -53,6 +51,7 @@ interface ReceiptGuideScreenProps {
 const ReceiptGuideScreen = ({
   titleSecondLine,
   imageAlt,
+  lastNotice,
   hint,
   ctaIcon,
   ctaLabel,
@@ -100,8 +99,8 @@ const ReceiptGuideScreen = ({
               <NoticeIcon />
             </span>
             {/* Body/B6 — 14px SemiBold, LH 160%, LS -2% */}
-            <ul className="text-[14px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#34363C]">
-              {NOTICES.map((notice) => (
+            <ul className="flex flex-col gap-px text-[14px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#34363C]">
+              {[...COMMON_NOTICES, lastNotice].map((notice) => (
                 <li key={notice}>{notice}</li>
               ))}
             </ul>
@@ -109,7 +108,7 @@ const ReceiptGuideScreen = ({
         </div>
 
         {/* 하단 CTA — 327×58 (px 24), 하단 40px */}
-        <div className="w-full px-6 pt-6 pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
+        <div className="w-full px-6 pt-[10px] pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
           {extra}
           <button
             type="button"
