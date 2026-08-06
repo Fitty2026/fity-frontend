@@ -39,7 +39,7 @@ const MAX_FILES = 5;
  * 화면 구조는 촬영 가이드와 공유한다 (ReceiptGuideScreen).
  * ※ 고른 파일을 어떻게 다루는지(미리보기·인식 요청)는 시안 미수급.
  */
-const ClosetReceiptUploadPage = () => {
+const ClosetUploadGuidePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const images = useClosetStore((state) => state.receiptImages);
@@ -72,6 +72,7 @@ const ClosetReceiptUploadPage = () => {
     <ReceiptGuideScreen
       titleSecondLine="다음과 같이 영수증 사진을 업로드해주세요"
       imageAlt="영수증 업로드 예시"
+      lastNotice="밝은 곳에서 촬영한 영수증을 업로드해주세요"
       hint={
         // 최대 장수 안내 — 이미지 아래 8, Caption 12px Regular LH165% (블록 138×20)
         <div className="mt-2 flex items-center justify-center gap-2 px-6">
@@ -98,4 +99,4 @@ const ClosetReceiptUploadPage = () => {
   );
 };
 
-export default ClosetReceiptUploadPage;
+export default ClosetUploadGuidePage;

@@ -132,7 +132,7 @@ const ClosetReceiptDonePage = () => {
                       <button
                         type="button"
                         onClick={() =>
-                          navigate('/closet/register/receipt-upload', {
+                          navigate('/closet/register/upload-guide', {
                             state: { replaceIndex: index },
                           })
                         }
