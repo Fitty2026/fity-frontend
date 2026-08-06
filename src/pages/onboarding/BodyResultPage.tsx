@@ -31,7 +31,8 @@ const BodyResultPage = () => {
 
   const handleFinish = () => {
     completeOnboarding();
-    navigate('/home', { replace: true });
+    // 온보딩을 마치면 바로 옷장 등록 안내로 넘어간다 (뒤로가기로 체형 단계에 다시 들어오지 않게 replace)
+    navigate('/closet/intro', { replace: true });
   };
 
   return (
