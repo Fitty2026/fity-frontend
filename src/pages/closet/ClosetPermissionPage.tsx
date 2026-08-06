@@ -1,173 +1,135 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
 import useClosetStore from '@/store/closetStore';
+import musinsaLogo from '@/assets/images/closet/platform-musinsa-logo.png';
 
-/** 플랫폼 로고 카드 — 72×72 검정 라운드 + 흰 이름 (로고 에셋 확정 시 교체) */
-const PlatformLogo = ({ name, bg }: { name: string; bg: string }) => (
-  <span
-    className="flex h-[72px] w-[72px] items-center justify-center rounded-2xl px-1 text-center text-[12px] font-bold leading-[1.3] tracking-[-0.02em] text-white"
-    style={{ background: bg }}
-  >
-    {name}
-  </span>
-);
-
-// 스택 카드 배경 — 앞→뒤로 갈수록 옅어짐 (1번째 solid, 2번째 80%, 3번째 40%)
-const CARD_BG = ['#1F2124', '#000000CC', '#00000066'];
-
-// 앞 카드 기준 누적 오프셋 (Figma 측정: 1→2 +22/-18, 2→3 +19/-13)
-const DX = [0, 22, 41]; // 우측 누적
-const DY = [0, 18, 31]; // 위 누적
-
-/**
- * 선택 쇼핑몰 로고 스택 — 최대 3장 겹침(앞=완전 노출), 4개 이상은 "+N".
- * 앞 카드(index 0)가 좌하단·최상단, 뒤로 갈수록 우상단으로 오프셋 (Figma 측정).
- */
-const PlatformLogoStack = ({ names }: { names: string[] }) => {
-  const visible = names.slice(0, 3);
-  const extra = names.length - visible.length;
-  const last = visible.length - 1;
-  const spanY = DY[last];
-
-  // 컨테이너 폭 = 앞 카드(72)만 → justify-center가 앞 카드를 화면 중앙에 둠.
-  // 뒤 카드·+N은 absolute로 우상단 오버플로우.
-  return (
-    <div className="relative" style={{ width: 72, height: 72 + spanY }}>
-      {visible.map((name, i) => (
-        <div
-          key={name}
-          className="absolute"
-          style={{ left: DX[i], top: spanY - DY[i], zIndex: visible.length - i }}
-        >
-          <PlatformLogo name={name} bg={CARD_BG[i] ?? CARD_BG[CARD_BG.length - 1]} />
-        </div>
-      ))}
-      {/* +N — 최상단 카드 오른쪽 12px, 세로 중앙 (top-back 카드 top=0, (72-26)/2=23) */}
-      {extra > 0 && (
-        <span
-          className="absolute whitespace-nowrap text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#6F7881]"
-          style={{ left: DX[last] + 72 + 12, top: 23 }}
-        >
-          +{extra}
-        </span>
-      )}
-    </div>
-  );
+/** 쇼핑몰 로고 — 무신사만 수급, 나머지는 이름 박스로 대체 */
+const PLATFORM_LOGOS: Record<string, string> = {
+  MUSINSA: musinsaLogo,
 };
 
-/** 상세보기 화살표 — 9×17, #959BA7 */
-const Chevron = () => (
-  <svg width="9" height="17" viewBox="0 0 9 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M0.75 0.75L8.25 8.25L0.75 15.75" stroke="#959BA7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+/** 카메라 — 32×32, stroke #34363C */
+const CameraIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path
+      d="M9.10267 8.23361C8.86265 8.61349 8.54243 8.93625 8.16445 9.17925C7.78647 9.42225 7.3599 9.57961 6.91467 9.64027C6.408 9.71227 5.90533 9.78961 5.40267 9.87361C3.99867 10.1069 3 11.3429 3 12.7656V24.0003C3 24.7959 3.31607 25.559 3.87868 26.1216C4.44129 26.6842 5.20435 27.0003 6 27.0003H26C26.7957 27.0003 27.5587 26.6842 28.1213 26.1216C28.6839 25.559 29 24.7959 29 24.0003V12.7656C29 11.3429 28 10.1069 26.5973 9.87361C26.0943 9.78979 25.5902 9.71201 25.0853 9.64027C24.6403 9.57942 24.214 9.42198 23.8363 9.17899C23.4586 8.936 23.1385 8.61333 22.8987 8.23361L21.8027 6.47894C21.5565 6.07907 21.2176 5.7444 20.8147 5.50325C20.4118 5.26211 19.9567 5.1216 19.488 5.09361C17.1643 4.9688 14.8357 4.9688 12.512 5.09361C12.0433 5.1216 11.5882 5.26211 11.1853 5.50325C10.7824 5.7444 10.4435 6.07907 10.1973 6.47894L9.10267 8.23361Z"
+      stroke="#34363C"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M22 17C22 18.5913 21.3679 20.1174 20.2426 21.2426C19.1174 22.3679 17.5913 23 16 23C14.4087 23 12.8826 22.3679 11.7574 21.2426C10.6321 20.1174 10 18.5913 10 17C10 15.4087 10.6321 13.8826 11.7574 12.7574C12.8826 11.6321 14.4087 11 16 11C17.5913 11 19.1174 11.6321 20.2426 12.7574C21.3679 13.8826 22 15.4087 22 17ZM25 14H25.0107V14.0107H25V14Z"
+      stroke="#34363C"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
-/** 필수 동의 항목 행 */
-const RequiredRow = ({
-  label,
-  checked,
-  onToggle,
-}: {
-  label: string;
-  checked: boolean;
-  onToggle: () => void;
-}) => (
-  <button type="button" onClick={onToggle} className="flex w-full items-center gap-[16px] text-left cursor-pointer">
-    <Checkbox checked={checked} />
-    <span className="flex items-baseline gap-[4px] whitespace-nowrap text-[14px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">
-      <span>(필수)</span>
-      <span>{label}</span>
-    </span>
-    <span className="ml-auto shrink-0">
-      <Chevron />
-    </span>
-  </button>
+/** 사진(앨범) — 32×32, stroke #1F2124 */
+const PhotoIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path
+      d="M3 21L9.87867 14.1213C10.1572 13.8428 10.488 13.6218 10.8519 13.471C11.2159 13.3202 11.606 13.2426 12 13.2426C12.394 13.2426 12.7841 13.3202 13.1481 13.471C13.512 13.6218 13.8428 13.8428 14.1213 14.1213L21 21M19 19L20.8787 17.1213C21.1572 16.8428 21.488 16.6218 21.8519 16.471C22.2159 16.3202 22.606 16.2426 23 16.2426C23.394 16.2426 23.7841 16.3202 24.1481 16.471C24.512 16.6218 24.8428 16.8428 25.1213 17.1213L29 21M5 26H27C27.5304 26 28.0391 25.7893 28.4142 25.4142C28.7893 25.0391 29 24.5304 29 24V8C29 7.46957 28.7893 6.96086 28.4142 6.58579C28.0391 6.21071 27.5304 6 27 6H5C4.46957 6 3.96086 6.21071 3.58579 6.58579C3.21071 6.96086 3 7.46957 3 8V24C3 24.5304 3.21071 25.0391 3.58579 25.4142C3.96086 25.7893 4.46957 26 5 26ZM19 11H19.0107V11.0107H19V11ZM19.5 11C19.5 11.1326 19.4473 11.2598 19.3536 11.3536C19.2598 11.4473 19.1326 11.5 19 11.5C18.8674 11.5 18.7402 11.4473 18.6464 11.3536C18.5527 11.2598 18.5 11.1326 18.5 11C18.5 10.8674 18.5527 10.7402 18.6464 10.6464C18.7402 10.5527 18.8674 10.5 19 10.5C19.1326 10.5 19.2598 10.5527 19.3536 10.6464C19.4473 10.7402 19.5 10.8674 19.5 11Z"
+      stroke="#1F2124"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
 );
 
-/** 체크박스 — 24×24. 미체크: 원 outline #CED1D5 / 체크: 임시(필드 스펙 대기) */
-const Checkbox = ({ checked }: { checked: boolean }) =>
-  checked ? (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M16.2806 9.21937C16.3504 9.28903 16.4057 9.37175 16.4434 9.46279C16.4812 9.55384 16.5006 9.65144 16.5006 9.75C16.5006 9.84856 16.4812 9.94616 16.4434 10.0372C16.4057 10.1283 16.3504 10.211 16.2806 10.2806L11.0306 15.5306C10.961 15.6004 10.8783 15.6557 10.7872 15.6934C10.6962 15.7312 10.5986 15.7506 10.5 15.7506C10.4014 15.7506 10.3038 15.7312 10.2128 15.6934C10.1218 15.6557 10.039 15.6004 9.96938 15.5306L7.71938 13.2806C7.57865 13.1399 7.49959 12.949 7.49959 12.75C7.49959 12.551 7.57865 12.3601 7.71938 12.2194C7.86011 12.0786 8.05098 11.9996 8.25 11.9996C8.44903 11.9996 8.6399 12.0786 8.78063 12.2194L10.5 13.9397L15.2194 9.21937C15.289 9.14964 15.3718 9.09432 15.4628 9.05658C15.5538 9.01884 15.6514 8.99941 15.75 8.99941C15.8486 8.99941 15.9462 9.01884 16.0372 9.05658C16.1283 9.09432 16.211 9.14964 16.2806 9.21937ZM21.75 12C21.75 13.9284 21.1782 15.8134 20.1068 17.4168C19.0355 19.0202 17.5127 20.2699 15.7312 21.0078C13.9496 21.7458 11.9892 21.9389 10.0979 21.5627C8.20656 21.1865 6.46928 20.2579 5.10571 18.8943C3.74215 17.5307 2.81355 15.7934 2.43735 13.9021C2.06114 12.0108 2.25422 10.0504 2.99218 8.26884C3.73013 6.48726 4.97982 4.96451 6.58319 3.89317C8.18657 2.82183 10.0716 2.25 12 2.25C14.585 2.25273 17.0634 3.28084 18.8913 5.10872C20.7192 6.93661 21.7473 9.41498 21.75 12ZM20.25 12C20.25 10.3683 19.7661 8.77325 18.8596 7.41655C17.9531 6.05984 16.6646 5.00242 15.1571 4.37799C13.6497 3.75357 11.9909 3.59019 10.3905 3.90852C8.79017 4.22685 7.32016 5.01259 6.16637 6.16637C5.01259 7.32015 4.22685 8.79016 3.90853 10.3905C3.5902 11.9908 3.75358 13.6496 4.378 15.1571C5.00242 16.6646 6.05984 17.9531 7.41655 18.8596C8.77326 19.7661 10.3683 20.25 12 20.25C14.1873 20.2475 16.2843 19.3775 17.8309 17.8309C19.3775 16.2843 20.2475 14.1873 20.25 12Z" fill="#1F2124" />
-    </svg>
-  ) : (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 2.25C10.0716 2.25 8.18657 2.82183 6.58319 3.89317C4.97982 4.96451 3.73013 6.48726 2.99218 8.26884C2.25422 10.0504 2.06114 12.0108 2.43735 13.9021C2.81355 15.7934 3.74215 17.5307 5.10571 18.8943C6.46928 20.2579 8.20656 21.1865 10.0979 21.5627C11.9892 21.9389 13.9496 21.7458 15.7312 21.0078C17.5127 20.2699 19.0355 19.0202 20.1068 17.4168C21.1782 15.8134 21.75 13.9284 21.75 12C21.7473 9.41498 20.7192 6.93661 18.8913 5.10872C17.0634 3.28084 14.585 2.25273 12 2.25ZM12 20.25C10.3683 20.25 8.77326 19.7661 7.41655 18.8596C6.05984 17.9531 5.00242 16.6646 4.378 15.1571C3.75358 13.6496 3.5902 11.9908 3.90853 10.3905C4.22685 8.79016 5.01259 7.32015 6.16637 6.16637C7.32016 5.01259 8.79017 4.22685 10.3905 3.90852C11.9909 3.59019 13.6497 3.75357 15.1571 4.37799C16.6646 5.00242 17.9531 6.05984 18.8596 7.41655C19.7661 8.77325 20.25 10.3683 20.25 12C20.2475 14.1873 19.3775 16.2843 17.8309 17.8309C16.2843 19.3775 14.1873 20.2475 12 20.25Z" fill="#CED1D5" />
-    </svg>
-  );
+/** 필요한 권한 안내 — 시안 2개 */
+const PERMISSIONS = [
+  {
+    key: 'camera',
+    icon: <CameraIcon />,
+    title: '카메라 접근',
+    description: '영수증을 직접 촬영할 때 사용돼요',
+  },
+  {
+    key: 'photo',
+    icon: <PhotoIcon />,
+    title: '사진 접근',
+    description: '앨범에서 영수증 사진을 선택할 때 사용돼요',
+  },
+];
 
 /**
- * 구매내역 권한 동의 — 선택 쇼핑몰 로고 + 안내 + 약관 동의(전체/필수 2항목) + 계속하기.
+ * 영수증 접근 권한 안내 — 선택한 쇼핑몰 로고 + 필요한 권한 2가지 + 다음.
+ * ※ 동의 체크는 없고 안내만 한다 (실제 권한 요청은 촬영/앨범을 열 때 브라우저가 한다).
  */
 const ClosetPermissionPage = () => {
   const navigate = useNavigate();
-  const storedPlatforms = useClosetStore((state) => state.selectedPlatforms);
+  const selectedPlatforms = useClosetStore((state) => state.selectedPlatforms);
   // 새로고침·직접 진입으로 선택값이 없으면 레이아웃 유지를 위해 기본 노출
-  const selectedPlatforms = storedPlatforms.length > 0 ? storedPlatforms : ['MUSINSA'];
-  const [purchase, setPurchase] = useState(false);
-  const [data, setData] = useState(false);
-  const allChecked = purchase && data;
-
-  const toggleAll = () => {
-    const next = !allChecked;
-    setPurchase(next);
-    setData(next);
-  };
+  const platform = selectedPlatforms[0] ?? 'MUSINSA';
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
       <div className="flex flex-col flex-1 min-h-0 bg-white">
         <OnboardingTopBar progress={300 / 375} showSkip onSkip={() => navigate('/closet')} />
 
-        <div className="flex-1 overflow-y-auto px-6">
-          {/* 선택 쇼핑몰 로고 — 스택(최대 3장 겹침, 4개 이상 +N) */}
-          <div className="mt-[52px] flex justify-center">
-            <PlatformLogoStack names={selectedPlatforms} />
+        <div className="flex-1 overflow-y-auto">
+          {/* 쇼핑몰 로고 72×72 r16 — 진행 바 아래 60 (Figma top 167) */}
+          <div className="mt-[60px] flex justify-center">
+            {PLATFORM_LOGOS[platform] ? (
+              <img
+                src={PLATFORM_LOGOS[platform]}
+                alt={platform}
+                className="h-[72px] w-[72px] rounded-2xl object-cover"
+              />
+            ) : (
+              // 로고 에셋 미수급 쇼핑몰은 이름 박스로 대체
+              <span className="flex h-[72px] w-[72px] items-center justify-center rounded-2xl bg-[#1F2124] px-1 text-center text-[12px] font-bold leading-[1.3] tracking-[-0.02em] text-white">
+                {platform}
+              </span>
+            )}
           </div>
 
-          {/* 안내 */}
-          <h1 className="mt-8 text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
-            선택한 쇼핑몰의
+          {/* 안내 문구 — 375×90 3줄 (Title/T3), 로고 아래 24 */}
+          <h1 className="mt-6 text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
+            영수증 사진을
             <br />
-            구매 내역을 불러오기 위해
+            촬영하거나 불러오기 위해
             <br />
-            아래 권한이 필요해요
+            아래 접근 권한이 필요해요
           </h1>
 
-          {/* 약관 전체 동의 (Figma: bg #F6F7F8, radius8, padding10/12, 타이틀→64px) */}
-          <button
-            type="button"
-            onClick={toggleAll}
-            className="mt-16 flex h-[46px] w-full items-center gap-[16px] rounded-lg bg-[#F6F7F8] py-[10px] pl-[12px] pr-[12px] text-left cursor-pointer"
-          >
-            <Checkbox checked={allChecked} />
-            <span className="text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">
-              약관 전체 동의
-            </span>
-          </button>
-
-          {/* 필수 항목 (Figma: bg #F6F7F8, radius8, border-top1, padding 24/24/10, gap8) */}
-          <div className="mt-[12px] flex flex-col gap-[8px] rounded-lg border-t border-[#E6E8EA] bg-[#F6F7F8] pt-[24px] pb-[24px] pl-[10px] pr-[12px]">
-            <RequiredRow label="구매 내역 조회" checked={purchase} onToggle={() => setPurchase((v) => !v)} />
-            <RequiredRow label="안전한 데이터 처리" checked={data} onToggle={() => setData((v) => !v)} />
+          {/* 권한 카드 326×126 — 문구 아래 40, 카드 간 8 (Figma top 393 / 527) */}
+          <div className="mt-10 flex flex-col gap-2 px-6">
+            {PERMISSIONS.map((permission) => (
+              <div
+                key={permission.key}
+                // padding 24/14/24/24, gap 40, radius 16, bg 흰색 20%, shadow 0/8/16 8%
+                className="flex items-center gap-10 rounded-2xl bg-white/20 py-6 pl-6 pr-[14px] shadow-[0_8px_16px_0_rgba(0,0,0,0.08)] backdrop-blur-md"
+              >
+                <span className="shrink-0">{permission.icon}</span>
+                <span className="flex flex-col gap-2">
+                  {/* Body/B1 — 16px Bold */}
+                  <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">
+                    {permission.title}
+                  </span>
+                  <span className="text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#959BA7]">
+                    {permission.description}
+                  </span>
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* 동의하고 계속하기 — 필수 전부 동의 시 활성 */}
+        {/* 하단 CTA — 327×58 */}
         <div className="w-full px-6 pt-3 pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
           <button
             type="button"
-            disabled={!allChecked}
-            onClick={allChecked ? () => navigate('/closet/register/capture-guide') : undefined}
-            className={[
-              'w-full h-[58px] rounded-[32px] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em]',
-              allChecked ? 'text-[#F6F7F8] cursor-pointer' : 'text-[#959BA7] cursor-not-allowed',
-            ].join(' ')}
-            style={{ backgroundColor: allChecked ? '#1F2124' : '#E6E8EA' }}
+            onClick={() => navigate('/closet/register/receipt-method')}
+            className="h-[58px] w-full cursor-pointer rounded-[32px] bg-[#1F2124] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
           >
-            동의하고 계속하기
+            다음
           </button>
         </div>
       </div>
