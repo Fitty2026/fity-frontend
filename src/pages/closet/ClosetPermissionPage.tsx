@@ -1,13 +1,29 @@
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
-import useClosetStore from '@/store/closetStore';
-import musinsaLogo from '@/assets/images/closet/platform-musinsa-logo.png';
 
-/** 쇼핑몰 로고 — 무신사만 수급, 나머지는 이름 박스로 대체 */
-const PLATFORM_LOGOS: Record<string, string> = {
-  MUSINSA: musinsaLogo,
-};
+/**
+ * 영수증 — 48×48, stroke 3 #1F2124 (Figma: majesticons:receipt-text-line).
+ * ※ 원본 아이콘 path 미수급이라 시안 크기(가로 8~40 / 세로 6~42)에 맞춰 그린 근사.
+ */
+const ReceiptIcon = () => (
+  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path
+      d="M8 39V9A3 3 0 0 1 11 6H37A3 3 0 0 1 40 9V39L36 42L32 39L28 42L24 39L20 42L16 39L12 42L8 39Z"
+      stroke="#1F2124"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M15 16H33M15 24H27"
+      stroke="#1F2124"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 /** 카메라 — 32×32, stroke #34363C */
 const CameraIcon = () => (
@@ -59,14 +75,12 @@ const PERMISSIONS = [
 ];
 
 /**
- * 영수증 접근 권한 안내 — 선택한 쇼핑몰 로고 + 필요한 권한 2가지 + 다음.
+ * 영수증 접근 권한 안내 — 영수증 아이콘 + 필요한 권한 2가지 + 다음.
  * ※ 동의 체크는 없고 안내만 한다 (실제 권한 요청은 촬영/앨범을 열 때 브라우저가 한다).
+ * ※ 쇼핑몰을 고르고 들어오지만 화면에 쇼핑몰 표시는 없다 (시안 기준).
  */
 const ClosetPermissionPage = () => {
   const navigate = useNavigate();
-  const selectedPlatforms = useClosetStore((state) => state.selectedPlatforms);
-  // 새로고침·직접 진입으로 선택값이 없으면 레이아웃 유지를 위해 기본 노출
-  const platform = selectedPlatforms[0] ?? 'MUSINSA';
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
@@ -74,23 +88,12 @@ const ClosetPermissionPage = () => {
         <OnboardingTopBar progress={300 / 375} showSkip onSkip={() => navigate('/closet')} />
 
         <div className="flex-1 overflow-y-auto">
-          {/* 쇼핑몰 로고 72×72 r16 — 진행 바 아래 60 (Figma top 167) */}
-          <div className="mt-[60px] flex justify-center">
-            {PLATFORM_LOGOS[platform] ? (
-              <img
-                src={PLATFORM_LOGOS[platform]}
-                alt={platform}
-                className="h-[72px] w-[72px] rounded-2xl object-cover"
-              />
-            ) : (
-              // 로고 에셋 미수급 쇼핑몰은 이름 박스로 대체
-              <span className="flex h-[72px] w-[72px] items-center justify-center rounded-2xl bg-[#1F2124] px-1 text-center text-[12px] font-bold leading-[1.3] tracking-[-0.02em] text-white">
-                {platform}
-              </span>
-            )}
+          {/* 영수증 아이콘 48×48 — 진행 바 아래 80 (Figma top 187) */}
+          <div className="mt-[80px] flex justify-center">
+            <ReceiptIcon />
           </div>
 
-          {/* 안내 문구 — 375×90 3줄 (Title/T3), 로고 아래 24 */}
+          {/* 안내 문구 — 375×90 3줄 (Title/T3), 아이콘 아래 24 (Figma top 259) */}
           <h1 className="mt-6 text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
             영수증 사진을
             <br />
