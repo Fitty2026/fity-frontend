@@ -31,6 +31,18 @@ const CheckBadge = () => (
   </svg>
 );
 
+/** 삭제 — 16×16, 원 안의 X. stroke #F6F7F8 (Figma) */
+const RemoveIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path
+      d="M6.5 6.5L9.5 9.5M9.5 6.5L6.5 9.5M14 8C14 8.78793 13.8448 9.56815 13.5433 10.2961C13.2417 11.0241 12.7998 11.6855 12.2426 12.2426C11.6855 12.7998 11.0241 13.2417 10.2961 13.5433C9.56815 13.8448 8.78793 14 8 14C7.21207 14 6.43185 13.8448 5.7039 13.5433C4.97595 13.2417 4.31451 12.7998 3.75736 12.2426C3.20021 11.6855 2.75825 11.0241 2.45672 10.2961C2.15519 9.56815 2 8.78793 2 8C2 6.4087 2.63214 4.88258 3.75736 3.75736C4.88258 2.63214 6.4087 2 8 2C9.5913 2 11.1174 2.63214 12.2426 3.75736C13.3679 4.88258 14 6.4087 14 8Z"
+      stroke="#F6F7F8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 /** 사진 추가 — 32×32, 원 채움 #9D98F0 / 십자 #F6F7F8 */
 const AddIcon = () => (
   <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
@@ -68,6 +80,19 @@ const ClosetReceiptCheckPage = () => {
       return next;
     });
 
+  /** 사진 자체를 뺀다 — 뒤 사진들의 번호가 당겨지므로 제외 표시도 같이 옮긴다 */
+  const remove = (index: number) => {
+    setImages(images.filter((_, i) => i !== index));
+    setExcluded((prev) => {
+      const next = new Set<number>();
+      prev.forEach((i) => {
+        if (i < index) next.add(i);
+        else if (i > index) next.add(i - 1);
+      });
+      return next;
+    });
+  };
+
   const handleAdd = (event: React.ChangeEvent<HTMLInputElement>) => {
     const picked = Array.from(event.target.files ?? []);
     if (picked.length === 0) return;
@@ -92,31 +117,49 @@ const ClosetReceiptCheckPage = () => {
             업로드한 영수증이 다음과 같아요?
           </h1>
 
-          {/* 썸네일 100×184, 3열. 타이틀 아래 88, 세로 간격 16.
+          {/* 장수 30×27 — 타이틀 아래 8 (Figma top 197). 18px SemiBold, 고른 수만 Point 색 */}
+          <p className="mt-2 text-center text-[18px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#34363C]">
+            <span className="text-[#9D98F0]">{selectedCount}</span>/{MAX_FILES}
+          </p>
+
+          {/* 썸네일 100×184, 3열. 장수 아래 53 (Figma top 277), 세로 간격 16.
               좌우 여백 24를 지키려면 가로 간격은 (327 - 300) / 2 = 13.5 */}
-          <div className="mt-[88px] grid grid-cols-3 gap-x-[13.5px] gap-y-4 px-6">
+          <div className="mt-[53px] grid grid-cols-3 gap-x-[13.5px] gap-y-4 px-6">
             {images.map((src, index) => {
               const on = !excluded.has(index);
               return (
-                <button
+                // 삭제 버튼이 안에 들어가야 해서 바깥은 div (버튼 안에 버튼은 못 넣는다)
+                <div
                   key={src}
-                  type="button"
-                  onClick={() => toggle(index)}
-                  className={[
-                    'relative h-[184px] w-[100px] cursor-pointer overflow-hidden rounded-2xl',
-                    on ? 'border border-[#1F2124]' : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
+                  className="relative h-[184px] w-[100px] overflow-hidden rounded-2xl border border-[#E6E8EA]"
                 >
-                  <img src={src} alt={`업로드한 영수증 ${index + 1}`} className="h-full w-full object-cover" />
-                  {/* 배지 16×16 — 위 8 / 오른쪽 12 (Figma) */}
+                  <button
+                    type="button"
+                    onClick={() => toggle(index)}
+                    aria-pressed={on}
+                    aria-label={`영수증 ${index + 1} 선택`}
+                    className="block h-full w-full cursor-pointer"
+                  >
+                    <img src={src} alt="" className="h-full w-full object-cover" />
+                  </button>
+
+                  {/* 선택 배지 16×16 — 위 8 / 왼쪽 12 (Figma) */}
                   {on && (
-                    <span className="absolute right-[12px] top-2">
+                    <span className="pointer-events-none absolute left-3 top-2">
                       <CheckBadge />
                     </span>
                   )}
-                </button>
+
+                  {/* 삭제 16×16 — 위 8 / 오른쪽 8 (Figma) */}
+                  <button
+                    type="button"
+                    onClick={() => remove(index)}
+                    aria-label={`영수증 ${index + 1} 삭제`}
+                    className="absolute right-2 top-2 cursor-pointer"
+                  >
+                    <RemoveIcon />
+                  </button>
+                </div>
               );
             })}
 
