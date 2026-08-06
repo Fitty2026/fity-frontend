@@ -4,10 +4,11 @@ import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
 import useClosetStore from '@/store/closetStore';
 
-// Figma 박스 3개 좌표에서 역산한 원 (중심 x -66.7 / 박스 중심 반지름 236.7 / 슬롯 간 43.5°)
+// 휠 배치 — 박스 3개 좌표에서 역산한 값 (중심 x -66.7 / 박스 중심 반지름 236.7)
 const CX = -66.7; // 원 중심 x (화면 밖 좌측)
 const BOX_R = 236.7; // 박스 중심 반지름
-// 점 반지름 = 중앙 박스 왼쪽 모서리(-66.7+236.7-36) - 간격 16 - 점 반지름 8
+const CENTER_BOX_R = BOX_R; // 중앙 박스도 같은 원 위
+// 점 반지름 = 중앙 박스 왼쪽 모서리 - 간격 16 - 점 반지름 8
 const DOT_R = 176.7;
 const R = DOT_R; // arc 라인은 점 위를 지난다
 const BOX = 48; // 일반 박스 한 변
@@ -76,8 +77,8 @@ const ClosetPlatformPage = () => {
   const navigate = useNavigate();
   const setSelectedPlatforms = useClosetStore((state) => state.setSelectedPlatforms);
   const [rotation, setRotation] = useState(0);
-  // 선택된 쇼핑몰 집합. 중앙(3시)에 온 쇼핑몰 클릭 시 토글. 하나라도 있으면 '다음' 활성
-  const [selectedSet, setSelectedSet] = useState<Set<string>>(new Set());
+  // 선택된 쇼핑몰 하나. 중앙(3시)에 온 쇼핑몰 클릭 시 토글 (단일 선택)
+  const [selectedName, setSelectedName] = useState<string | null>(null);
   const drag = useRef<{ startY: number; startRot: number } | null>(null);
   const moved = useRef(false); // 드래그로 움직였는지 (움직였으면 클릭 토글 무시)
 
@@ -103,15 +104,10 @@ const ClosetPlatformPage = () => {
   // 중앙 쇼핑몰 선택 토글 (드래그 후 발생한 클릭은 무시)
   const toggleSelect = () => {
     if (moved.current) return;
-    setSelectedSet((prev) => {
-      const next = new Set(prev);
-      if (next.has(selected.name)) next.delete(selected.name);
-      else next.add(selected.name);
-      return next;
-    });
+    setSelectedName((prev) => (prev === selected.name ? null : selected.name));
   };
-  const centerSelected = selectedSet.has(selected.name);
-  const nextActive = selectedSet.size > 0;
+  const centerSelected = selectedName === selected.name;
+  const nextActive = selectedName !== null;
   const onPointerMove = (e: React.PointerEvent) => {
     if (!drag.current) return;
     if (Math.abs(e.clientY - drag.current.startY) > 4) moved.current = true;
@@ -124,9 +120,9 @@ const ClosetPlatformPage = () => {
   };
 
   // 중앙(선택 위치) 요소 좌표 — 박스는 다른 슬롯과 같은 반지름, 점은 점 반지름
-  const selBox = pos(BOX_R, selected.angle);
+  const selBox = pos(CENTER_BOX_R, selected.angle);
   const selDot = pos(DOT_R, selected.angle);
-  const selLabel = pos(BOX_R + CENTER_BOX / 2 + LABEL_GAP, selected.angle);
+  const selLabel = pos(CENTER_BOX_R + CENTER_BOX / 2 + LABEL_GAP, selected.angle);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
@@ -136,7 +132,9 @@ const ClosetPlatformPage = () => {
         </div>
 
         <p className="relative z-20 mt-[52px] text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
-          연동할 쇼핑몰을 선택해주세요
+          영수증을 발급받을
+          <br />
+          쇼핑몰을 선택해 주세요
         </p>
 
         {/* 휠 영역 */}
@@ -156,7 +154,7 @@ const ClosetPlatformPage = () => {
           {/* 로고 (점 + 박스). 선택은 아래 큰 오버레이가 대신 */}
           {items.map((it) => {
             if (it.key === selected.key) return null;
-            const isSel = selectedSet.has(it.name); // 선택된 쇼핑몰 → 검정 표시
+            const isSel = selectedName === it.name; // 선택된 쇼핑몰 → 검정 표시
             const slot = Math.round(it.angle / SPACING);
             // 3개뿐이라 중앙 외에는 전부 위·아래 끝 → 그라데이션 처리
             const edge = Math.abs(slot) >= 1;
@@ -217,7 +215,7 @@ const ClosetPlatformPage = () => {
             <span
               className={[
                 'absolute w-4 h-4 rounded-full',
-                centerSelected ? 'bg-[#1F2124]' : 'bg-gray-400',
+                centerSelected ? 'bg-[#1F2124]' : 'bg-[#B2B8BD]',
               ].join(' ')}
               style={{ left: `${selDot.x}px`, top: `calc(50% + ${selDot.y}px)`, transform: 'translate(-50%,-50%)' }}
             />
@@ -241,9 +239,6 @@ const ClosetPlatformPage = () => {
           </div>
         </div>
 
-        {/* 하단 흰색 페이드 — 본문을 흐릿하게 (버튼 뒤) */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-40 bg-linear-to-t from-white via-white/80 to-transparent" />
-
         {/* 하단 CTA — 투명 래퍼(본문 비쳐보이게), 버튼만 반투명 z-10 */}
         <div className="relative z-10 w-full px-6 pt-3 pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
           {/* 다음 — 쇼핑몰 하나라도 선택되면 활성 (bg #1F2124 + #F6F7F8) */}
@@ -253,20 +248,16 @@ const ClosetPlatformPage = () => {
             onClick={
               nextActive
                 ? () => {
-                    // 선택 순서 대신 휠 노출 순서 유지
-                    setSelectedPlatforms(NAMES.filter((name) => selectedSet.has(name)));
+                    setSelectedPlatforms(selectedName ? [selectedName] : []);
                     navigate('/closet/register/permission');
                   }
                 : undefined
             }
             className={[
               'w-full h-[58px] rounded-[32px] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em]',
-              nextActive ? 'text-[#F6F7F8] cursor-pointer' : 'text-[#1F2124] cursor-not-allowed',
+              nextActive ? 'text-[#F6F7F8] cursor-pointer' : 'text-[#959BA7] cursor-not-allowed',
             ].join(' ')}
-            style={{
-              backgroundColor: nextActive ? '#1F2124' : 'rgba(31,33,36,0.04)',
-              boxShadow: '0px 8px 16px 0px rgba(0,0,0,0.08)',
-            }}
+            style={{ backgroundColor: nextActive ? '#1F2124' : '#E6E8EA' }}
           >
             다음
           </button>
