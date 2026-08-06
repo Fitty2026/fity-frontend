@@ -1,3 +1,11 @@
+import { useEffect, useState } from 'react';
+
+/**
+ * 직전 화면의 진행률. 화면이 바뀌어도 바가 끊기지 않고 이어서 차오르게 하려고
+ * 모듈 스코프에 들고 있는다 (SPA라 라우트 이동 사이에 유지됨).
+ */
+let lastProgress = 0;
+
 interface OnboardingTopBarProps {
   /** 진행률 0~1. 지정 시 하단 프로그레스 바 표시 */
   progress?: number;
@@ -21,6 +29,16 @@ const OnboardingTopBar = ({
   showBack = false,
   onBack,
 }: OnboardingTopBarProps) => {
+  // 이전 값으로 먼저 그린 뒤 다음 프레임에 목표값으로 — CSS transition이 그 사이를 채운다
+  const [width, setWidth] = useState(lastProgress);
+
+  useEffect(() => {
+    if (progress === undefined) return;
+    const frame = requestAnimationFrame(() => setWidth(progress));
+    lastProgress = progress;
+    return () => cancelAnimationFrame(frame);
+  }, [progress]);
+
   return (
     <div className="w-full bg-white pt-[env(safe-area-inset-top,0px)]">
       <div className="relative flex items-center justify-center h-[53px] px-4">
@@ -57,8 +75,8 @@ const OnboardingTopBar = ({
       {progress !== undefined && (
         <div className="h-1 w-full bg-[#E6E8EA]">
           <div
-            className="h-full rounded-r-[4px] bg-[#9D98F0] transition-[width] duration-300"
-            style={{ width: `${Math.min(Math.max(progress, 0), 1) * 100}%` }}
+            className="h-full rounded-r-[4px] bg-[#9D98F0] transition-[width] duration-500 ease-out"
+            style={{ width: `${Math.min(Math.max(width, 0), 1) * 100}%` }}
           />
         </div>
       )}
