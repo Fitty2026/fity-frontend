@@ -1,13 +1,11 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
+import useClosetStore from '@/store/closetStore';
 
-/** 인식 결과 — API 연동 전 목업 */
-const RESULTS = [
-  { store: '무신사 스탠다드 강남점', date: '2026.06.28.', failed: false },
-  { store: 'ZARA 코엑스점', date: '2026.07.11.', failed: false },
-  { store: '', date: '', failed: true },
-];
+/** '2026.06.28. 13:45:55' → '2026.06.28.' — 목록엔 날짜만 보여준다 */
+const toDate = (purchasedAt: string) => purchasedAt.split(' ')[0];
 
 /** 인식 완료 — 24×24, 원 채움 #9D98F0 / 체크 흰색 */
 const DoneIcon = () => (
@@ -32,6 +30,19 @@ const FailIcon = () => (
     <path
       d="M11.5002 9.86798V13.1294M3.2696 16.0656C2.50343 17.3702 3.46159 19 4.99306 19H18.0074C19.538 19 20.4962 17.3702 19.7309 16.0656L13.2246 4.97843C12.4584 3.67386 10.5421 3.67386 9.77591 4.97843L3.2696 16.0656ZM11.5002 15.7386H11.5064V15.7455H11.5002V15.7386Z"
       stroke="#B2B8BD"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+/** 이탈 확인 — 48×48 경고, stroke 3 #000000 (Figma). 목록 카드의 실패 아이콘과 같은 도형 */
+const WarningIcon = () => (
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path
+      d="M11.5002 9.86798V13.1294M3.2696 16.0656C2.50343 17.3702 3.46159 19 4.99306 19H18.0074C19.538 19 20.4962 17.3702 19.7309 16.0656L13.2246 4.97843C12.4584 3.67386 10.5421 3.67386 9.77591 4.97843L3.2696 16.0656ZM11.5002 15.7386H11.5064V15.7455H11.5002V15.7386Z"
+      stroke="#000000"
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -71,10 +82,24 @@ const CalendarIcon = () => (
  */
 const ClosetReceiptDonePage = () => {
   const navigate = useNavigate();
+  const results = useClosetStore((state) => state.ocrResults);
+
+  // 인식 못 한 장을 그대로 두고 나가려 할 때 붙잡아둘 목적지
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
+  const failedCount = results.filter((result) => result.failed).length;
+
+  /** 실패분이 남아 있으면 바로 나가지 않고 한 번 묻는다 */
+  const leave = (path: string) => {
+    if (failedCount > 0) {
+      setPendingPath(path);
+      return;
+    }
+    navigate(path);
+  };
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
-      <div className="flex flex-col h-[100dvh] min-h-0 bg-white">
+      <div className="relative flex flex-col h-[100dvh] min-h-0 bg-white">
         <OnboardingTopBar progress={300 / 375} showSkip onSkip={() => navigate('/closet')} />
 
         <div
@@ -88,7 +113,7 @@ const ClosetReceiptDonePage = () => {
 
           {/* 결과 카드 — 327×131(실패 157), 좌우 24, 타이틀 아래 56, 카드 간 24 (Figma) */}
           <div className="mt-14 flex flex-col gap-6 px-6">
-            {RESULTS.map((result, index) => (
+            {results.map((result, index) => (
               // padding 20/16, radius 8, border 1px #E6E8EA
               <div key={index} className="flex flex-col gap-2 rounded-lg border border-[#E6E8EA] px-4 py-5">
                 {/* 머리줄 — 아이콘 24 + gap 8 + 이름, 우측 화살표 20 */}
@@ -104,7 +129,9 @@ const ClosetReceiptDonePage = () => {
                     type="button"
                     aria-label={`영수증 ${index + 1} 상세`}
                     onClick={() =>
-                      navigate('/closet/register/ocr-confirm', { state: { from: 'list' } })
+                      navigate(`/closet/register/ocr-confirm/${index}`, {
+                        state: { from: 'list' },
+                      })
                     }
                     className="cursor-pointer"
                   >
@@ -123,7 +150,9 @@ const ClosetReceiptDonePage = () => {
                       <button
                         type="button"
                         onClick={() =>
-                          navigate('/closet/register/ocr-manual', { state: { from: 'list' } })
+                          navigate(`/closet/register/ocr-manual/${index}`, {
+                            state: { from: 'list' },
+                          })
                         }
                         className="h-9 flex-1 cursor-pointer rounded-[32px] border border-[#CED1D5] text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#1F2124]"
                       >
@@ -150,7 +179,7 @@ const ClosetReceiptDonePage = () => {
                     </p>
                     <p className="flex items-center gap-0.5 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#1F2124]">
                       <CalendarIcon />
-                      {result.date}
+                      {toDate(result.purchasedAt)}
                     </p>
                   </div>
                 )}
@@ -163,19 +192,68 @@ const ClosetReceiptDonePage = () => {
         <div className="flex flex-col gap-2 px-6 pt-4 pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
           <button
             type="button"
-            onClick={() => navigate('/closet/items')}
+            onClick={() => leave('/closet/items')}
             className="h-[58px] w-full cursor-pointer rounded-[32px] bg-[#F6F7F8] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124]"
           >
             옷장 보러가기
           </button>
           <button
             type="button"
-            onClick={() => navigate('/styling')}
+            onClick={() => leave('/styling')}
             className="h-[58px] w-full cursor-pointer rounded-[32px] bg-[#1F2124] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
           >
             코디 시작하기
           </button>
         </div>
+
+        {/* 실패분 두고 이탈 — 딤 40% 위에 260 팝업 (Figma) */}
+        {pendingPath && (
+          <div
+            role="presentation"
+            onClick={() => setPendingPath(null)}
+            className="absolute inset-0 z-30 flex items-center justify-center bg-black/40"
+          >
+            {/* 팝업 260×194 — 화면 중앙에서 위로 48 (Figma) */}
+            <div
+              role="dialog"
+              aria-modal="true"
+              onClick={(event) => event.stopPropagation()}
+              className="flex w-[260px] -translate-y-12 flex-col items-center gap-4 rounded-lg bg-[#F6F7F8] py-8"
+            >
+              <WarningIcon />
+
+              {/* 문구 두 줄 — 사이 10 */}
+              <div className="flex w-full flex-col gap-2.5">
+                {/* Title/T3 */}
+                <p className="text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
+                  {failedCount}건이 등록되지 않았어요
+                </p>
+                {/* Body/B3 */}
+                <p className="text-center text-[16px] font-medium leading-[1.6] tracking-[-0.02em] text-[#959BA7]">
+                  그래도 넘어가시겠어요?
+                </p>
+              </div>
+
+              {/* 시안에 버튼이 없어 임의로 넣음 — 실패 카드의 알약 버튼과 같은 형태 */}
+              <div className="flex w-full gap-[5px] px-4">
+                <button
+                  type="button"
+                  onClick={() => setPendingPath(null)}
+                  className="h-9 flex-1 cursor-pointer rounded-[32px] border border-[#B2B8BD] text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#1F2124]"
+                >
+                  머무르기
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate(pendingPath)}
+                  className="h-9 flex-1 cursor-pointer rounded-[32px] bg-[#1F2124] text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
+                >
+                  넘어가기
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </PageLayout>
   );

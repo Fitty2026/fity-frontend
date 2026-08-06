@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
+import useClosetStore, { makeMockOcrResults } from '@/store/closetStore';
 
 /** 닫기 — 32×32, stroke #F6F7F8 */
 const CloseIcon = () => (
@@ -211,6 +212,7 @@ const ReadingDoneOverlay = () => {
  */
 const ClosetCapturePage = () => {
   const navigate = useNavigate();
+  const setOcrResults = useClosetStore((state) => state.setOcrResults);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [reading, setReading] = useState(false);
   const [readDone, setReadDone] = useState(false);
@@ -231,9 +233,11 @@ const ClosetCapturePage = () => {
   // 완료 표시를 잠깐 보여준 뒤 결과 확인 화면으로
   useEffect(() => {
     if (!readDone) return;
-    const timer = setTimeout(() => navigate('/closet/register/ocr-confirm'), DONE_HOLD_MS);
+    // 찍은 장수만큼 영수증을 만들고, 목록에서 장별로 확인하게 한다 (업로드 플로우와 같은 길)
+    setOcrResults(makeMockOcrResults(Math.max(captured, 1)));
+    const timer = setTimeout(() => navigate('/closet/register/receipt-done'), DONE_HOLD_MS);
     return () => clearTimeout(timer);
-  }, [readDone, navigate]);
+  }, [readDone, captured, navigate, setOcrResults]);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -386,7 +390,9 @@ const ClosetCapturePage = () => {
           <>
             {/* 타이틀 — 375×30 (Title/T3), 진행 바 없는 화면이라 top 159 기준 (상태바 50 제외 109) */}
             <p className="absolute inset-x-0 top-[calc(109px+env(safe-area-inset-top,0px))] text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#F6F7F8]">
-              {captured >= MAX_RECEIPTS ? '영수증을 모두 촬영했어요' : '영수증을 더 추가하시겠어요?'}
+              {captured >= MAX_RECEIPTS
+                ? `영수증 ${MAX_RECEIPTS}장을 모두 추가했어요`
+                : '영수증을 더 추가하시겠어요?'}
             </p>
 
             {/* 진행 카운터 — 27×27, 타이틀 아래 8 (Figma top 197). 18px SemiBold */}
@@ -409,7 +415,7 @@ const ClosetCapturePage = () => {
               <button
                 type="button"
                 onClick={handleRecognize}
-                className="h-[58px] w-full cursor-pointer rounded-[32px] bg-[#1F2124] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
+                className="h-[58px] w-full cursor-pointer rounded-[32px] bg-[#F6F7F8] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124]"
               >
                 다음
               </button>

@@ -1,129 +1,89 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useRef } from 'react';
+import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
-import { OnboardingTopBar } from '@/features/closet/components';
+import { OnboardingTopBar, ReceiptCard } from '@/features/closet/components';
 import useClosetStore from '@/store/closetStore';
 
-/** 필드 한 칸 — 라벨(Body/B3, 327×26) + 값 박스 */
-const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div className="flex flex-col gap-1">
-    <span className="text-[16px] font-medium leading-[1.6] tracking-[-0.02em] text-[#B2B8BD]">
-      {label}
-    </span>
-    {children}
-  </div>
-);
-
-/** 값 박스 — 327×50, padding 12/16, 테두리만 (Body/B3) */
-const ValueBox = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex h-[50px] items-center rounded-lg border border-[#E6E8EA] bg-white px-4 text-[16px] font-medium leading-[1.6] tracking-[-0.02em] text-[#34363C]">
-    {children}
-  </div>
-);
-
 /**
- * OCR 결과 확인 — 인식된 상품 정보를 보여주고 수정/확인을 받는다.
- * ※ 필드 간격·박스 높이·색상은 Figma 값 미수급이라 임시.
+ * 영수증 한 장 확인 — 인식 결과를 실제 영수증 모양으로 보여주고 수정으로 넘긴다.
+ * 다른 장은 목록(receipt-done)에서 고르거나 뒤로 나가서 고른다.
  */
 const ClosetOcrConfirmPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const result = useClosetStore((state) => state.ocrResult);
-  // 여러 장을 인식한 목록에서 들어왔는지 (촬영 플로우는 1장이라 바로 완료로 간다)
+  const { index = '0' } = useParams();
+  const results = useClosetStore((state) => state.ocrResults);
+  const current = Number(index);
+  const item = results[current];
+
+  // 목록에서 들어왔는지 — 뒤로가기 목적지가 달라진다
   const fromList = (location.state as { from?: string } | null)?.from === 'list';
+
+  // 영수증 영역을 마우스 드래그로도 훑을 수 있게 (데스크톱에선 드래그가 스크롤을 일으키지 않는다)
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ startY: number; startTop: number } | null>(null);
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === 'touch') return; // 터치는 네이티브 스크롤에 맡긴다
+    const el = scrollRef.current;
+    if (!el) return;
+    drag.current = { startY: event.clientY, startTop: el.scrollTop };
+    el.setPointerCapture(event.pointerId);
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const el = scrollRef.current;
+    if (!el || !drag.current) return;
+    el.scrollTop = drag.current.startTop - (event.clientY - drag.current.startY);
+  };
+
+  const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    const el = scrollRef.current;
+    if (el?.hasPointerCapture(event.pointerId)) el.releasePointerCapture(event.pointerId);
+    drag.current = null;
+  };
+
+  // 새로고침 등으로 스토어가 비어 없는 장을 가리키면 목록으로 되돌린다 (훅 호출 뒤에 둔다)
+  if (!item) return <Navigate to="/closet/register/receipt-done" replace />;
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
       {/* 높이를 고정해야 안쪽 flex-1 스크롤 영역이 기준을 잡는다 (#app-container는 min-h-screen) */}
-      <div className="flex flex-col h-[100dvh] min-h-0 bg-white">
-        <OnboardingTopBar progress={300 / 375} showSkip onSkip={() => navigate('/closet')} />
+      <div className="relative flex flex-col h-[100dvh] min-h-0 bg-white">
+        {/* 목록에서 왔으면 목록으로 고정 — 수정을 거쳐 들어오면 히스토리 한 칸 뒤가 수정 화면이라 되돌아간다 */}
+        <OnboardingTopBar
+          progress={300 / 375}
+          showBack
+          onBack={() => (fromList ? navigate('/closet/register/receipt-done') : navigate(-1))}
+        />
 
         <div
-          className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden"
+          ref={scrollRef}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          // 버튼이 위에 떠 있으므로 그 높이(58 + 하단 40)만큼 여백을 둔다
+          className="flex-1 overflow-y-auto px-6 pb-[106px] [&::-webkit-scrollbar]:hidden"
           style={{ scrollbarWidth: 'none' }}
         >
           {/* 타이틀 — 375×30 (Title/T3) */}
           <h1 className="mt-[52px] text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
-            영수증 정보가 다음과 같나요?
+            영수증 {current + 1}
           </h1>
 
-          {/* 결과 폼 — 327 Hug(시안 656), 타이틀 아래 40. 감싸는 테두리 없음 */}
-          <div className="mt-10 px-6">
-            <div className="flex flex-col gap-4">
-              <Field label="브랜드">
-                <ValueBox>{result.brand}</ValueBox>
-              </Field>
-              <Field label="상품명">
-                <ValueBox>{result.name}</ValueBox>
-              </Field>
-              <Field label="수량">
-                <ValueBox>{result.quantity}</ValueBox>
-              </Field>
-              <Field label="옵션">
-                {/* 사이즈 칩(Hug 46×50) + 색상 박스, 사이 간격 13 */}
-                <div className="flex gap-[13px]">
-                  <ValueBox>{result.size}</ValueBox>
-                  <div className="flex-1">
-                    <ValueBox>
-                      {/* 색상 점 24×24, 문구와 간격 13 */}
-                      <span
-                        className="mr-[13px] h-6 w-6 shrink-0 rounded-full"
-                        style={{ backgroundColor: result.color.hex }}
-                      />
-                      {/* Body/B2 — 16px SemiBold */}
-                      <span className="font-semibold">{result.color.label}</span>
-                    </ValueBox>
-                  </div>
-                </div>
-              </Field>
-              <Field label="가격">
-                <ValueBox>{result.price}</ValueBox>
-              </Field>
-              <Field label="구매처">
-                <ValueBox>{result.store}</ValueBox>
-              </Field>
-              <Field label="구매일">
-                <ValueBox>{result.purchasedAt}</ValueBox>
-              </Field>
-            </div>
-          </div>
+          <ReceiptCard item={item} className="mt-14" />
         </div>
 
-        {/* 하단 고정 버튼 — 327×58 두 개, 사이 8 */}
-        <div className="flex flex-col gap-2 px-6 pt-4 pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
+        {/* 하단 고정 버튼 — 327×58. 바탕 없이 떠 있고 내용은 뒤로 스크롤된다 */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 px-6 pb-[calc(40px+env(safe-area-inset-bottom,0px))] [&>button]:pointer-events-auto">
           <button
             type="button"
-            onClick={() => navigate('/closet/register/ocr-edit', { state: location.state })}
+            onClick={() => navigate(`/closet/register/ocr-edit/${index}`, { state: location.state })}
             className="h-[58px] w-full cursor-pointer rounded-[32px] bg-[#F6F7F8] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124]"
           >
             수정하기
           </button>
-          {/* 업로드 플로우는 목록으로 돌아갈 수단이 필요해 확인 줄을 둘로 나눈다 (임시 — 시안 대기) */}
-          {fromList ? (
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => navigate('/closet/register/receipt-done')}
-                className="h-[58px] flex-1 cursor-pointer rounded-[32px] bg-[#F6F7F8] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124]"
-              >
-                다른 영수증
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/closet/register/ocr-complete')}
-                className="h-[58px] flex-1 cursor-pointer rounded-[32px] bg-[#1F2124] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
-              >
-                확인
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => navigate('/closet/register/ocr-complete')}
-              className="h-[58px] w-full cursor-pointer rounded-[32px] bg-[#1F2124] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
-            >
-              확인
-            </button>
-          )}
         </div>
       </div>
     </PageLayout>

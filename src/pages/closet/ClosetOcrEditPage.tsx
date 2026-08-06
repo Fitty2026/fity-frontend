@@ -1,10 +1,13 @@
 import { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
 // 코디 생성 날짜 선택과 동일한 휠 피커를 재사용한다
 import { WheelDatePicker } from '@/features/styling/components';
-import useClosetStore from '@/store/closetStore';
+import { SHOPPING_MALLS, toShoppingMallCode } from '@/features/closet/shoppingMalls';
+import { COLOR_COLUMNS, COLOR_OPTIONS, colorChipStyle } from '@/features/closet/colors';
+import useClosetStore, { emptyOcrResult } from '@/store/closetStore';
+import type { OcrResult } from '@/store/closetStore';
 
 /** '2026.06.28. 13:45:55' → 연/월/일 + 뒤에 붙는 시각 */
 const parsePurchasedAt = (value: string) => {
@@ -21,6 +24,19 @@ const parsePurchasedAt = (value: string) => {
 /** 연/월/일 + 시각 → '2026.06.28. 13:45:55' */
 const formatPurchasedAt = (year: number, month: number, day: number, rest: string) =>
   `${year}.${String(month).padStart(2, '0')}.${String(day).padStart(2, '0')}.${rest}`;
+
+/**
+ * 오늘 이후인지 — 산 적 없는 날짜는 구매일이 될 수 없다.
+ * 타이핑 도중처럼 아직 날짜 꼴이 아닌 값은 통과시켜 입력을 막지 않는다.
+ */
+const isFutureDate = (value: string) => {
+  const matched = value.match(/^(\d{4})\.(\d{2})\.(\d{2})\./);
+  if (!matched) return false;
+  const picked = new Date(Number(matched[1]), Number(matched[2]) - 1, Number(matched[3]));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return picked.getTime() > today.getTime();
+};
 
 /** 입력 지우기 — 24×24 */
 const ClearIcon = () => (
@@ -120,45 +136,6 @@ const TextField = ({
   </Field>
 );
 
-/**
- * 색상 선택지 — 목록에서 고르게 해서 쇼핑몰마다 다른 색상명을 한 기준으로 모은다.
- * ※ 색상 구성·hex는 디자이너 확정 전 임시값. 저장은 code 기준이라 hex가 바뀌어도 과거 데이터가 안 깨진다.
- */
-const COLOR_OPTIONS = [
-  { code: 'BLACK', label: '블랙', hex: '#1F2124' },
-  { code: 'WHITE', label: '화이트', hex: '#F2F2F2' },
-  { code: 'GRAY', label: '그레이', hex: '#959BA7' },
-  { code: 'BEIGE', label: '베이지', hex: '#D8C3A5' },
-  { code: 'BROWN', label: '브라운', hex: '#7A5230' },
-  { code: 'NAVY', label: '네이비', hex: '#052D78' },
-  { code: 'BLUE', label: '블루', hex: '#2F6FED' },
-  { code: 'GREEN', label: '그린', hex: '#2E9E5B' },
-  { code: 'KHAKI', label: '카키', hex: '#6B7A4B' },
-  { code: 'YELLOW', label: '옐로우', hex: '#F2C230' },
-  { code: 'ORANGE', label: '오렌지', hex: '#F2762E' },
-  { code: 'RED', label: '레드', hex: '#C0392B' },
-  { code: 'PINK', label: '핑크', hex: '#E86A9A' },
-  { code: 'PURPLE', label: '퍼플', hex: '#7A4BD1' },
-];
-
-/** 값 없을 때 쓰는 칩 색 */
-const UNKNOWN_COLOR = '#E6E8EA';
-
-/** 구매처 — OCR이 지원하는 쇼핑몰 3곳 */
-const STORES = ['MUSINSA', 'ABLY', 'ZIGZAG'];
-
-/** 인식 실패로 처음부터 입력할 때 쓰는 빈 값 */
-const EMPTY_VALUES = {
-  brand: '',
-  name: '',
-  quantity: '',
-  size: '',
-  color: { label: '', hex: '' },
-  price: '',
-  store: '',
-  purchasedAt: '',
-};
-
 interface ClosetOcrEditPageProps {
   /** edit = 인식된 값 수정 / manual = 인식 실패분 직접 입력 */
   mode?: 'edit' | 'manual';
@@ -171,25 +148,58 @@ interface ClosetOcrEditPageProps {
 const ClosetOcrEditPage = ({ mode = 'edit' }: ClosetOcrEditPageProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const ocrResult = useClosetStore((state) => state.ocrResult);
-  const setOcrResult = useClosetStore((state) => state.setOcrResult);
+  // 몇 번째 영수증인지. 직접 입력(:index 없는 경로)은 새 장으로 붙는다
+  const { index } = useParams();
+  const results = useClosetStore((state) => state.ocrResults);
+  const updateOcrResult = useClosetStore((state) => state.updateOcrResult);
+  const addOcrResult = useClosetStore((state) => state.addOcrResult);
   const manual = mode === 'manual';
   // 진입 시점의 값을 편집하고, 확인을 눌러야 스토어에 반영한다
-  const [values, setValues] = useState(manual ? EMPTY_VALUES : ocrResult);
+  const [values, setValues] = useState<OcrResult>(
+    // manual은 인식이 안 된 장이라 스토어 값이 비어 있다 — 빈 값에서 시작
+    manual ? emptyOcrResult : (results[Number(index)] ?? emptyOcrResult),
+  );
 
-  type FieldKey = Exclude<keyof typeof values, 'color'>;
+  /**
+   * 장을 넘겨도 같은 화면이라 리마운트가 없다 — index가 바뀌면 그 장의 값으로 갈아끼운다.
+   * 스토어가 바뀔 때마다 덮어쓰면 입력 중인 값이 튕기므로 index가 실제로 바뀐 경우만 본다.
+   */
+  const [shownIndex, setShownIndex] = useState(index);
+  if (shownIndex !== index) {
+    setShownIndex(index);
+    const next = results[Number(index)];
+    if (!manual && next) setValues(next);
+  }
+
+  type FieldKey = Exclude<keyof OcrResult, 'color' | 'failed'>;
   const update = (key: FieldKey, value: string) => setValues((prev) => ({ ...prev, [key]: value }));
 
   const pickColor = (option: (typeof COLOR_OPTIONS)[number]) =>
     setValues((prev) => ({ ...prev, color: { label: option.label, hex: option.hex } }));
+
+  // 구매처는 지원 쇼핑몰 3곳 중 하나만 — 원문이 그대로 들어와도 코드로 맞춰 고른 상태를 유지한다
+  const storeCode = toShoppingMallCode(values.store);
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [storeOpen, setStoreOpen] = useState(false);
   const [colorOpen, setColorOpen] = useState(false);
   const purchased = parsePurchasedAt(values.purchasedAt);
 
+  // 미래 날짜를 되돌릴 때 휠을 다시 그리기 위한 값 — 아래 updatePurchasedAt 참고
+  const [pickerNonce, setPickerNonce] = useState(0);
+
+  /** 구매일 — 아직 오지 않은 날짜는 받지 않고 원래 값을 그대로 둔다 */
+  const updatePurchasedAt = (value: string) => {
+    if (isFutureDate(value)) {
+      // 휠은 value가 그대로면 스스로 되돌아오지 않는다(스크롤 동기화가 value 변화에만 반응) → 다시 그려 제자리로
+      setPickerNonce((nonce) => nonce + 1);
+      return;
+    }
+    update('purchasedAt', value);
+  };
+
   const handlePickDate = (year: number, month: number, day: number) =>
-    update('purchasedAt', formatPurchasedAt(year, month, day, purchased.rest));
+    updatePurchasedAt(formatPurchasedAt(year, month, day, purchased.rest));
 
   // 필수 항목 — 저장 API(CLOSET-02) 스펙 확정 전 임시 기준
   const canConfirm = Boolean(
@@ -198,14 +208,17 @@ const ClosetOcrEditPage = ({ mode = 'edit' }: ClosetOcrEditPageProps) => {
 
   const handleConfirm = () => {
     if (!canConfirm) return;
-    setOcrResult(values);
+    // 인덱스가 있으면 그 장을 덮어쓰고(실패분이면 이때 성공으로 바뀐다), 없으면 새 장으로 붙인다
+    const targetIndex = index === undefined ? results.length : Number(index);
+    if (index === undefined) addOcrResult(values);
+    else updateOcrResult(targetIndex, values);
     // 목록에서 온 직접 입력은 목록으로, 그 외에는 확인 화면으로 (from을 그대로 넘겨 CTA 유지)
     const fromList = (location.state as { from?: string } | null)?.from === 'list';
     if (manual && fromList) {
       navigate('/closet/register/receipt-done');
       return;
     }
-    navigate('/closet/register/ocr-confirm', { state: location.state });
+    navigate(`/closet/register/ocr-confirm/${targetIndex}`, { state: location.state });
   };
 
   return (
@@ -236,9 +249,9 @@ const ClosetOcrEditPage = ({ mode = 'edit' }: ClosetOcrEditPageProps) => {
               />
 
               <Field label="옵션">
-                {/* 사이즈 + 색상, 사이 간격 13 */}
+                {/* 사이즈 111 + 간격 12 + 색상 204 = 327 (Figma). 색상은 남는 폭을 채운다 */}
                 <div className="flex gap-3">
-                  <div className="w-[65px]">
+                  <div className="w-[111px]">
                     <InputBox>
                       <input
                         value={values.size}
@@ -259,7 +272,7 @@ const ClosetOcrEditPage = ({ mode = 'edit' }: ClosetOcrEditPageProps) => {
                       <InputBox className="gap-[10px]">
                         <span
                           className="h-6 w-6 shrink-0 rounded-full border-[0.8px] border-[#E6E8EA]"
-                          style={{ backgroundColor: values.color.hex || UNKNOWN_COLOR }}
+                          style={colorChipStyle(values.color)}
                         />
                         <span
                           className={[
@@ -283,13 +296,10 @@ const ClosetOcrEditPage = ({ mode = 'edit' }: ClosetOcrEditPageProps) => {
                           className="fixed inset-0 z-10 cursor-default"
                           onClick={() => setColorOpen(false)}
                         />
-                        {/* 구매처 드롭다운과 같은 형태. 항목이 많아 스크롤 */}
+                        {/* 드롭다운 228×120 — 76×30 칸을 3열로, radius 8, 그림자 (Figma) */}
                         <div
-                          className="absolute right-0 top-[calc(100%+4px)] z-20 max-h-[180px] w-[160px] overflow-y-auto rounded-lg [&::-webkit-scrollbar]:hidden"
-                          style={{
-                            filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.24))',
-                            scrollbarWidth: 'none',
-                          }}
+                          className="absolute right-0 top-[calc(100%+4px)] z-20 grid w-[228px] grid-cols-3 overflow-hidden rounded-lg"
+                          style={{ filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.24))' }}
                         >
                           {COLOR_OPTIONS.map((option, index) => (
                             <button
@@ -300,8 +310,10 @@ const ClosetOcrEditPage = ({ mode = 'edit' }: ClosetOcrEditPageProps) => {
                                 setColorOpen(false);
                               }}
                               className={[
-                                'flex h-[30px] w-full cursor-pointer items-center gap-2 bg-[#F6F7F8] px-4 text-[14px] font-semibold leading-[1.6] tracking-[-0.02em]',
-                                index < COLOR_OPTIONS.length - 1 ? 'border-b border-[#E6E8EA]' : '',
+                                // Body/B6 — 14px SemiBold. 칩 16 + 간격 4 + 이름
+                                'flex h-[30px] cursor-pointer items-center justify-center gap-1 border-b border-[#E6E8EA] bg-[#F6F7F8] text-[14px] font-semibold leading-[1.6] tracking-[-0.02em]',
+                                // 세로 구분선은 가운데 열의 좌우 테두리로 그린다
+                                index % COLOR_COLUMNS === 1 ? 'border-x' : '',
                                 values.color.label === option.label ? 'text-[#9D98F0]' : 'text-[#1F2124]',
                               ]
                                 .filter(Boolean)
@@ -309,7 +321,7 @@ const ClosetOcrEditPage = ({ mode = 'edit' }: ClosetOcrEditPageProps) => {
                             >
                               <span
                                 className="h-4 w-4 shrink-0 rounded-full border-[0.8px] border-[#E6E8EA]"
-                                style={{ backgroundColor: option.hex }}
+                                style={colorChipStyle(option)}
                               />
                               {option.label}
                             </button>
@@ -334,10 +346,10 @@ const ClosetOcrEditPage = ({ mode = 'edit' }: ClosetOcrEditPageProps) => {
                       <span
                         className={[
                           'flex-1 text-left text-[16px] font-medium leading-[1.6] tracking-[-0.02em]',
-                          values.store ? 'text-[#34363C]' : 'text-[#B2B8BD]',
+                          storeCode ? 'text-[#34363C]' : 'text-[#B2B8BD]',
                         ].join(' ')}
                       >
-                        {values.store || '구매처'}
+                        {storeCode || '구매처'}
                       </span>
                       <span className="shrink-0">
                         <ChevronDownIcon />
@@ -359,24 +371,24 @@ const ClosetOcrEditPage = ({ mode = 'edit' }: ClosetOcrEditPageProps) => {
                         className="absolute right-0 top-[calc(100%+4px)] z-20 w-[120px] overflow-hidden rounded-lg"
                         style={{ filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.24))' }}
                       >
-                        {STORES.map((store, index) => (
+                        {SHOPPING_MALLS.map((mall, index) => (
                           <button
-                            key={store}
+                            key={mall.code}
                             type="button"
                             onClick={() => {
-                              update('store', store);
+                              update('store', mall.code);
                               setStoreOpen(false);
                             }}
                             className={[
                               // Body/B6 — 14px SemiBold, 선택된 항목만 Point 색
                               'flex h-[30px] w-full cursor-pointer items-center justify-center bg-[#F6F7F8] px-4 text-[14px] font-semibold leading-[1.6] tracking-[-0.02em]',
-                              index < STORES.length - 1 ? 'border-b border-[#E6E8EA]' : '',
-                              values.store === store ? 'text-[#9D98F0]' : 'text-[#1F2124]',
+                              index < SHOPPING_MALLS.length - 1 ? 'border-b border-[#E6E8EA]' : '',
+                              storeCode === mall.code ? 'text-[#9D98F0]' : 'text-[#1F2124]',
                             ]
                               .filter(Boolean)
                               .join(' ')}
                           >
-                            {store}
+                            {mall.code}
                           </button>
                         ))}
                       </div>
@@ -390,7 +402,7 @@ const ClosetOcrEditPage = ({ mode = 'edit' }: ClosetOcrEditPageProps) => {
                   <InputBox>
                     <input
                       value={values.purchasedAt}
-                      onChange={(event) => update('purchasedAt', event.target.value)}
+                      onChange={(event) => updatePurchasedAt(event.target.value)}
                       placeholder="구매일"
                       className={boxInputDateClass}
                     />
@@ -415,6 +427,7 @@ const ClosetOcrEditPage = ({ mode = 'edit' }: ClosetOcrEditPageProps) => {
                       />
                       {/* Figma: 입력 박스 아래, 좌측 정렬 */}
                       <WheelDatePicker
+                        key={pickerNonce}
                         className="absolute left-0 top-[calc(100%-3px)] z-20"
                         year={purchased.year}
                         month={purchased.month}

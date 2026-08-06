@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
-import useClosetStore from '@/store/closetStore';
+import useClosetStore, { makeMockOcrResults } from '@/store/closetStore';
 
 /** 한 장을 인식하는 데 걸리는 시간 — API 연동 전 임시값 */
 const STEP_MS = 2000;
@@ -64,6 +64,7 @@ const ClosetReceiptRecognizingPage = () => {
   const navigate = useNavigate();
 
   const images = useClosetStore((state) => state.receiptImages);
+  const setOcrResults = useClosetStore((state) => state.setOcrResults);
   // 업로드분이 없으면(직접 진입) 최소 1장으로 화면을 유지
   const total = Math.max(images.length, 1);
   // 지금까지 인식이 끝난 장수
@@ -72,12 +73,14 @@ const ClosetReceiptRecognizingPage = () => {
   // 장당 STEP_MS씩 진행하고, 마지막 장이 끝나면 결과 화면으로
   useEffect(() => {
     if (doneCount >= total) {
+      // 결과 목록이 업로드한 장수와 같아야 다음 화면에서 장별로 짚어볼 수 있다
+      setOcrResults(makeMockOcrResults(total));
       navigate('/closet/register/receipt-done');
       return;
     }
     const timer = setTimeout(() => setDoneCount((count) => count + 1), STEP_MS);
     return () => clearTimeout(timer);
-  }, [doneCount, total, navigate]);
+  }, [doneCount, total, navigate, setOcrResults]);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">

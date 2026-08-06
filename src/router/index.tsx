@@ -1,4 +1,4 @@
-import { createBrowserRouter, Outlet } from 'react-router-dom';
+import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 
 // 0. 진입 / 계정
@@ -170,18 +170,38 @@ const router = createBrowserRouter([
     path: '/closet/register/capture',
     element: <ProtectedRoute><ClosetCapturePage /></ProtectedRoute>,
   },
+  // 영수증은 여러 장이라 :index로 몇 번째 장인지 지정한다.
+  // index 없이 들어오면(주소 직접 입력 등) 첫 장으로 보낸다
   {
     path: '/closet/register/ocr-confirm',
-    element: <ProtectedRoute><ClosetOcrConfirmPage /></ProtectedRoute>,
+    element: <Navigate to="/closet/register/ocr-confirm/0" replace />,
   },
   {
     path: '/closet/register/ocr-edit',
-    element: <ProtectedRoute><ClosetOcrEditPage /></ProtectedRoute>,
+    element: <Navigate to="/closet/register/ocr-edit/0" replace />,
   },
   {
     path: '/closet/register/ocr-complete',
+    element: <Navigate to="/closet/register/ocr-complete/0" replace />,
+  },
+  {
+    path: '/closet/register/ocr-confirm/:index',
+    element: <ProtectedRoute><ClosetOcrConfirmPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/ocr-edit/:index',
+    element: <ProtectedRoute><ClosetOcrEditPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/ocr-complete/:index',
     element: <ProtectedRoute><ClosetOcrCompletePage /></ProtectedRoute>,
   },
+  // 인식 실패분을 다시 채우는 경우 — 해당 장을 덮어쓴다
+  {
+    path: '/closet/register/ocr-manual/:index',
+    element: <ProtectedRoute><ClosetOcrEditPage mode="manual" /></ProtectedRoute>,
+  },
+  // 영수증 없이 처음부터 입력하는 경우 — 새 장으로 추가된다
   {
     path: '/closet/register/ocr-manual',
     element: <ProtectedRoute><ClosetOcrEditPage mode="manual" /></ProtectedRoute>,
