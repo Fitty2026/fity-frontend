@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
+import { createBrowserRouter, Outlet } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 
 // 0. 진입 / 계정
@@ -34,11 +34,7 @@ import ClosetReceiptCheckPage from '../pages/closet/ClosetReceiptCheckPage';
 import ClosetReceiptRecognizingPage from '../pages/closet/ClosetReceiptRecognizingPage';
 import ClosetReceiptDonePage from '../pages/closet/ClosetReceiptDonePage';
 import ClosetReceiptFailedPage from '../pages/closet/ClosetReceiptFailedPage';
-import ClosetImportingPage from '../pages/closet/ClosetImportingPage';
-import ClosetReceiptPage from '../pages/closet/ClosetReceiptPage';
 import ClosetPhotoPage from '../pages/closet/ClosetPhotoPage';
-import ClosetUploadPage from '../pages/closet/ClosetUploadPage';
-import ClosetLoadingPage from '../pages/closet/ClosetLoadingPage';
 import ClosetAddedPage from '../pages/closet/ClosetAddedPage';
 import ClosetCompletePage from '../pages/closet/ClosetCompletePage';
 import ClosetItemDetailPage from '../pages/closet/ClosetItemDetailPage';
@@ -170,40 +166,23 @@ const router = createBrowserRouter([
     path: '/closet/register/capture',
     element: <ProtectedRoute><ClosetCapturePage /></ProtectedRoute>,
   },
-  // 영수증은 여러 장이라 :index로 몇 번째 장인지 지정한다.
-  // index 없이 들어오면(주소 직접 입력 등) 첫 장으로 보낸다
+  // 영수증은 여러 장이라 ?receipt=N으로 몇 번째 장인지 지정한다 (N은 1부터 = 화면의 '영수증 N').
+  // receipt 없이 들어오면(주소 직접 입력 등) 첫 장을 본다
   {
-    path: '/closet/register/ocr-confirm',
-    element: <Navigate to="/closet/register/ocr-confirm/0" replace />,
-  },
-  {
-    path: '/closet/register/ocr-edit',
-    element: <Navigate to="/closet/register/ocr-edit/0" replace />,
-  },
-  {
-    path: '/closet/register/ocr-complete',
-    element: <Navigate to="/closet/register/ocr-complete/0" replace />,
-  },
-  {
-    path: '/closet/register/ocr-confirm/:index',
+    path: '/closet/register/confirm',
     element: <ProtectedRoute><ClosetOcrConfirmPage /></ProtectedRoute>,
   },
   {
-    path: '/closet/register/ocr-edit/:index',
+    path: '/closet/register/edit',
     element: <ProtectedRoute><ClosetOcrEditPage /></ProtectedRoute>,
   },
   {
-    path: '/closet/register/ocr-complete/:index',
+    path: '/closet/register/ocr-complete',
     element: <ProtectedRoute><ClosetOcrCompletePage /></ProtectedRoute>,
   },
-  // 인식 실패분을 다시 채우는 경우 — 해당 장을 덮어쓴다
+  // 직접 입력 — ?receipt=N이면 그 장(인식 실패분)을 덮어쓰고, 없으면 새 장으로 추가된다
   {
-    path: '/closet/register/ocr-manual/:index',
-    element: <ProtectedRoute><ClosetOcrEditPage mode="manual" /></ProtectedRoute>,
-  },
-  // 영수증 없이 처음부터 입력하는 경우 — 새 장으로 추가된다
-  {
-    path: '/closet/register/ocr-manual',
+    path: '/closet/register/manual',
     element: <ProtectedRoute><ClosetOcrEditPage mode="manual" /></ProtectedRoute>,
   },
   {
@@ -223,7 +202,7 @@ const router = createBrowserRouter([
     element: <ProtectedRoute><ClosetReceiptRecognizingPage /></ProtectedRoute>,
   },
   {
-    path: '/closet/register/receipt-done',
+    path: '/closet/register/receipt-confirm',
     element: <ProtectedRoute><ClosetReceiptDonePage /></ProtectedRoute>,
   },
   {
@@ -233,22 +212,6 @@ const router = createBrowserRouter([
   {
     path: '/closet/register/photo',
     element: <ProtectedRoute><ClosetPhotoPage /></ProtectedRoute>,
-  },
-  {
-    path: '/closet/register/upload',
-    element: <ProtectedRoute><ClosetUploadPage /></ProtectedRoute>,
-  },
-  {
-    path: '/closet/register/receipt',
-    element: <ProtectedRoute><ClosetReceiptPage /></ProtectedRoute>,
-  },
-  {
-    path: '/closet/register/importing',
-    element: <ProtectedRoute><ClosetImportingPage /></ProtectedRoute>,
-  },
-  {
-    path: '/closet/register/analyzing',
-    element: <ProtectedRoute><ClosetLoadingPage variant="analyze" /></ProtectedRoute>,
   },
   {
     path: '/closet/register/added',

@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
-import useClosetStore, { makeMockOcrResults } from '@/store/closetStore';
+import useClosetStore, { emptyOcrResult, makeMockOcrResults } from '@/store/closetStore';
 
 /** 한 장을 인식하는 데 걸리는 시간 — API 연동 전 임시값 */
 const STEP_MS = 2000;
@@ -63,24 +63,45 @@ const Spinner = ({ size }: { size: number }) => (
 const ClosetReceiptRecognizingPage = () => {
   const navigate = useNavigate();
 
+  const location = useLocation();
   const images = useClosetStore((state) => state.receiptImages);
+  const results = useClosetStore((state) => state.ocrResults);
   const setOcrResults = useClosetStore((state) => state.setOcrResults);
+  const updateOcrResult = useClosetStore((state) => state.updateOcrResult);
+  // 실패분 한 장만 다시 올린 경우 — 그 장만 인식하고 나머지는 건드리지 않는다
+  const replaceIndex = (location.state as { replaceIndex?: number } | null)?.replaceIndex;
+  const single = typeof replaceIndex === 'number';
   // 업로드분이 없으면(직접 진입) 최소 1장으로 화면을 유지
-  const total = Math.max(images.length, 1);
+  const total = single ? 1 : Math.max(images.length, 1);
   // 지금까지 인식이 끝난 장수
   const [doneCount, setDoneCount] = useState(0);
+
+  // 결과를 두 번 쓰지 않게 한 번만 통과시킨다 (스토어가 바뀌면 이 효과가 다시 돈다)
+  const settled = useRef(false);
 
   // 장당 STEP_MS씩 진행하고, 마지막 장이 끝나면 결과 화면으로
   useEffect(() => {
     if (doneCount >= total) {
-      // 결과 목록이 업로드한 장수와 같아야 다음 화면에서 장별로 짚어볼 수 있다
-      setOcrResults(makeMockOcrResults(total));
-      navigate('/closet/register/receipt-done');
+      if (settled.current) return;
+      settled.current = true;
+      if (single) {
+        // 다시 올린 장 — 목업은 계속 실패로 두고 시도 횟수만 올린다 (반복 실패 안내를 확인할 수 있게)
+        const before = results[replaceIndex];
+        updateOcrResult(replaceIndex, {
+          ...emptyOcrResult,
+          failed: true,
+          retryCount: (before?.retryCount ?? 0) + 1,
+        });
+      } else {
+        // 결과 목록이 업로드한 장수와 같아야 다음 화면에서 장별로 짚어볼 수 있다
+        setOcrResults(makeMockOcrResults(total));
+      }
+      navigate('/closet/register/receipt-confirm');
       return;
     }
     const timer = setTimeout(() => setDoneCount((count) => count + 1), STEP_MS);
     return () => clearTimeout(timer);
-  }, [doneCount, total, navigate, setOcrResults]);
+  }, [doneCount, total, single, replaceIndex, results, navigate, setOcrResults, updateOcrResult]);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">

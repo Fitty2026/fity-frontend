@@ -235,7 +235,7 @@ const ClosetCapturePage = () => {
     if (!readDone) return;
     // 찍은 장수만큼 영수증을 만들고, 목록에서 장별로 확인하게 한다 (업로드 플로우와 같은 길)
     setOcrResults(makeMockOcrResults(Math.max(captured, 1)));
-    const timer = setTimeout(() => navigate('/closet/register/receipt-done'), DONE_HOLD_MS);
+    const timer = setTimeout(() => navigate('/closet/register/receipt-confirm'), DONE_HOLD_MS);
     return () => clearTimeout(timer);
   }, [readDone, captured, navigate, setOcrResults]);
 

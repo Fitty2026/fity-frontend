@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
-import useClosetStore from '@/store/closetStore';
+import useClosetStore, { receiptProducts } from '@/store/closetStore';
+
+/** 이 횟수만큼 다시 올려도 인식하지 못하면 직접 입력으로 유도한다 */
+const RETRY_LIMIT = 2;
 
 /** '2026.06.28. 13:45:55' → '2026.06.28.' — 목록엔 날짜만 보여준다 */
 const toDate = (purchasedAt: string) => purchasedAt.split(' ')[0];
@@ -77,7 +80,7 @@ const CalendarIcon = () => (
 );
 
 /**
- * 영수증 인식 완료 — 장별 결과를 보여주고 다음 행동을 고르게 한다.
+ * 사진 첨부·수정 — 인식된 장별 결과를 보여주고, 수정 화면으로 들여보낸다.
  * ※ 카드 내부 간격·타이포·아이콘은 시안 값 미수급이라 임시.
  */
 const ClosetReceiptDonePage = () => {
@@ -86,11 +89,26 @@ const ClosetReceiptDonePage = () => {
 
   // 인식 못 한 장을 그대로 두고 나가려 할 때 붙잡아둘 목적지
   const [pendingPath, setPendingPath] = useState<string | null>(null);
+
+  // 같은 장을 이 횟수만큼 다시 올려도 실패하면 직접 입력으로 유도한다
+  const stuck = results.some((result) => result.failed && (result.retryCount ?? 0) >= RETRY_LIMIT);
+  // 한 번 닫으면 다시 뜨지 않는다 — 목록을 못 쓰게 막지는 않는다
+  const [retryGuideClosed, setRetryGuideClosed] = useState(false);
+  const showRetryGuide = stuck && !retryGuideClosed;
   const failedCount = results.filter((result) => result.failed).length;
 
-  /** 실패분이 남아 있으면 바로 나가지 않고 한 번 묻는다 */
+  // 옷 사진은 서버 필수 필드라, 인식된 장의 상품마다 하나씩 다 붙기 전엔 넘길 수 없다
+  const recognized = results.filter((result) => !result.failed);
+  const canGoNext =
+    recognized.length > 0 &&
+    recognized.every((result) => receiptProducts(result).every((product) => Boolean(product.photo)));
+
+  /**
+   * 실패분이 남아 있으면 바로 나가지 않고 한 번 묻는다.
+   * 팝업엔 버튼이 없다 — 같은 버튼을 한 번 더 누르면 넘어가고, 딴 데를 누르면 이 화면에 머문다.
+   */
   const leave = (path: string) => {
-    if (failedCount > 0) {
+    if (failedCount > 0 && pendingPath !== path) {
       setPendingPath(path);
       return;
     }
@@ -108,7 +126,9 @@ const ClosetReceiptDonePage = () => {
         >
           {/* 타이틀 — 375×30 (Title/T3) */}
           <h1 className="mt-[52px] text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
-            영수증 인식이 완료되었어요
+            영수증을 인식했어요
+            <br />
+            옷 사진을 추가하고 정보를 수정해주세요
           </h1>
 
           {/* 결과 카드 — 327×131(실패 157), 좌우 24, 타이틀 아래 56, 카드 간 24 (Figma) */}
@@ -129,7 +149,7 @@ const ClosetReceiptDonePage = () => {
                     type="button"
                     aria-label={`영수증 ${index + 1} 상세`}
                     onClick={() =>
-                      navigate(`/closet/register/ocr-confirm/${index}`, {
+                      navigate(`/closet/register/confirm?receipt=${index + 1}`, {
                         state: { from: 'list' },
                       })
                     }
@@ -150,7 +170,7 @@ const ClosetReceiptDonePage = () => {
                       <button
                         type="button"
                         onClick={() =>
-                          navigate(`/closet/register/ocr-manual/${index}`, {
+                          navigate(`/closet/register/manual?receipt=${index + 1}`, {
                             state: { from: 'list' },
                           })
                         }
@@ -188,23 +208,56 @@ const ClosetReceiptDonePage = () => {
           </div>
         </div>
 
-        {/* 하단 고정 버튼 — 327×58, 사이 8 */}
-        <div className="flex flex-col gap-2 px-6 pt-4 pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
+        {/* 하단 고정 버튼 — 327×58. 감싼 영역은 딤 아래에 두고 버튼만 위로 올린다 */}
+        <div className="px-6 pt-4 pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
+          {/* 인식된 장마다 옷 사진이 다 붙어야 활성 — 비활성 스타일은 다른 등록 화면과 동일 */}
           <button
             type="button"
-            onClick={() => leave('/closet/items')}
-            className="h-[58px] w-full cursor-pointer rounded-[32px] bg-[#F6F7F8] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124]"
+            disabled={!canGoNext}
+            onClick={() => leave('/closet/register/ocr-complete?receipt=1')}
+            className={[
+              // 딤(z-30)보다 위 — 팝업이 떠도 버튼만 밝게 남아 그대로 누를 수 있다
+              'relative z-40 h-[58px] w-full rounded-[32px] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em]',
+              canGoNext
+                ? 'cursor-pointer bg-[#1F2124] text-[#F6F7F8]'
+                : 'cursor-not-allowed bg-[#E6E8EA] text-[#959BA7]',
+            ].join(' ')}
           >
-            옷장 보러가기
-          </button>
-          <button
-            type="button"
-            onClick={() => leave('/styling')}
-            className="h-[58px] w-full cursor-pointer rounded-[32px] bg-[#1F2124] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
-          >
-            코디 시작하기
+            다음
           </button>
         </div>
+
+        {/* 반복 실패 안내 — 260×224, padding 32/0, gap 16, radius 8, 중앙에서 위로 48 (Figma) */}
+        {showRetryGuide && (
+          <div
+            role="presentation"
+            onClick={() => setRetryGuideClosed(true)}
+            className="absolute inset-0 z-30 flex items-center justify-center bg-black/40"
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              onClick={(event) => event.stopPropagation()}
+              className="flex w-[260px] -translate-y-12 flex-col items-center gap-4 rounded-lg bg-[#F6F7F8] py-8"
+            >
+              <WarningIcon />
+
+              {/* 문구 — 타이틀 두 줄(60) + 안내 한 줄(26), 사이 10 */}
+              <div className="flex w-full flex-col gap-2.5">
+                {/* Title/T3 */}
+                <p className="text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
+                  여러 번 시도했으나
+                  <br />
+                  인식하지 못했어요
+                </p>
+                {/* Body/B3 */}
+                <p className="text-center text-[16px] font-medium leading-[1.6] tracking-[-0.02em] text-[#959BA7]">
+                  직접 입력으로 등록해주세요
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 실패분 두고 이탈 — 딤 40% 위에 260 팝업 (Figma) */}
         {pendingPath && (
@@ -234,23 +287,6 @@ const ClosetReceiptDonePage = () => {
                 </p>
               </div>
 
-              {/* 시안에 버튼이 없어 임의로 넣음 — 실패 카드의 알약 버튼과 같은 형태 */}
-              <div className="flex w-full gap-[5px] px-4">
-                <button
-                  type="button"
-                  onClick={() => setPendingPath(null)}
-                  className="h-9 flex-1 cursor-pointer rounded-[32px] border border-[#B2B8BD] text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#1F2124]"
-                >
-                  머무르기
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate(pendingPath)}
-                  className="h-9 flex-1 cursor-pointer rounded-[32px] bg-[#1F2124] text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
-                >
-                  넘어가기
-                </button>
-              </div>
             </div>
           </div>
         )}

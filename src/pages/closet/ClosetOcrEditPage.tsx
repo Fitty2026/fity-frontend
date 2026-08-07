@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useRef, useState } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
 // 코디 생성 날짜 선택과 동일한 휠 피커를 재사용한다
@@ -61,6 +61,21 @@ const CalendarIcon = () => (
 const ChevronDownIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
     <path d="M4.5 9L12 16.5L19.5 9" stroke="#6F7881" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+/** 바텀시트 카메라 아이콘 — 32×32, stroke #34363C (Figma. 옷장 홈 시트와 같은 에셋) */
+const SheetCameraIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path d="M9.10267 8.23361C8.86265 8.61349 8.54243 8.93625 8.16445 9.17925C7.78647 9.42225 7.3599 9.57961 6.91467 9.64027C6.408 9.71227 5.90533 9.78961 5.40267 9.87361C3.99867 10.1069 3 11.3429 3 12.7656V24.0003C3 24.7959 3.31607 25.559 3.87868 26.1216C4.44129 26.6842 5.20435 27.0003 6 27.0003H26C26.7957 27.0003 27.5587 26.6842 28.1213 26.1216C28.6839 25.559 29 24.7959 29 24.0003V12.7656C29 11.3429 28 10.1069 26.5973 9.87361C26.0943 9.78979 25.5902 9.71201 25.0853 9.64027C24.6403 9.57942 24.214 9.42198 23.8363 9.17899C23.4586 8.936 23.1385 8.61333 22.8987 8.23361L21.8027 6.47894C21.5565 6.07907 21.2176 5.7444 20.8147 5.50325C20.4118 5.26211 19.9567 5.1216 19.488 5.09361C17.1643 4.9688 14.8357 4.9688 12.512 5.09361C12.0433 5.1216 11.5882 5.26211 11.1853 5.50325C10.7824 5.7444 10.4435 6.07907 10.1973 6.47894L9.10267 8.23361Z" stroke="#34363C" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M22 17C22 18.5913 21.3679 20.1174 20.2426 21.2426C19.1174 22.3679 17.5913 23 16 23C14.4087 23 12.8826 22.3679 11.7574 21.2426C10.6321 20.1174 10 18.5913 10 17C10 15.4087 10.6321 13.8826 11.7574 12.7574C12.8826 11.6321 14.4087 11 16 11C17.5913 11 19.1174 11.6321 20.2426 12.7574C21.3679 13.8826 22 15.4087 22 17ZM25 14H25.0107V14.0107H25V14Z" stroke="#34363C" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+/** 바텀시트 앨범 아이콘 — 32×32, stroke #1F2124 (Figma. 옷장 홈 시트와 같은 에셋) */
+const SheetAlbumIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path d="M3 21L9.87867 14.1213C10.1572 13.8428 10.488 13.6218 10.8519 13.471C11.2159 13.3202 11.606 13.2426 12 13.2426C12.394 13.2426 12.7841 13.3202 13.1481 13.471C13.512 13.6218 13.8428 13.8428 14.1213 14.1213L21 21M19 19L20.8787 17.1213C21.1572 16.8428 21.488 16.6218 21.8519 16.471C22.2159 16.3202 22.606 16.2426 23 16.2426C23.394 16.2426 23.7841 16.3202 24.1481 16.471C24.512 16.6218 24.8428 16.8428 25.1213 17.1213L29 21M5 26H27C27.5304 26 28.0391 25.7893 28.4142 25.4142C28.7893 25.0391 29 24.5304 29 24V8C29 7.46957 28.7893 6.96086 28.4142 6.58579C28.0391 6.21071 27.5304 6 27 6H5C4.46957 6 3.96086 6.21071 3.58579 6.58579C3.21071 6.96086 3 7.46957 3 8V24C3 24.5304 3.21071 25.0391 3.58579 25.4142C3.96086 25.7893 4.46957 26 5 26ZM19 11H19.0107V11.0107H19V11ZM19.5 11C19.5 11.1326 19.4473 11.2598 19.3536 11.3536C19.2598 11.4473 19.1326 11.5 19 11.5C18.8674 11.5 18.7402 11.4473 18.6464 11.3536C18.5527 11.2598 18.5 11.1326 18.5 11C18.5 10.8674 18.5527 10.7402 18.6464 10.6464C18.7402 10.5527 18.8674 10.5 19 10.5C19.1326 10.5 19.2598 10.5527 19.3536 10.6464C19.4473 10.7402 19.5 10.8674 19.5 11Z" stroke="#1F2124" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
@@ -148,27 +163,52 @@ interface ClosetOcrEditPageProps {
 const ClosetOcrEditPage = ({ mode = 'edit' }: ClosetOcrEditPageProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  // 몇 번째 영수증인지. 직접 입력(:index 없는 경로)은 새 장으로 붙는다
-  const { index } = useParams();
+  // 몇 번째 영수증인지 — ?receipt=1이 첫 장. 직접 입력은 receipt 없이 들어와 새 장으로 붙는다
+  const [searchParams] = useSearchParams();
+  const receipt = searchParams.get('receipt');
+  const index = receipt === null ? undefined : String(Number(receipt) - 1);
+  // 상품이 여러 개인 영수증은 확인 화면에서 고른 상품 번호가 ?product=N으로 온다 (N도 1부터)
+  const productIndex = Number(searchParams.get('product') ?? 1) - 1;
   const results = useClosetStore((state) => state.ocrResults);
   const updateOcrResult = useClosetStore((state) => state.updateOcrResult);
   const addOcrResult = useClosetStore((state) => state.addOcrResult);
   const manual = mode === 'manual';
+  // 촬영 화면에 다녀오면 편집 중이던 값이 state로 되돌아온다 — 스토어보다 이걸 먼저 쓴다
+  const incoming = location.state as { from?: string; values?: OcrResult } | null;
+  const fromList = incoming?.from === 'list';
+  /**
+   * 다른 화면으로 넘길 state — values는 빼고 어디서 왔는지만 넘긴다.
+   * 편집값이 계속 딸려 다니면 다음 상품을 열어도 직전 상품 값(사진 포함)이 먼저 적용된다.
+   */
+  const passState = fromList ? { from: 'list' } : undefined;
+
+  /**
+   * 편집할 값 — 영수증 정보(구매처·구매일)에 고른 상품의 필드를 얹는다.
+   * 상품이 하나뿐인 영수증은 products가 없어 단일 상품 필드를 그대로 쓴다.
+   */
+  const toEditable = (result: OcrResult | undefined): OcrResult => {
+    if (!result) return emptyOcrResult;
+    const product = result.products?.[productIndex];
+    // photo를 따로 덮는 이유: 상품에 photo 키가 없으면 영수증 최상위 사진이 그대로 남는다
+    return product ? { ...result, ...product, photo: product.photo } : result;
+  };
+
   // 진입 시점의 값을 편집하고, 확인을 눌러야 스토어에 반영한다
   const [values, setValues] = useState<OcrResult>(
     // manual은 인식이 안 된 장이라 스토어 값이 비어 있다 — 빈 값에서 시작
-    manual ? emptyOcrResult : (results[Number(index)] ?? emptyOcrResult),
+    incoming?.values ?? (manual ? emptyOcrResult : toEditable(results[Number(index)])),
   );
 
   /**
-   * 장을 넘겨도 같은 화면이라 리마운트가 없다 — index가 바뀌면 그 장의 값으로 갈아끼운다.
-   * 스토어가 바뀔 때마다 덮어쓰면 입력 중인 값이 튕기므로 index가 실제로 바뀐 경우만 본다.
+   * 장·상품을 넘겨도 같은 화면이라 리마운트가 없다 — 대상이 바뀌면 그 값으로 갈아끼운다.
+   * 스토어가 바뀔 때마다 덮어쓰면 입력 중인 값이 튕기므로 대상이 실제로 바뀐 경우만 본다.
    */
-  const [shownIndex, setShownIndex] = useState(index);
-  if (shownIndex !== index) {
-    setShownIndex(index);
+  const target = `${index}:${productIndex}`;
+  const [shownTarget, setShownTarget] = useState(target);
+  if (shownTarget !== target) {
+    setShownTarget(target);
     const next = results[Number(index)];
-    if (!manual && next) setValues(next);
+    if (!manual && next) setValues(toEditable(next));
   }
 
   type FieldKey = Exclude<keyof OcrResult, 'color' | 'failed'>;
@@ -201,30 +241,83 @@ const ClosetOcrEditPage = ({ mode = 'edit' }: ClosetOcrEditPageProps) => {
   const handlePickDate = (year: number, month: number, day: number) =>
     updatePurchasedAt(formatPurchasedAt(year, month, day, purchased.rest));
 
-  // 필수 항목 — 저장 API(CLOSET-02) 스펙 확정 전 임시 기준
+  /**
+   * 옷 사진 — 서버 필수 필드. 시안 미수급이라 UI는 임시(정사각 썸네일 + 파일 선택).
+   * 미리보기 URL만 들고 있고, 실제 업로드는 API 연동 때 붙인다.
+   */
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const [photoSheetOpen, setPhotoSheetOpen] = useState(false);
+  const handlePickPhoto = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) setValues((prev) => ({ ...prev, photo: URL.createObjectURL(file) }));
+    event.target.value = ''; // 같은 파일을 다시 골라도 onChange가 오게
+    setPhotoSheetOpen(false);
+  };
+
+  /**
+   * 촬영 화면으로 — 편집 중이던 값을 통째로 들려 보내고, 사진을 받아 같은 자리로 돌아온다.
+   * 스토어에 미리 쓰지 않는 이유: 확인을 누르기 전에는 반영하지 않는다는 이 화면 규칙을 지키려고.
+   */
+  const goCapture = () => {
+    setPhotoSheetOpen(false);
+    navigate('/closet/register/photo', {
+      state: {
+        from: 'ocr-edit',
+        returnTo: `${location.pathname}${location.search}`,
+        returnState: passState,
+        values,
+      },
+    });
+  };
+
+  // 필수 항목 — 저장 API(CLOSET-02) 스펙 확정 전 임시 기준. 사이즈·수량·가격은 비워도 넘어간다
   const canConfirm = Boolean(
-    values.brand.trim() && values.name.trim() && values.size.trim() && values.color.label.trim(),
+    values.brand.trim() &&
+      values.name.trim() &&
+      values.color.label.trim() &&
+      values.store.trim() &&
+      values.photo,
   );
 
   const handleConfirm = () => {
     if (!canConfirm) return;
     // 인덱스가 있으면 그 장을 덮어쓰고(실패분이면 이때 성공으로 바뀐다), 없으면 새 장으로 붙인다
     const targetIndex = index === undefined ? results.length : Number(index);
-    if (index === undefined) addOcrResult(values);
-    else updateOcrResult(targetIndex, values);
+    const base = results[targetIndex];
+    if (index === undefined) {
+      addOcrResult(values);
+    } else if (base?.products?.length) {
+      // 상품이 여러 개인 영수증은 고른 상품 자리만 갈아끼운다 (구매처·구매일은 장 전체 값)
+      const products = base.products.map((product, at) =>
+        at === productIndex
+          ? {
+              brand: values.brand,
+              name: values.name,
+              quantity: values.quantity,
+              size: values.size,
+              color: values.color,
+              price: values.price,
+              photo: values.photo,
+            }
+          : product,
+      );
+      // 사진은 상품마다 따로 가진다 — 최상위에 남기면 다음 상품을 열 때 그 사진이 딸려온다
+      updateOcrResult(targetIndex, { ...values, products, photo: undefined });
+    } else {
+      updateOcrResult(targetIndex, values);
+    }
     // 목록에서 온 직접 입력은 목록으로, 그 외에는 확인 화면으로 (from을 그대로 넘겨 CTA 유지)
-    const fromList = (location.state as { from?: string } | null)?.from === 'list';
     if (manual && fromList) {
-      navigate('/closet/register/receipt-done');
+      navigate('/closet/register/receipt-confirm');
       return;
     }
-    navigate(`/closet/register/ocr-confirm/${targetIndex}`, { state: location.state });
+    navigate(`/closet/register/confirm?receipt=${targetIndex + 1}`, { state: passState });
   };
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
       {/* 높이를 고정해야 안쪽 flex-1 스크롤 영역이 기준을 잡는다 (#app-container는 min-h-screen) */}
-      <div className="flex flex-col h-[100dvh] min-h-0 bg-white">
+      <div className="relative flex flex-col h-[100dvh] min-h-0 bg-white">
         <OnboardingTopBar progress={300 / 375} showSkip onSkip={() => navigate('/closet')} />
 
         <div
@@ -239,6 +332,40 @@ const ClosetOcrEditPage = ({ mode = 'edit' }: ClosetOcrEditPageProps) => {
           {/* 하단 여백 — 마지막 필드(구매일)에서 캘린더를 열어도 잘리지 않게 */}
           <div className="mt-10 px-6 pb-[110px]">
             <div className="flex flex-col gap-4">
+              {/* 옷 사진 — 시안 미수급이라 임시 UI. 크기·문구·배치는 시안 나오면 교체 */}
+              <Field label="옷 사진">
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setPhotoSheetOpen(true)}
+                    aria-label={values.photo ? '옷 사진 변경' : '옷 사진 추가'}
+                    className="h-20 w-20 shrink-0 cursor-pointer overflow-hidden rounded-lg border border-dashed border-[#CED1D5] bg-[#F6F7F8]"
+                  >
+                    {values.photo ? (
+                      <img src={values.photo} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-[24px] font-medium leading-none text-[#B2B8BD]">+</span>
+                    )}
+                  </button>
+                  {values.photo && (
+                    <button
+                      type="button"
+                      onClick={() => setValues((prev) => ({ ...prev, photo: undefined }))}
+                      className="h-9 cursor-pointer rounded-[32px] border border-[#CED1D5] px-4 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#1F2124]"
+                    >
+                      삭제
+                    </button>
+                  )}
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePickPhoto}
+                    className="hidden"
+                  />
+                </div>
+              </Field>
+
               <TextField label="브랜드" value={values.brand} onChange={(v) => update('brand', v)} />
               <TextField label="상품명" value={values.name} onChange={(v) => update('name', v)} />
               <TextField
@@ -459,6 +586,50 @@ const ClosetOcrEditPage = ({ mode = 'edit' }: ClosetOcrEditPageProps) => {
             확인
           </button>
         </div>
+
+        {/* 옷 사진 추가 방식 — 375×294, 바닥에서 -2, radius 56 위쪽만, 안쪽 32/40 + gap 40 (Figma) */}
+        {photoSheetOpen && (
+          <div
+            role="presentation"
+            onClick={() => setPhotoSheetOpen(false)}
+            className="absolute inset-0 z-30 flex items-end bg-black/40"
+          >
+            <div
+              role="presentation"
+              onClick={(event) => event.stopPropagation()}
+              className="-mb-0.5 flex w-full flex-col items-center gap-10 rounded-t-[56px] bg-[#F6F7F8] pt-8 pb-[calc(40px+env(safe-area-inset-bottom,0px))] shadow-[0px_-1px_16px_rgba(0,0,0,0.16)]"
+            >
+              {/* Title/T3 — 375×30 */}
+              <p className="w-full text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
+                옷 사진 추가
+              </p>
+
+              {/* 선택지 — 80 두 줄, 각 줄 위에 구분선 (Figma) */}
+              <div className="flex w-full flex-col">
+                <button
+                  type="button"
+                  onClick={goCapture}
+                  className="flex h-20 w-full cursor-pointer items-center gap-10 border-t border-[#E6E8EA] bg-[#F6F7F8] pl-6 pr-3.5 text-left"
+                >
+                  <SheetCameraIcon />
+                  <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">
+                    카메라로 촬영
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => photoInputRef.current?.click()}
+                  className="flex h-20 w-full cursor-pointer items-center gap-10 border-t border-[#E6E8EA] bg-[#F6F7F8] pl-6 pr-3.5 text-left"
+                >
+                  <SheetAlbumIcon />
+                  <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">
+                    앨범에서 선택
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </PageLayout>
   );

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar, ReceiptCard } from '@/features/closet/components';
 import useClosetStore from '@/store/closetStore';
@@ -33,15 +33,34 @@ const CompleteIcon = ({ filled }: { filled: boolean }) => (
   </div>
 );
 
+/** 장 넘김 화살표 — 20×20, stroke #B2B8BD 1.5 (Figma) */
+const PagerIcon = ({ direction }: { direction: 'prev' | 'next' }) => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path
+      d={direction === 'prev' ? 'M12.5 4.375L6.875 10L12.5 15.625' : 'M7.5 4.375L13.125 10L7.5 15.625'}
+      stroke="#B2B8BD"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 /**
  * 영수증 등록 성공 — 인식·확인된 정보를 영수증 형태로 보여준다.
- * ※ 업로드 플로우는 목록(receipt-done)에서 끝나 이 화면을 거치지 않는다 — 진입 경로 확인 필요.
+ * ※ 업로드 플로우는 목록(receipt-confirm)에서 끝나 이 화면을 거치지 않는다 — 진입 경로 확인 필요.
  */
 const ClosetOcrCompletePage = () => {
   const navigate = useNavigate();
-  const { index = '0' } = useParams();
+  // ?receipt=1이 첫 장 — 배열 index는 -1
+  const [searchParams] = useSearchParams();
   const results = useClosetStore((state) => state.ocrResults);
-  const item = results[Number(index)];
+  const receipt = Number(searchParams.get('receipt') ?? 1);
+  const current = receipt - 1;
+  const item = results[current];
+  // 여러 장을 등록했으면 카드 좌우 화살표로 넘겨 본다
+  const goReceipt = (next: number) =>
+    navigate(`/closet/register/ocr-complete?receipt=${next + 1}`, { replace: true });
   // 흰 체크로 시작해 1초 뒤 검정 체크 + '코디 시작하기' 활성
   const [filled, setFilled] = useState(false);
 
@@ -56,6 +75,8 @@ const ClosetOcrCompletePage = () => {
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.pointerType === 'touch') return; // 터치는 네이티브 스크롤에 맡긴다
+    // 버튼 위에서 시작한 포인터는 잡지 않는다 — 캡처하면 클릭이 버튼까지 못 간다
+    if ((event.target as HTMLElement).closest('button')) return;
     const el = scrollRef.current;
     if (!el) return;
     drag.current = { startY: event.clientY, startTop: el.scrollTop };
@@ -75,7 +96,7 @@ const ClosetOcrCompletePage = () => {
   };
 
   // 새로고침 등으로 스토어가 비어 없는 장을 가리키면 목록으로 되돌린다 (훅 호출 뒤에 둔다)
-  if (!item) return <Navigate to="/closet/register/receipt-done" replace />;
+  if (!item) return <Navigate to="/closet/register/receipt-confirm" replace />;
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
@@ -101,8 +122,40 @@ const ClosetOcrCompletePage = () => {
             영수증 정보가 등록되었어요
           </p>
 
-          {/* 영수증 카드 327×621, 문구 아래 56 */}
-          <ReceiptCard item={item} className="mt-14" />
+          {/* 영수증 카드 327×621, 문구 아래 56. 여러 장이면 좌우에 넘김 버튼이 카드 모서리에 걸친다 */}
+          <div className="relative mt-14">
+            <ReceiptCard item={item} />
+
+            {results.length > 1 && (
+              <>
+                {/* 32×32 원, bg #F6F7F8, shadow 0 4px 16px rgba(0,0,0,0.16). 중심이 카드 좌우 끝에 온다 */}
+                <button
+                  type="button"
+                  disabled={current === 0}
+                  onClick={() => goReceipt(current - 1)}
+                  aria-label="이전 영수증"
+                  className={[
+                    'absolute left-0 top-1/2 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-2xl bg-[#F6F7F8] shadow-[0px_4px_16px_rgba(0,0,0,0.16)]',
+                    current === 0 ? 'cursor-not-allowed opacity-40' : 'cursor-pointer',
+                  ].join(' ')}
+                >
+                  <PagerIcon direction="prev" />
+                </button>
+                <button
+                  type="button"
+                  disabled={current === results.length - 1}
+                  onClick={() => goReceipt(current + 1)}
+                  aria-label="다음 영수증"
+                  className={[
+                    'absolute right-0 top-1/2 flex h-8 w-8 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-2xl bg-[#F6F7F8] shadow-[0px_4px_16px_rgba(0,0,0,0.16)]',
+                    current === results.length - 1 ? 'cursor-not-allowed opacity-40' : 'cursor-pointer',
+                  ].join(' ')}
+                >
+                  <PagerIcon direction="next" />
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* 하단 고정 버튼 — 327×58 두 개, 사이 8. 바탕 없이 떠 있고 내용은 뒤로 스크롤된다 */}

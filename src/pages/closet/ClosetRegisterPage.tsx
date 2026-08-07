@@ -1,7 +1,9 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
 import registerBgBlob from '@/assets/images/closet-register-bg-blob.png';
+import useClosetStore from '@/store/closetStore';
 
 /** 영수증 — 32×32 */
 const ReceiptIcon = () => (
@@ -41,7 +43,7 @@ const OPTIONS = [
     key: 'manual',
     label: '직접 입력하기',
     icon: <PencilIcon />,
-    to: '/closet/register/ocr-manual',
+    to: '/closet/register/manual',
   },
 ];
 
@@ -50,6 +52,12 @@ const OPTIONS = [
  */
 const ClosetRegisterPage = () => {
   const navigate = useNavigate();
+  const startOcrFlow = useClosetStore((state) => state.startOcrFlow);
+
+  // 등록 플로우의 시작점 — 지난 회차 영수증이 남아 장수가 계속 불어나지 않게 여기서 비운다
+  useEffect(() => {
+    startOcrFlow();
+  }, [startOcrFlow]);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">

@@ -40,7 +40,7 @@ const ClosetReceiptFailedPage = () => {
           </p>
           <button
             type="button"
-            onClick={() => navigate('/closet/register/ocr-manual')}
+            onClick={() => navigate('/closet/register/manual')}
             className="w-full cursor-pointer text-center text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#5A6169] underline"
           >
             직접 입력하기
