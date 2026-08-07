@@ -60,7 +60,8 @@ const ClosetUploadGuidePage = () => {
       const next = [...images];
       next[replaceIndex] = urls[0];
       setReceiptImages(next);
-      navigate('/closet/register/receipt-recognizing');
+      // 어느 장을 다시 올린 것인지 인식 화면까지 넘긴다 — 그 장만 갱신해야 나머지가 살아남는다
+      navigate('/closet/register/receipt-recognizing', { state: { replaceIndex } });
       return;
     }
 
