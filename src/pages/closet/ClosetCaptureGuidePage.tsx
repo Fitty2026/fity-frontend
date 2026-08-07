@@ -1,6 +1,6 @@
-import { useNavigate } from 'react-router-dom';
-import PageLayout from '@/components/layout/PageeLayout';
-import { OnboardingTopBar } from '@/features/closet/components';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { ReceiptGuideScreen } from '@/features/closet/components';
 
 /** 카메라 — 24×24, stroke white (촬영하기 버튼 좌측) */
 const CameraIcon = () => (
@@ -22,40 +22,68 @@ const CameraIcon = () => (
   </svg>
 );
 
+/** 카메라 권한 안내 토스트 노출 시간 — 임시값 (문구·형태 디자이너 확인 대기) */
+const TOAST_MS = 5000;
+
 /**
- * 구매내역 캡처 가이드 — 어떤 화면을 찍어야 하는지 안내.
- * 상단 바(건너뛰기·진행 바) + 타이틀 + 가이드 + 하단 촬영 CTA.
- * ※ 중간 가이드(예시 이미지·설명)는 시안 미수급 → 자리만 비워둠.
+ * 권한을 다시 켜는 경로 — OS·브라우저마다 달라서 대략만 구분한다.
+ * ※ 실제 메뉴 이름은 버전에 따라 다를 수 있어 확정 문구는 아니다.
+ */
+const permissionGuide = () => {
+  const ua = navigator.userAgent;
+  const isIOS = /iPhone|iPad|iPod/.test(ua);
+  // iOS는 브라우저가 앱 단위로 카메라 권한을 받는다 (엔진은 모두 WebKit)
+  if (isIOS && /CriOS/.test(ua)) return '설정 > Chrome > 카메라 > 허용';
+  if (isIOS && /EdgiOS/.test(ua)) return '설정 > Edge > 카메라 > 허용';
+  if (isIOS) return '설정 > Safari > 카메라 > 허용';
+  if (/Android/.test(ua)) return '주소창 자물쇠 > 권한 > 카메라 > 허용';
+  // 데스크톱 크롬은 자물쇠 대신 슬라이더 아이콘인 버전이 있어 '사이트 정보'로 부른다
+  if (/Chrome|Chromium|Edg/.test(ua)) return '주소창 사이트 정보 > 사이트 설정 > 카메라 > 허용';
+  return '주소창 자물쇠 > 카메라 > 허용';
+};
+
+/**
+ * OCR 카메라 가이드 — 영수증을 어떻게 촬영해야 하는지 안내.
+ * 화면 구조는 업로드 가이드와 공유한다 (ReceiptGuideScreen).
  */
 const ClosetCaptureGuidePage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // 촬영 화면에서 카메라 권한이 막혀 되돌아온 경우
+  const [showDeniedToast, setShowDeniedToast] = useState(
+    Boolean((location.state as { cameraDenied?: boolean } | null)?.cameraDenied),
+  );
+
+  useEffect(() => {
+    if (!showDeniedToast) return;
+    const timer = setTimeout(() => setShowDeniedToast(false), TOAST_MS);
+    return () => clearTimeout(timer);
+  }, [showDeniedToast]);
 
   return (
-    <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
-      <div className="flex flex-col flex-1 min-h-0 bg-white">
-        <OnboardingTopBar progress={300 / 375} showSkip onSkip={() => navigate('/closet')} />
-
-        {/* 타이틀 — 진행 바 아래 52px, Title/T3 (다른 등록 화면과 동일) */}
-        <h1 className="mt-[52px] text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
-          다음과 같이 화면을 촬영해주세요
-        </h1>
-
-        {/* 가이드 영역 — 시안 나오면 채움 */}
-        <div className="flex-1 min-h-0" />
-
-        {/* 하단 CTA — 327×58 (px 24), 하단 40px */}
-        <div className="w-full px-6 pt-3 pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
-          <button
-            type="button"
-            onClick={() => navigate('/closet/register/capture')}
-            className="flex h-[58px] w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#1F2124] text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
+    <ReceiptGuideScreen
+      titleSecondLine="다음과 같이 영수증을 촬영해주세요"
+      imageAlt="영수증 촬영 예시"
+      lastNotice="밝은 곳에서 영수증을 촬영해주세요"
+      ctaIcon={<CameraIcon />}
+      ctaLabel="촬영하기"
+      onCta={() => navigate('/closet/register/capture')}
+      overlay={
+        // 카메라 권한 거부 안내 — 임시 토스트 (시안 미수급)
+        showDeniedToast ? (
+          <div
+            role="status"
+            className="absolute inset-x-6 bottom-[120px] z-10 rounded-lg bg-black/80 px-4 py-3 text-center text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-white"
           >
-            <CameraIcon />
-            촬영하기
-          </button>
-        </div>
-      </div>
-    </PageLayout>
+            카메라 권한이 거부되어 촬영할 수 없어요
+            <br />
+            아래 경로에서 허용해주세요
+            <br />
+            <span className="font-semibold">{permissionGuide()}</span>
+          </div>
+        ) : null
+      }
+    />
   );
 };
 

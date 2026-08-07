@@ -2,29 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
 
-/**
- * 영수증 — 48×48, stroke 3 #1F2124 (Figma: majesticons:receipt-text-line).
- * ※ 원본 아이콘 path 미수급이라 시안 크기(가로 8~40 / 세로 6~42)에 맞춰 그린 근사.
- */
-const ReceiptIcon = () => (
-  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-    <path
-      d="M8 39V9A3 3 0 0 1 11 6H37A3 3 0 0 1 40 9V39L36 42L32 39L28 42L24 39L20 42L16 39L12 42L8 39Z"
-      stroke="#1F2124"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M15 16H33M15 24H27"
-      stroke="#1F2124"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 /** 카메라 — 32×32, stroke #34363C */
 const CameraIcon = () => (
   <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
@@ -58,28 +35,47 @@ const PhotoIcon = () => (
   </svg>
 );
 
-/** 필요한 권한 안내 — 시안 2개 */
-const PERMISSIONS = [
+/** 촬영 CTA용 카메라 — 24×24, stroke #FFFFFF */
+const CameraIconSmall = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path
+      d="M6.827 6.17521C6.64699 6.46012 6.40682 6.70219 6.12334 6.88444C5.83985 7.06669 5.51993 7.18471 5.186 7.23021C4.806 7.28421 4.429 7.34221 4.052 7.40521C2.999 7.58021 2.25 8.50721 2.25 9.57421V18.0002C2.25 18.5969 2.48705 19.1692 2.90901 19.5912C3.33097 20.0132 3.90326 20.2502 4.5 20.2502H19.5C20.0967 20.2502 20.669 20.0132 21.091 19.5912C21.5129 19.1692 21.75 18.5969 21.75 18.0002V9.57421C21.75 8.50721 21 7.58021 19.948 7.40521C19.5707 7.34234 19.1927 7.28401 18.814 7.23021C18.4802 7.18457 18.1605 7.06649 17.8772 6.88424C17.5939 6.702 17.3539 6.46 17.174 6.17521L16.352 4.85921C16.1674 4.5593 15.9132 4.3083 15.611 4.12744C15.3089 3.94658 14.9675 3.8412 14.616 3.82021C12.8733 3.7266 11.1267 3.7266 9.384 3.82021C9.03245 3.8412 8.69114 3.94658 8.38896 4.12744C8.08678 4.3083 7.83262 4.5593 7.648 4.85921L6.827 6.17521Z"
+      stroke="#FFFFFF"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M16.5 12.75C16.5 13.9435 16.0259 15.0881 15.182 15.932C14.3381 16.7759 13.1935 17.25 12 17.25C10.8065 17.25 9.66193 16.7759 8.81802 15.932C7.97411 15.0881 7.5 13.9435 7.5 12.75C7.5 11.5565 7.97411 10.4119 8.81802 9.56802C9.66193 8.72411 10.8065 8.25 12 8.25C13.1935 8.25 14.3381 8.72411 15.182 9.56802C16.0259 10.4119 16.5 11.5565 16.5 12.75ZM18.75 10.5H18.758V10.508H18.75V10.5Z"
+      stroke="#FFFFFF"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+/** 영수증을 가져오는 방식 */
+const METHODS = [
   {
     key: 'camera',
     icon: <CameraIcon />,
-    title: '카메라 접근',
-    description: '영수증을 직접 촬영할 때 사용돼요',
+    label: '카메라로 캡처',
+    to: '/closet/register/capture-guide',
   },
   {
-    key: 'photo',
+    key: 'album',
     icon: <PhotoIcon />,
-    title: '사진 접근',
-    description: '앨범에서 영수증 사진을 선택할 때 사용돼요',
+    label: '사진 첨부',
+    to: '/closet/register/upload-guide',
   },
 ];
 
 /**
- * 영수증 접근 권한 안내 — 영수증 아이콘 + 필요한 권한 2가지 + 다음.
- * ※ 동의 체크는 없고 안내만 한다 (실제 권한 요청은 촬영/앨범을 열 때 브라우저가 한다).
- * ※ 쇼핑몰을 고르고 들어오지만 화면에 쇼핑몰 표시는 없다 (시안 기준).
+ * 영수증 불러올 방식 선택 — 카메라 촬영 / 앨범 첨부.
+ * ※ 방식 선택 UI는 시안 미수급 — 플로우 확인용으로 카드 2장을 임시로 둔다.
  */
-const ClosetPermissionPage = () => {
+const ClosetReceiptMethodPage = () => {
   const navigate = useNavigate();
 
   return (
@@ -88,51 +84,38 @@ const ClosetPermissionPage = () => {
         <OnboardingTopBar progress={300 / 375} showSkip onSkip={() => navigate('/closet')} />
 
         <div className="flex-1 overflow-y-auto">
-          {/* 영수증 아이콘 48×48 — 진행 바 아래 80 (Figma top 187) */}
-          <div className="mt-[80px] flex justify-center">
-            <ReceiptIcon />
-          </div>
-
-          {/* 안내 문구 — 375×90 3줄 (Title/T3), 아이콘 아래 24 (Figma top 259) */}
-          <h1 className="mt-6 text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
-            영수증 사진을
-            <br />
-            촬영하거나 불러오기 위해
-            <br />
-            아래 접근 권한이 필요해요
+          {/* Title/T3 */}
+          {/* 타이틀 — 375×30 (Title/T3), 진행 바 아래 52 */}
+          <h1 className="mt-[52px] text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
+            영수증을 불러올 방식을 선택해주세요
           </h1>
 
-          {/* 권한 카드 326×126 — 문구 아래 40, 카드 간 8 (Figma top 393 / 527) */}
           <div className="mt-10 flex flex-col gap-2 px-6">
-            {PERMISSIONS.map((permission) => (
-              <div
-                key={permission.key}
-                // padding 24/14/24/24, gap 40, radius 16, bg 흰색 20%, shadow 0/8/16 8%
-                className="flex items-center gap-10 rounded-2xl bg-white/20 py-6 pl-6 pr-[14px] shadow-[0_8px_16px_0_rgba(0,0,0,0.08)] backdrop-blur-md"
+            {METHODS.map((method) => (
+              <button
+                key={method.key}
+                type="button"
+                onClick={() => navigate(method.to)}
+                className="flex h-20 w-full cursor-pointer items-center gap-7 rounded-2xl bg-white/20 p-6 text-left shadow-[0_8px_16px_0_rgba(0,0,0,0.08)] backdrop-blur-md"
               >
-                <span className="shrink-0">{permission.icon}</span>
-                <span className="flex flex-col gap-2">
-                  {/* Body/B1 — 16px Bold */}
-                  <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">
-                    {permission.title}
-                  </span>
-                  <span className="text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#959BA7]">
-                    {permission.description}
-                  </span>
+                <span className="ml-3 shrink-0">{method.icon}</span>
+                <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">
+                  {method.label}
                 </span>
-              </div>
+              </button>
             ))}
           </div>
         </div>
 
-        {/* 하단 CTA — 327×58 */}
+        {/* 하단 CTA — 327×58, 아이콘↔라벨 8 (Figma top 716) */}
         <div className="w-full px-6 pt-3 pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
+          {/* 눌렀을 때 동작은 시안 미수급 — 아직 연결하지 않는다 */}
           <button
             type="button"
-            onClick={() => navigate('/closet/register/receipt-method')}
-            className="h-[58px] w-full cursor-pointer rounded-[32px] bg-[#1F2124] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
+            className="flex h-[58px] w-full cursor-pointer items-center justify-center gap-2 rounded-[32px] bg-[#1F2124] text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
           >
-            다음
+            <CameraIconSmall />
+            촬영하기
           </button>
         </div>
       </div>
@@ -140,4 +123,4 @@ const ClosetPermissionPage = () => {
   );
 };
 
-export default ClosetPermissionPage;
+export default ClosetReceiptMethodPage;
