@@ -29,6 +29,9 @@ import ClosetOcrConfirmPage from '../pages/closet/ClosetOcrConfirmPage';
 import ClosetOcrEditPage from '../pages/closet/ClosetOcrEditPage';
 import ClosetOcrCompletePage from '../pages/closet/ClosetOcrCompletePage';
 import ClosetReceiptMethodPage from '../pages/closet/ClosetReceiptMethodPage';
+import ClosetTagConfirmPage from '../pages/closet/ClosetTagConfirmPage';
+import ClosetPhotoEditPage from '../pages/closet/ClosetPhotoEditPage';
+import ClosetTagEditPage from '../pages/closet/ClosetTagEditPage';
 import ClosetUploadGuidePage from '../pages/closet/ClosetUploadGuidePage';
 import ClosetReceiptCheckPage from '../pages/closet/ClosetReceiptCheckPage';
 import ClosetReceiptRecognizingPage from '../pages/closet/ClosetReceiptRecognizingPage';
@@ -43,7 +46,6 @@ import ClosetItemListPage from '../pages/closet/ClosetItemListPage';
 import ClosetIntroPage from '../pages/closet/ClosetIntroPage';
 
 // 3. 홈
-import HomePage from '../pages/home/HomePage';
 
 // 4. 코디 생성
 import StylingStartPage from '../pages/styling/StylingStartPage';
@@ -133,8 +135,9 @@ const router = createBrowserRouter([
 
     // ── 메인 (로그인 필요) ────────────────────────
     {
+      // 홈 탭 = 코디 시작 홈 (develop에서 빈 홈 화면을 걷어냄)
       path: '/home',
-      element: <ProtectedRoute><HomePage /></ProtectedRoute>,
+      element: <ProtectedRoute><StylingStartPage /></ProtectedRoute>,
     },
 
     // 옷장
@@ -188,6 +191,19 @@ const router = createBrowserRouter([
   {
     path: '/closet/register/receipt-method',
     element: <ProtectedRoute><ClosetReceiptMethodPage /></ProtectedRoute>,
+  },
+  // 태그 확인·수정 — 진입 경로는 아직 미정(회의 후 연결). 지금은 주소로만 들어갈 수 있다
+  {
+    path: '/closet/register/tags',
+    element: <ProtectedRoute><ClosetTagConfirmPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/tags/photo',
+    element: <ProtectedRoute><ClosetPhotoEditPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/tags/edit',
+    element: <ProtectedRoute><ClosetTagEditPage /></ProtectedRoute>,
   },
   {
     path: '/closet/register/upload-guide',

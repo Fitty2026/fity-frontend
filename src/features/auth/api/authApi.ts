@@ -1,21 +1,22 @@
 import api from '@/lib/axios';
-import type { ApiResponse, SocialProvider, StylePreference, User } from '@/types';
+import type { ApiResponse, SocialProvider, User } from '@/types';
 
 const MOCK_DELAY_MS = 500;
 
-// ── PROFILE-01 프로필 조회 ──
+// ── USER-04 프로필 정보 조회 (GET /api/v1/users/me) ──
 interface MyProfileResult {
-  userId: number;
+  id: number;
+  username: string;
   email: string;
-  nickname: string;
-  profileImageUrl: string | null;
-  stylePreferences: StylePreference[];
+  name: string;
+  styleTags: string[] | null;
+  styleTagIds: number[];
 }
 
 export const getMyProfile = async (): Promise<User> => {
   const { data } = await api.get<ApiResponse<MyProfileResult>>('/api/v1/users/me');
-  const { userId, ...rest } = data.result;
-  return { id: userId, ...rest };
+  const { id, username, email, name, styleTags, styleTagIds } = data.result;
+  return { id, username, email, name, styleTags, styleTagIds };
 };
 
 // ── AUTH-02 이메일 로그인 ──
@@ -24,10 +25,17 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface LoginUser {
+  id: number;
+  username: string;
+  email: string;
+  name: string;
+}
+
 export interface LoginResult {
   accessToken: string;
-  userId: number;
-  nickname: string;
+  tokenType: string;
+  user: LoginUser;
 }
 
 export const login = async (body: LoginRequest): Promise<LoginResult> => {
@@ -41,29 +49,32 @@ export const logout = async (): Promise<void> => {
 };
 
 // ── 소셜 로그인: 아직 API 미제공이라 mock 유지 (추후 실제 연동) ──
-export interface SocialLoginResult extends LoginResult {
-  email: string;
-}
-
-export const socialLogin = async (provider: SocialProvider): Promise<SocialLoginResult> => {
+export const socialLogin = async (provider: SocialProvider): Promise<LoginResult> => {
   await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
   return {
     accessToken: `mock-token-${provider}`,
-    userId: 1,
-    nickname: '피티',
-    email: `${provider}@fitty.mock`,
+    tokenType: 'Bearer',
+    user: { id: 1, username: `${provider}_user`, email: `${provider}@fitty.mock`, name: '피티' },
   };
 };
 
-// ── AUTH-01 회원가입: 요청의 agreements 처리 방식을 백엔드와 조율 중이라 mock 유지 ──
+// ── AUTH-01 이메일 회원가입 (POST /api/v1/auth/signup) ──
 export interface SignupParams {
   name: string;
-  username: string;
+  loginId: string;
   email: string;
   password: string;
 }
 
-export const signup = async (params: SignupParams): Promise<void> => {
-  void params; // mock에서는 입력값을 사용하지 않는다
-  await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
+export interface SignupResult {
+  userId: number;
+  loginId: string;
+  email: string;
+  name: string;
+  createdAt: string;
+}
+
+export const signup = async (params: SignupParams): Promise<SignupResult> => {
+  const { data } = await api.post<ApiResponse<SignupResult>>('/api/v1/auth/signup', params);
+  return data.result;
 };

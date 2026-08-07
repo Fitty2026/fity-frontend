@@ -4,10 +4,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import AddItemBottomSheet from '@/features/codyplay/components/AddItemBottomSheet';
 import RetouchItem from '@/features/codyplay/components/RetouchItem';
+import useSaveRetouchedOutfit from '@/features/codyplay/hooks/useSaveRetouchedOutfit';
 import '@/features/codyplay/codyRetouch.css';
 
-import { mockOutfits } from '../../mocks/data/outfit';
 import type { ClothingCategory, ClothingItem, Outfit } from '../../types';
+import useStylingStore from '@/store/stylingStore';
 
 const createRecommendItem = (id: string, category: ClothingItem['category']): ClothingItem => ({
   id,
@@ -47,7 +48,9 @@ const isSameItem = (item: ClothingItem, target: ClothingItem) =>
 
 const CodyRetouchPage = () => {
   const location = useLocation();
-  const [result, setResult] = useState<Outfit | undefined>(() => mockOutfits[0]);
+  const generatedOutfit = useStylingStore((state) => state.generatedOutfit);
+  const setGeneratedOutfit = useStylingStore((state) => state.setGeneratedOutfit);
+  const [result, setResult] = useState<Outfit | undefined>(() => generatedOutfit ?? undefined);
   const [selectItem, setSelectItem] = useState<ClothingItem | null>();
   const [selectCategory, setSelectCategory] = useState<string | null>();
   const [changeItem, setChangeItem] = useState<ClothingItem | null>(null);
@@ -56,6 +59,7 @@ const CodyRetouchPage = () => {
     index: number;
   } | null>(null);
   const [isAddItemSheetOpen, setIsAddItemSheetOpen] = useState(false);
+  const saveRetouchMutation = useSaveRetouchedOutfit();
   const navigate = useNavigate();
 
   const handleChangeItem = () => {
@@ -130,6 +134,18 @@ const CodyRetouchPage = () => {
   const activeItem = selectItem
     ? result?.items.find((item) => isSameItem(item, selectItem))
     : undefined;
+
+  const finishRetouch = () => {
+    if (!result || saveRetouchMutation.isPending) return;
+
+    saveRetouchMutation.mutate(result, {
+      onSuccess: (savedResult) => {
+        setResult(savedResult);
+        setGeneratedOutfit(savedResult);
+        navigate('/codyplay', { replace: true });
+      },
+    });
+  };
 
   return (
     <PageLayout
@@ -295,13 +311,22 @@ const CodyRetouchPage = () => {
           </div>
         ) : (
           <button
-            onClick={() => setSelectCategory(selectItem?.category)}
-            disabled={!selectItem}
+            onClick={
+              selectItem
+                ? () => setSelectCategory(selectItem.category)
+                : finishRetouch
+            }
+            disabled={!result || saveRetouchMutation.isPending}
             className="w-full bg-[#1F2124] disabled:bg-[#E6E8EA] rounded-[32px] py-[16px] text-[#F6F7F8] disabled:text-[#959BA7] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
           >
-            확인
+            {saveRetouchMutation.isPending ? '저장 중...' : '확인'}
           </button>
         )}
+        {saveRetouchMutation.error ? (
+          <p className="mt-[8px] text-center text-[12px] text-red-500">
+            {saveRetouchMutation.error.message}
+          </p>
+        ) : null}
       </div>
       <AddItemBottomSheet
         isOpen={isAddItemSheetOpen}
