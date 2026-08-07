@@ -65,12 +65,6 @@ const SheetCameraIcon = () => (
   </svg>
 );
 
-/** 바텀시트 앨범 아이콘 — 32×32, stroke #1F2124 (Figma) */
-const SheetAlbumIcon = () => (
-  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M3 21L9.87867 14.1213C10.1572 13.8428 10.488 13.6218 10.8519 13.471C11.2159 13.3202 11.606 13.2426 12 13.2426C12.394 13.2426 12.7841 13.3202 13.1481 13.471C13.512 13.6218 13.8428 13.8428 14.1213 14.1213L21 21M19 19L20.8787 17.1213C21.1572 16.8428 21.488 16.6218 21.8519 16.471C22.2159 16.3202 22.606 16.2426 23 16.2426C23.394 16.2426 23.7841 16.3202 24.1481 16.471C24.512 16.6218 24.8428 16.8428 25.1213 17.1213L29 21M5 26H27C27.5304 26 28.0391 25.7893 28.4142 25.4142C28.7893 25.0391 29 24.5304 29 24V8C29 7.46957 28.7893 6.96086 28.4142 6.58579C28.0391 6.21071 27.5304 6 27 6H5C4.46957 6 3.96086 6.21071 3.58579 6.58579C3.21071 6.96086 3 7.46957 3 8V24C3 24.5304 3.21071 25.0391 3.58579 25.4142C3.96086 25.7893 4.46957 26 5 26ZM19 11H19.0107V11.0107H19V11ZM19.5 11C19.5 11.1326 19.4473 11.2598 19.3536 11.3536C19.2598 11.4473 19.1326 11.5 19 11.5C18.8674 11.5 18.7402 11.4473 18.6464 11.3536C18.5527 11.2598 18.5 11.1326 18.5 11C18.5 10.8674 18.5527 10.7402 18.6464 10.6464C18.7402 10.5527 18.8674 10.5 19 10.5C19.1326 10.5 19.2598 10.5527 19.3536 10.6464C19.4473 10.7402 19.5 10.8674 19.5 11Z" stroke="#1F2124" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
 
 /** 옷 가로 스크롤 행 — 스크롤바 숨김 + 하단 구분선(좌우 24). 아이템 클릭 시 상세 이동 */
 const ClothesRow = ({ items, onItemClick }: { items: ClothingItem[]; onItemClick: (id: string) => void }) => (
@@ -261,18 +255,10 @@ const ClosetHomePage = () => {
               <button
                 type="button"
                 onClick={() => navigate('/closet/register/photo')}
-                className="flex h-20 w-full items-center gap-10 border-b border-[#E6E8EA] pl-6 pr-3.5 text-left cursor-pointer"
+                className="flex h-20 w-full items-center gap-10 pl-6 pr-3.5 text-left cursor-pointer"
               >
                 <SheetCameraIcon />
                 <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">카메라로 촬영</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/closet/register/upload')}
-                className="flex h-20 w-full items-center gap-10 pl-6 pr-3.5 text-left cursor-pointer"
-              >
-                <SheetAlbumIcon />
-                <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">앨범에서 선택</span>
               </button>
             </div>
           </div>
