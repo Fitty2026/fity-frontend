@@ -51,7 +51,8 @@ const BodyResultPage = () => {
       {
         onSuccess: finishOnboarding,
         onError: (err) => {
-          if (err instanceof ApiError && err.code === 'PROFILE409_1') finishOnboarding();
+          // 명세서 표기가 PROFILE409_1/PROFILE409_01로 혼용돼 접두사로 매칭한다
+          if (err instanceof ApiError && err.code.startsWith('PROFILE409')) finishOnboarding();
         },
       },
     );
