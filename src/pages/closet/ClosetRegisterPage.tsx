@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
+import { registerStartPath } from '@/features/closet/registerFlow';
+import useOnboardingStore from '@/store/onboardingStore';
 import registerBgBlob from '@/assets/images/closet-register-bg-blob.png';
 import useClosetStore from '@/store/closetStore';
 
@@ -31,19 +33,21 @@ const PencilIcon = () => (
   </svg>
 );
 
-/** 등록 방식 — 영수증으로 자동 등록 / 직접 입력 두 가지 */
+/**
+ * 등록 방식 — 영수증 / 구매내역. 둘 다 권한 안내를 먼저 거치고, 그 다음이 갈린다.
+ * 영수증  → 촬영·앨범 방식 선택(receipt-method)
+ * 구매내역 → 쇼핑몰 선택(platform) → 앨범 업로드(upload-guide)
+ */
 const OPTIONS = [
   {
-    key: 'receipt',
+    key: 'receipt' as const,
     label: '영수증 불러오기',
     icon: <ReceiptIcon />,
-    to: '/closet/register/platform',
   },
   {
-    key: 'manual',
-    label: '직접 입력하기',
+    key: 'purchase' as const,
+    label: '구매내역 불러오기',
     icon: <PencilIcon />,
-    to: '/closet/register/manual',
   },
 ];
 
@@ -53,6 +57,8 @@ const OPTIONS = [
 const ClosetRegisterPage = () => {
   const navigate = useNavigate();
   const startOcrFlow = useClosetStore((state) => state.startOcrFlow);
+  // 권한 안내는 최초 1회만 거친다
+  const permissionSeen = useOnboardingStore((state) => state.closetPermissionSeen);
 
   // 등록 플로우의 시작점 — 지난 회차 영수증이 남아 장수가 계속 불어나지 않게 여기서 비운다
   useEffect(() => {
@@ -62,7 +68,8 @@ const ClosetRegisterPage = () => {
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
       <div className="relative flex flex-col flex-1 min-h-0 bg-white overflow-hidden">
-        {/* 배경 blob — Figma: 1078.79², top 0, left -451, angle 10.07°(=CSS -10.07°) */}
+        {/* 배경 blob — Figma: 1078.79², top 0, left -451, angle 10.07°(=CSS -10.07°).
+            좌표는 Figma 그대로가 아니라 화면에서 맞춰 본 값이다(스펙대로 넣으면 어긋난다) */}
         <img
           src={registerBgBlob}
           alt=""
@@ -93,15 +100,22 @@ const ClosetRegisterPage = () => {
             더 정확한 코디를 추천해드려요
           </p>
 
-          {/* 등록 방식 카드 — 327×80, 문구 아래 200, 카드 간 11 */}
-          <div className="mt-[200px] flex flex-col gap-[11px] pb-10">
+          {/* 등록 방식 카드 — 327×80, 카드 간 12 (Figma 568/660).
+              문구 블록(120)이 앱 125에서 끝나므로 518에 놓으려면 273 띄운다 */}
+          <div className="mt-[273px] flex flex-col gap-3 pb-10">
             {OPTIONS.map((option) => (
               <button
                 key={option.key}
                 type="button"
-                onClick={() => navigate(option.to)}
-                // padding 24, radius 16, bg 흰색 20%, shadow 0/8/16 8%
-                className="flex h-20 w-full cursor-pointer items-center gap-7 rounded-2xl bg-white/20 p-6 text-left shadow-[0_8px_16px_0_rgba(0,0,0,0.08)] backdrop-blur-md"
+                // 어느 쪽으로 들어왔는지 넘긴다 — 다음 목적지가 갈린다.
+                // 권한 안내를 이미 봤으면 그 화면은 건너뛴다
+                onClick={() =>
+                  navigate(registerStartPath(option.key, permissionSeen), {
+                    state: { entry: option.key },
+                  })
+                }
+                // padding 24, radius 16, bg 흰색 20%, shadow 0 8 16 #00000014
+                className="flex h-20 w-full cursor-pointer items-center gap-7 rounded-2xl bg-white/20 p-6 text-left shadow-[0_8px_16px_0_#00000014] backdrop-blur-md"
               >
                 {/* 아이콘만 12 오른쪽으로 (라벨 위치는 그대로 유지하려고 gap을 28로) */}
                 <span className="ml-3 shrink-0">{option.icon}</span>
