@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar, TransitionBlobScreen } from '@/features/closet/components';
 import closetIntroBlob from '@/assets/images/closet-intro-blob.png';
+import closetRegisterBgBlob from '@/assets/images/closet-register-bg-blob.png';
 
 /**
  * 개인화 온보딩 → 디지털 옷장 온보딩 진입 전환 화면.
@@ -12,9 +13,10 @@ import closetIntroBlob from '@/assets/images/closet-intro-blob.png';
 const ClosetIntroPage = () => {
   const navigate = useNavigate();
 
-  // 2초 후 옷장 등록 방식 선택으로 자동 이동 (임시: 추후 백엔드 준비 완료 응답으로 대체)
+  // blob 성장(6s)이 끝나는 시점에 옷장 등록 방식 선택으로 자동 이동
+  // (임시: 추후 백엔드 준비 완료 응답으로 대체)
   useEffect(() => {
-    const timer = setTimeout(() => navigate('/closet/register'), 2000);
+    const timer = setTimeout(() => navigate('/closet/register'), 6000);
     return () => clearTimeout(timer);
   }, [navigate]);
 
@@ -23,7 +25,12 @@ const ClosetIntroPage = () => {
       <div className="flex flex-col flex-1 min-h-0 bg-white">
         {/* 진행률 = 채움 241 / track 375 (Figma) */}
         <OnboardingTopBar progress={241 / 375} />
-        <TransitionBlobScreen message="거의 다 왔어요" image={closetIntroBlob} animated />
+        <TransitionBlobScreen
+          message="거의 다 왔어요"
+          image={closetIntroBlob}
+          imageEnd={closetRegisterBgBlob}
+          animated
+        />
       </div>
     </PageLayout>
   );
