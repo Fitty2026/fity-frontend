@@ -60,25 +60,21 @@ const ClosetPhotoPage = () => {
   const fileInput = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // OCR 수정 화면에서 옷 사진을 찍으러 온 경우 — 사진만 넘겨주고 그 화면으로 되돌아간다
-  const fromEdit = location.state as
-    | { from?: string; returnTo?: string; returnState?: unknown; values?: Record<string, unknown> }
+  // 다른 화면이 옷 사진을 찍으러 보낸 경우 — 돌아갈 주소와 그때 들고 갈 값을 함께 받는다
+  const caller = location.state as
+    | { returnTo?: string; returnState?: Record<string, unknown> }
     | null;
-  const isFromEdit = fromEdit?.from === 'ocr-edit';
 
   /**
    * 촬영/갤러리 선택 후 이동.
-   * 수정 화면에서 왔으면 편집 중이던 값에 사진만 얹어 돌려보내고, 그 외엔 기존 라우트를 탄다
-   * (분석 화면 경유 여부는 시안 확인 대기).
+   * 부른 화면이 있으면 사진만 얹어 그리로 되돌리고(편집 중이던 값은 returnState로 보존),
+   * 없으면 기존 등록 완료 경로를 탄다.
    */
   const goNext = (photo: string) => {
-    if (isFromEdit && fromEdit?.returnTo) {
-      navigate(fromEdit.returnTo, {
+    if (caller?.returnTo) {
+      navigate(caller.returnTo, {
         replace: true,
-        state: {
-          ...(fromEdit.returnState as object | null),
-          values: { ...fromEdit.values, photo },
-        },
+        state: { ...caller.returnState, photo },
       });
       return;
     }

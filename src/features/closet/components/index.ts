@@ -7,6 +7,7 @@ export { default as HangerLoader } from './HangerLoader';
 export { default as TransitionBlobScreen } from './TransitionBlobScreen';
 export { default as ReceiptGuideScreen } from './ReceiptGuideScreen';
 export { default as PermissionDeniedAlert } from './PermissionDeniedAlert';
+export { default as PhotoSourceSheet } from './PhotoSourceSheet';
 export { default as ReceiptCard } from './ReceiptCard';
 export { default as ClosetBottomNav } from './ClosetBottomNav';
 export { default as CtaButton } from './CtaButton';

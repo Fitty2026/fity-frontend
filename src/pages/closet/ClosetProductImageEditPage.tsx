@@ -1,7 +1,12 @@
 import { useRef, useState } from 'react';
-import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
-import { ClosetSearchField, ClosetTopBar, CtaButton } from '@/features/closet/components';
+import {
+  ClosetSearchField,
+  ClosetTopBar,
+  CtaButton,
+  PhotoSourceSheet,
+} from '@/features/closet/components';
 import { COLOR_COLUMNS, COLOR_OPTIONS, colorChipStyle } from '@/features/closet/colors';
 import { SHOPPING_MALLS } from '@/features/closet/shoppingMalls';
 import useClosetStore, { receiptProducts } from '@/store/closetStore';
@@ -38,6 +43,39 @@ const PencilIcon = () => (
 const ChevronIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
     <path d="M5.5 3L10.5 8L5.5 13" stroke="#959BA7" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+/** 사진 시트 카메라 — 32×32, stroke 2.2 #34363C */
+const SheetCameraIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path
+      d="M9.10267 8.23361C8.86265 8.61349 8.54243 8.93625 8.16445 9.17925C7.78647 9.42225 7.3599 9.57961 6.91467 9.64027C6.408 9.71227 5.90533 9.78961 5.40267 9.87361C3.99867 10.1069 3 11.3429 3 12.7656V24.0003C3 24.7959 3.31607 25.559 3.87868 26.1216C4.44129 26.6842 5.20435 27.0003 6 27.0003H26C26.7957 27.0003 27.5587 26.6842 28.1213 26.1216C28.6839 25.559 29 24.7959 29 24.0003V12.7656C29 11.3429 28 10.1069 26.5973 9.87361C26.0943 9.78979 25.5902 9.71201 25.0853 9.64027C24.6403 9.57942 24.214 9.42198 23.8363 9.17899C23.4586 8.936 23.1385 8.61333 22.8987 8.23361L21.8027 6.47894C21.5565 6.07907 21.2176 5.7444 20.8147 5.50325C20.4118 5.26211 19.9567 5.1216 19.488 5.09361C17.1643 4.9688 14.8357 4.9688 12.512 5.09361C12.0433 5.1216 11.5882 5.26211 11.1853 5.50325C10.7824 5.7444 10.4435 6.07907 10.1973 6.47894L9.10267 8.23361Z"
+      stroke="#34363C"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M22 17C22 18.5913 21.3679 20.1174 20.2426 21.2426C19.1174 22.3679 17.5913 23 16 23C14.4087 23 12.8826 22.3679 11.7574 21.2426C10.6321 20.1174 10 18.5913 10 17C10 15.4087 10.6321 13.8826 11.7574 12.7574C12.8826 11.6321 14.4087 11 16 11C17.5913 11 19.1174 11.6321 20.2426 12.7574C21.3679 13.8826 22 15.4087 22 17ZM25 14H25.0107V14.0107H25V14Z"
+      stroke="#34363C"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+/** 사진 시트 앨범 — 32×32, stroke 2 #1F2124 */
+const SheetAlbumIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path
+      d="M3 21L9.87867 14.1213C10.1572 13.8428 10.488 13.6218 10.8519 13.471C11.2159 13.3202 11.606 13.2426 12 13.2426C12.394 13.2426 12.7841 13.3202 13.1481 13.471C13.512 13.6218 13.8428 13.8428 14.1213 14.1213L21 21M19 19L20.8787 17.1213C21.1572 16.8428 21.488 16.6218 21.8519 16.471C22.2159 16.3202 22.606 16.2426 23 16.2426C23.394 16.2426 23.7841 16.3202 24.1481 16.471C24.512 16.6218 24.8428 16.8428 25.1213 17.1213L29 21M5 26H27C27.5304 26 28.0391 25.7893 28.4142 25.4142C28.7893 25.0391 29 24.5304 29 24V8C29 7.46957 28.7893 6.96086 28.4142 6.58579C28.0391 6.21071 27.5304 6 27 6H5C4.46957 6 3.96086 6.21071 3.58579 6.58579C3.21071 6.96086 3 7.46957 3 8V24C3 24.5304 3.21071 25.0391 3.58579 25.4142C3.96086 25.7893 4.46957 26 5 26ZM19 11H19.0107V11.0107H19V11ZM19.5 11C19.5 11.1326 19.4473 11.2598 19.3536 11.3536C19.2598 11.4473 19.1326 11.5 19 11.5C18.8674 11.5 18.7402 11.4473 18.6464 11.3536C18.5527 11.2598 18.5 11.1326 18.5 11C18.5 10.8674 18.5527 10.7402 18.6464 10.6464C18.7402 10.5527 18.8674 10.5 19 10.5C19.1326 10.5 19.2598 10.5527 19.3536 10.6464C19.4473 10.7402 19.5 10.8674 19.5 11Z"
+      stroke="#1F2124"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
@@ -136,7 +174,15 @@ const SelectRow = ({
  */
 const ClosetProductImageEditPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [params] = useSearchParams();
+  /**
+   * 촬영 화면에서 돌아온 경우 — 찍은 사진과, 떠나기 전 편집 중이던 값이 실려 온다.
+   * draft가 없으면(정상 진입) 인식 결과에서 시작한다.
+   */
+  const returned = location.state as
+    | { photo?: string; draft?: Record<string, unknown> }
+    | null;
   const results = useClosetStore((state) => state.ocrResults);
   const updateOcrResult = useClosetStore((state) => state.updateOcrResult);
   /**
@@ -163,23 +209,33 @@ const ClosetProductImageEditPage = () => {
   const order = Number(params.get('product') ?? '1');
   const entry = entries[order - 1];
 
-  const [name, setName] = useState(entry?.product.name ?? '');
+  // 촬영하러 갔다 왔으면 그때 값을, 아니면 인식 결과를 시작값으로 쓴다
+  const draft = returned?.draft;
+  const [name, setName] = useState((draft?.name as string) ?? entry?.product.name ?? '');
   const [nameEditing, setNameEditing] = useState(false);
-  const [photo, setPhoto] = useState(entry?.product.photo);
-  const [tags, setTags] = useState(entry?.product.tags ?? []);
+  const [photo, setPhoto] = useState(returned?.photo ?? entry?.product.photo);
+  const [tags, setTags] = useState((draft?.tags as string[]) ?? entry?.product.tags ?? []);
+  // 옷 사진 추가 시트 — 카메라로 촬영 / 앨범에서 선택
+  const [photoSheetOpen, setPhotoSheetOpen] = useState(false);
   // 태그 추가 바텀시트 — 검색/직접 입력 + 추천 태그 선택
   const [tagSheetOpen, setTagSheetOpen] = useState(false);
   const [tagSearch, setTagSearch] = useState('');
   const [pickedTags, setPickedTags] = useState<string[]>([]);
   // 태그 한 개를 눌러 선택하면 X가 붙는다 (삭제 전 단계)
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [memo, setMemo] = useState('');
-  const [category, setCategory] = useState(entry?.product.category ?? '');
-  const [subCategory, setSubCategory] = useState(entry?.product.subCategory ?? '');
-  const [brand, setBrand] = useState(entry?.product.brand ?? '');
+  const [memo, setMemo] = useState((draft?.memo as string) ?? '');
+  const [category, setCategory] = useState(
+    (draft?.category as string) ?? entry?.product.category ?? '',
+  );
+  const [subCategory, setSubCategory] = useState(
+    (draft?.subCategory as string) ?? entry?.product.subCategory ?? '',
+  );
+  const [brand, setBrand] = useState((draft?.brand as string) ?? entry?.product.brand ?? '');
   // 색상은 최대 2개. 인식 결과가 단일 color만 들고 있으면 그것을 첫 칸으로 본다
   const [colors, setColors] = useState<{ label: string; hex: string }[]>(
-    entry?.product.colors ?? (entry?.product.color.label ? [entry.product.color] : []),
+    (draft?.colors as { label: string; hex: string }[]) ??
+      entry?.product.colors ??
+      (entry?.product.color.label ? [entry.product.color] : []),
   );
   const [openRow, setOpenRow] = useState<string | null>(null);
 
@@ -242,7 +298,7 @@ const ClosetProductImageEditPage = () => {
             {photo ? (
               <button
                 type="button"
-                onClick={() => fileRef.current?.click()}
+                onClick={() => setPhotoSheetOpen(true)}
                 className="h-[256px] w-[256px] cursor-pointer overflow-hidden rounded-[14.11px]"
               >
                 <img src={photo} alt="" className="h-full w-full object-cover" />
@@ -250,7 +306,7 @@ const ClosetProductImageEditPage = () => {
             ) : (
               <button
                 type="button"
-                onClick={() => fileRef.current?.click()}
+                onClick={() => setPhotoSheetOpen(true)}
                 // dash 5.29 = 1.76 × 3 이라 브라우저 기본 dashed 패턴과 같다
                 className="flex h-[256px] w-[256px] cursor-pointer flex-col items-center justify-center gap-2 rounded-[14.11px] border-[1.76px] border-dashed border-[#9D98F0]"
               >
@@ -268,7 +324,10 @@ const ClosetProductImageEditPage = () => {
             className="hidden"
             onChange={(event) => {
               const file = event.target.files?.[0];
+              // 같은 파일을 다시 골라도 onChange가 오도록 값을 비운다
+              event.target.value = '';
               if (file) setPhoto(URL.createObjectURL(file));
+              setPhotoSheetOpen(false);
             }}
           />
 
@@ -522,6 +581,36 @@ const ClosetProductImageEditPage = () => {
             확인
           </button>
         </div>
+
+        {/* 옷 사진 추가 시트 */}
+        <PhotoSourceSheet
+          open={photoSheetOpen}
+          onClose={() => setPhotoSheetOpen(false)}
+          title="옷 이미지 추가"
+          options={[
+            {
+              key: 'camera',
+              icon: <SheetCameraIcon />,
+              label: '카메라로 촬영',
+              // 편집 중이던 값을 들려 보내야 돌아왔을 때 입력이 날아가지 않는다
+              onSelect: () =>
+                navigate('/closet/register/photo', {
+                  state: {
+                    returnTo: `/closet/register/product-images/edit?product=${order}`,
+                    returnState: {
+                      draft: { name, tags, colors, brand, category, subCategory, memo },
+                    },
+                  },
+                }),
+            },
+            {
+              key: 'album',
+              icon: <SheetAlbumIcon />,
+              label: '앨범에서 선택',
+              onSelect: () => fileRef.current?.click(),
+            },
+          ]}
+        />
 
         {/* 태그 추가 바텀시트 — radius 상단 56, padding 상32/좌우24/하40, bg #F6F7F8 (옷장 상세와 동일) */}
         {tagSheetOpen && (
