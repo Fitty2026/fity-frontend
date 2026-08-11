@@ -306,12 +306,8 @@ const ClosetOcrEditPage = ({ mode = 'edit' }: ClosetOcrEditPageProps) => {
     } else {
       updateOcrResult(targetIndex, values);
     }
-    // 목록에서 온 직접 입력은 목록으로, 그 외에는 확인 화면으로 (from을 그대로 넘겨 CTA 유지)
-    if (manual && fromList) {
-      navigate('/closet/register/receipt-confirm');
-      return;
-    }
-    navigate(`/closet/register/confirm?receipt=${targetIndex + 1}`, { state: passState });
+    // 입력이 끝나면 상품 이미지 등록 목록으로 — 여기서 사진을 채우고 등록을 마친다
+    navigate('/closet/register/product-images');
   };
 
   return (

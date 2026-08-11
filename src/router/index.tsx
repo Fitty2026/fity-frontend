@@ -25,18 +25,14 @@ import ClosetPlatformPage from '../pages/closet/ClosetPlatformPage';
 import ClosetPermissionPage from '../pages/closet/ClosetPermissionPage';
 import ClosetCaptureGuidePage from '../pages/closet/ClosetCaptureGuidePage';
 import ClosetCapturePage from '../pages/closet/ClosetCapturePage';
-import ClosetOcrConfirmPage from '../pages/closet/ClosetOcrConfirmPage';
-import ClosetOcrEditPage from '../pages/closet/ClosetOcrEditPage';
-import ClosetOcrCompletePage from '../pages/closet/ClosetOcrCompletePage';
+import ClosetManualInputPage from '../pages/closet/ClosetManualInputPage';
 import ClosetReceiptMethodPage from '../pages/closet/ClosetReceiptMethodPage';
-import ClosetTagConfirmPage from '../pages/closet/ClosetTagConfirmPage';
-import ClosetPhotoEditPage from '../pages/closet/ClosetPhotoEditPage';
-import ClosetTagEditPage from '../pages/closet/ClosetTagEditPage';
 import ClosetUploadGuidePage from '../pages/closet/ClosetUploadGuidePage';
 import ClosetReceiptCheckPage from '../pages/closet/ClosetReceiptCheckPage';
 import ClosetReceiptRecognizingPage from '../pages/closet/ClosetReceiptRecognizingPage';
-import ClosetReceiptDonePage from '../pages/closet/ClosetReceiptDonePage';
 import ClosetReceiptFailedPage from '../pages/closet/ClosetReceiptFailedPage';
+import ClosetProductImagesPage from '../pages/closet/ClosetProductImagesPage';
+import ClosetProductImageEditPage from '../pages/closet/ClosetProductImageEditPage';
 import ClosetPhotoPage from '../pages/closet/ClosetPhotoPage';
 import ClosetAddedPage from '../pages/closet/ClosetAddedPage';
 import ClosetCompletePage from '../pages/closet/ClosetCompletePage';
@@ -169,41 +165,14 @@ const router = createBrowserRouter([
     path: '/closet/register/capture',
     element: <ProtectedRoute><ClosetCapturePage /></ProtectedRoute>,
   },
-  // 영수증은 여러 장이라 ?receipt=N으로 몇 번째 장인지 지정한다 (N은 1부터 = 화면의 '영수증 N').
-  // receipt 없이 들어오면(주소 직접 입력 등) 첫 장을 본다
-  {
-    path: '/closet/register/confirm',
-    element: <ProtectedRoute><ClosetOcrConfirmPage /></ProtectedRoute>,
-  },
-  {
-    path: '/closet/register/edit',
-    element: <ProtectedRoute><ClosetOcrEditPage /></ProtectedRoute>,
-  },
-  {
-    path: '/closet/register/ocr-complete',
-    element: <ProtectedRoute><ClosetOcrCompletePage /></ProtectedRoute>,
-  },
   // 직접 입력 — ?receipt=N이면 그 장(인식 실패분)을 덮어쓰고, 없으면 새 장으로 추가된다
   {
     path: '/closet/register/manual',
-    element: <ProtectedRoute><ClosetOcrEditPage mode="manual" /></ProtectedRoute>,
+    element: <ProtectedRoute><ClosetManualInputPage /></ProtectedRoute>,
   },
   {
     path: '/closet/register/receipt-method',
     element: <ProtectedRoute><ClosetReceiptMethodPage /></ProtectedRoute>,
-  },
-  // 태그 확인·수정 — 진입 경로는 아직 미정(회의 후 연결). 지금은 주소로만 들어갈 수 있다
-  {
-    path: '/closet/register/tags',
-    element: <ProtectedRoute><ClosetTagConfirmPage /></ProtectedRoute>,
-  },
-  {
-    path: '/closet/register/tags/photo',
-    element: <ProtectedRoute><ClosetPhotoEditPage /></ProtectedRoute>,
-  },
-  {
-    path: '/closet/register/tags/edit',
-    element: <ProtectedRoute><ClosetTagEditPage /></ProtectedRoute>,
   },
   {
     path: '/closet/register/upload-guide',
@@ -218,12 +187,17 @@ const router = createBrowserRouter([
     element: <ProtectedRoute><ClosetReceiptRecognizingPage /></ProtectedRoute>,
   },
   {
-    path: '/closet/register/receipt-confirm',
-    element: <ProtectedRoute><ClosetReceiptDonePage /></ProtectedRoute>,
-  },
-  {
     path: '/closet/register/receipt-failed',
     element: <ProtectedRoute><ClosetReceiptFailedPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/product-images',
+    element: <ProtectedRoute><ClosetProductImagesPage /></ProtectedRoute>,
+  },
+  // 상품 하나를 ?product=N(평탄화한 순번, 1부터)으로 지정한다
+  {
+    path: '/closet/register/product-images/edit',
+    element: <ProtectedRoute><ClosetProductImageEditPage /></ProtectedRoute>,
   },
   {
     path: '/closet/register/photo',
