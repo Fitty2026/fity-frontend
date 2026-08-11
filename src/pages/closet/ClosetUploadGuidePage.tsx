@@ -1,6 +1,6 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ReceiptGuideScreen } from '@/features/closet/components';
+import { PermissionDeniedAlert, ReceiptGuideScreen } from '@/features/closet/components';
 import useClosetStore from '@/store/closetStore';
 
 /** 사진 — 24×24, stroke white (사진 업로드 버튼 좌측). 실 에셋 미수급 */
@@ -45,6 +45,7 @@ const ClosetUploadGuidePage = () => {
   const images = useClosetStore((state) => state.receiptImages);
   const setReceiptImages = useClosetStore((state) => state.setReceiptImages);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [showDeniedAlert, setShowDeniedAlert] = useState(false);
 
   // 인식 실패분 '다시 업로드' — 그 한 장만 교체하므로 다중 선택을 막는다
   const replaceIndex = (location.state as { replaceIndex?: number } | null)?.replaceIndex;
@@ -86,6 +87,15 @@ const ClosetUploadGuidePage = () => {
       ctaIcon={<PhotoIcon />}
       ctaLabel="사진 업로드"
       onCta={() => fileRef.current?.click()}
+      overlay={
+        showDeniedAlert ? (
+          <PermissionDeniedAlert
+            title="갤러리 권한이 거부되어 불러올 수 없어요"
+            description="브라우저 설정에서 갤러리를 허용해주세요"
+            onConfirm={() => setShowDeniedAlert(false)}
+          />
+        ) : null
+      }
       extra={
         <input
           ref={fileRef}

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
-import useClosetStore, { makeMockOcrResults } from '@/store/closetStore';
+import useClosetStore, { emptyOcrResult, makeMockOcrResults } from '@/store/closetStore';
 
 /** 닫기 — 32×32, stroke #F6F7F8 */
 const CloseIcon = () => (
@@ -163,21 +163,30 @@ const ReadingDoneIcon = ({ filled }: { filled: boolean }) => (
 
 /**
  * 인식 중 오버레이 — 촬영 직후 카드(260×206) 노출.
- * ※ 카드 radius·딤 농도는 Figma 값 미수급이라 임시.
+ * 카드는 화면 정중앙이 아니라 위로 57 올라가 있다 (Figma).
+ * 높이 검산: 32(pt) + 60(스피너) + 16(gap) + 66(문구 그룹) + 32(pb) = 206.
  */
 const ReadingOverlay = () => (
-  <div className="absolute inset-0 z-20 flex items-center justify-center">
-    {/* 카드 260×206, 스피너는 상단에서 32 (Figma) */}
-    <div className="flex h-[206px] w-[260px] flex-col items-center rounded-2xl bg-white pt-[32px]">
+  <div className="absolute inset-0 z-20">
+    <div
+      className="absolute flex h-[206px] w-[260px] flex-col items-center gap-4 rounded-lg bg-[#F6F7F8] py-8"
+      style={{
+        left: 'calc(50% - 130px + 0.5px)',
+        top: 'calc(50% - 103px - 57px)',
+      }}
+    >
       <ReadingSpinner />
-      {/* Title/T3 — 20px SemiBold, LH 150%, 블록 260×30 */}
-      <p className="mt-[26px] w-full text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
-        영수증을 인식하고 있어요
-      </p>
-      {/* Body/B3 — 16px Medium, LH 160%, 블록 260×26 (카드 상단에서 148, 하단 여백 32) */}
-      <p className="w-full text-center text-[16px] font-medium leading-[1.6] tracking-[-0.02em] text-[#B2B8BD]">
-        예상 소요시간은 약 7~9초예요
-      </p>
+      {/* 문구 그룹 260×66 — 두 줄 간격 10 */}
+      <div className="flex w-full flex-col gap-2.5">
+        {/* Title/T3 — 20px SemiBold, LH 150%, 블록 260×30 */}
+        <p className="text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
+          영수증을 인식하고 있어요
+        </p>
+        {/* Body/B3 — 16px Medium, LH 160%, 블록 260×26 */}
+        <p className="text-center text-[16px] font-medium leading-[1.6] tracking-[-0.02em] text-[#959BA7]">
+          예상 소요시간은 약 7~9초예요
+        </p>
+      </div>
     </div>
   </div>
 );
@@ -212,7 +221,11 @@ const ReadingDoneOverlay = () => {
  */
 const ClosetCapturePage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const setOcrResults = useClosetStore((state) => state.setOcrResults);
+  const updateOcrResult = useClosetStore((state) => state.updateOcrResult);
+  // 실패분 '다시 시도'로 들어온 경우 — 그 한 장만 다시 찍는다
+  const replaceIndex = (location.state as { replaceIndex?: number } | null)?.replaceIndex;
   const videoRef = useRef<HTMLVideoElement>(null);
   const [reading, setReading] = useState(false);
   const [readDone, setReadDone] = useState(false);
@@ -230,14 +243,34 @@ const ClosetCapturePage = () => {
     return () => clearTimeout(timer);
   }, [reading]);
 
-  // 완료 표시를 잠깐 보여준 뒤 결과 확인 화면으로
+  // 완료 표시를 잠깐 보여준 뒤 결과 확인 화면으로.
+  // ocrResults는 구독하지 않고 필요할 때만 꺼낸다 — deps에 넣으면 여기서 스토어를 바꾸는 순간
+  // 효과가 정리(clearTimeout)되고 다시 실행돼, 이동 타이머가 사라진다
   useEffect(() => {
     if (!readDone) return;
-    // 찍은 장수만큼 영수증을 만들고, 목록에서 장별로 확인하게 한다 (업로드 플로우와 같은 길)
-    setOcrResults(makeMockOcrResults(Math.max(captured, 1)));
-    const timer = setTimeout(() => navigate('/closet/register/receipt-confirm'), DONE_HOLD_MS);
+    // 실패분 한 장만 다시 찍은 경우 — 그 장만 갱신하고 나머지는 건드리지 않는다
+    if (typeof replaceIndex === 'number') {
+      const before = useClosetStore.getState().ocrResults[replaceIndex];
+      // 목업은 계속 실패로 두고 시도 횟수만 올린다 (반복 실패 안내를 확인할 수 있게)
+      updateOcrResult(replaceIndex, {
+        ...emptyOcrResult,
+        ...before,
+        failed: true,
+        retryCount: (before?.retryCount ?? 0) + 1,
+      });
+      const timer = setTimeout(() => navigate('/closet/register/receipt-failed'), DONE_HOLD_MS);
+      return () => clearTimeout(timer);
+    }
+    // 찍은 장수만큼 영수증을 만든다 (업로드 플로우와 같은 길)
+    const results = makeMockOcrResults(Math.max(captured, 1));
+    setOcrResults(results);
+    // 실패분이 있으면 먼저 그것만 모아 보여주고, 없으면 바로 상품 이미지 등록으로
+    const next = results.some((result) => result.failed)
+      ? '/closet/register/receipt-failed'
+      : '/closet/register/product-images';
+    const timer = setTimeout(() => navigate(next), DONE_HOLD_MS);
     return () => clearTimeout(timer);
-  }, [readDone, captured, navigate, setOcrResults]);
+  }, [readDone, captured, replaceIndex, navigate, setOcrResults, updateOcrResult]);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -318,8 +351,12 @@ const ClosetCapturePage = () => {
           className="absolute inset-0 h-full w-full object-cover"
         />
 
-        {/* 프리뷰 위 딤 — 촬영 0.4 / 추가 여부 묻는 단계 0.8 (Figma) */}
-        <div className={`pointer-events-none absolute inset-0 ${asking ? 'bg-black/80' : 'bg-black/40'}`} />
+        {/* 프리뷰 위 딤 — 촬영 0.4 / 인식 중 0.6 / 추가 여부 묻는 단계 0.8 (Figma) */}
+        <div
+          className={`pointer-events-none absolute inset-0 ${
+            asking ? 'bg-black/80' : reading ? 'bg-black/60' : 'bg-black/40'
+          }`}
+        />
 
         {/* 상단 컨트롤 — 좌우 24, 상태바 아래 15 (Figma 812 기준) */}
         <div className="absolute inset-x-0 top-[calc(14px+env(safe-area-inset-top,0px))] flex items-center justify-between px-6">
@@ -332,8 +369,9 @@ const ClosetCapturePage = () => {
           </button>
         </div>
 
-        {/* 스캔 프레임 — 브래킷 110×110이 화면 정중앙 (Figma: 상하좌우 351/132). 인식 완료 후에는 숨긴다 */}
-        {!readDone && !asking && (
+        {/* 스캔 프레임 — 브래킷 110×110이 화면 정중앙 (Figma: 상하좌우 351/132).
+            인식 중·완료·추가 여부 단계에서는 숨긴다 */}
+        {!reading && !readDone && !asking && (
           <div className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-center">
             <div className="relative flex h-[160px] w-[160px] items-center justify-center">
               <ScanFrame />
