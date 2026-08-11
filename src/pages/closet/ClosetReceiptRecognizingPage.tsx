@@ -92,11 +92,18 @@ const ClosetReceiptRecognizingPage = () => {
           failed: true,
           retryCount: (before?.retryCount ?? 0) + 1,
         });
-      } else {
-        // 결과 목록이 업로드한 장수와 같아야 다음 화면에서 장별로 짚어볼 수 있다
-        setOcrResults(makeMockOcrResults(total));
+        navigate('/closet/register/receipt-failed');
+        return;
       }
-      navigate('/closet/register/receipt-confirm');
+      // 결과 목록이 업로드한 장수와 같아야 다음 화면에서 장별로 짚어볼 수 있다
+      const next = makeMockOcrResults(total);
+      setOcrResults(next);
+      // 실패분이 있으면 먼저 그것만 모아 보여주고, 없으면 바로 전체 목록으로
+      navigate(
+        next.some((result) => result.failed)
+          ? '/closet/register/receipt-failed'
+          : '/closet/register/product-images',
+      );
       return;
     }
     const timer = setTimeout(() => setDoneCount((count) => count + 1), STEP_MS);
