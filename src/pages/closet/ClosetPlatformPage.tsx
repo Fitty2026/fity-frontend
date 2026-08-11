@@ -139,6 +139,9 @@ const SlotBox = ({
 const ClosetPlatformPage = () => {
   const navigate = useNavigate();
   const setSelectedPlatforms = useClosetStore((state) => state.setSelectedPlatforms);
+  // 인식 실패분을 다시 시도할 때 앨범으로 돌려보내야 한다
+  const setReceiptMethod = useClosetStore((state) => state.setReceiptMethod);
+  const setRegisterEntry = useClosetStore((state) => state.setRegisterEntry);
   const [rotation, setRotation] = useState(0);
   // 선택된 쇼핑몰 하나. 중앙(3시)에 온 쇼핑몰 클릭 시 토글 (단일 선택)
   const [selectedName, setSelectedName] = useState<string | null>(null);
@@ -316,7 +319,10 @@ const ClosetPlatformPage = () => {
               nextActive
                 ? () => {
                     setSelectedPlatforms(selectedName ? [selectedName] : []);
-                    navigate('/closet/register/permission');
+                    // 구매내역은 방식 선택 없이 앨범 업로드로 바로 간다
+                    setReceiptMethod('album');
+                    setRegisterEntry('purchase');
+                    navigate('/closet/register/purchase-guide');
                   }
                 : undefined
             }

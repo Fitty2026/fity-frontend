@@ -13,9 +13,11 @@ interface ClosetSearchFieldProps {
 
 /**
  * 옷장 공통 검색바 — 327×36, radius 32, border #959BA7. 좌측 돋보기 + 입력.
+ * 배경은 채우지 않는다(시안에 fill 없음) — 부모 색을 그대로 비춰서
+ * 흰 화면에서도, 바텀시트(#F6F7F8) 위에서도 겉돌지 않는다.
  */
 const ClosetSearchField = ({ value, onChange, placeholder = '검색어를 입력해주세요' }: ClosetSearchFieldProps) => (
-  <div className="flex h-9 items-center gap-2.5 rounded-[32px] border border-[#959BA7] bg-white py-2 pl-3 pr-3">
+  <div className="flex h-9 items-center gap-2.5 rounded-[32px] border border-[#959BA7] py-2 pl-3 pr-3">
     <SearchIcon />
     <input
       type="text"

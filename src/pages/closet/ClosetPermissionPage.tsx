@@ -1,6 +1,8 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
+import { pathAfterPermission, type RegisterEntry } from '@/features/closet/registerFlow';
+import useOnboardingStore from '@/store/onboardingStore';
 
 /**
  * 영수증 — 48×48, stroke 3 #1F2124 (Figma: majesticons:receipt-text-line).
@@ -81,11 +83,22 @@ const PERMISSIONS = [
  */
 const ClosetPermissionPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // 구매내역으로 들어왔으면 쇼핑몰을 먼저 고르고, 영수증이면 촬영·앨범 방식을 고른다
+  const entry = (location.state as { entry?: RegisterEntry } | null)?.entry;
+  // 이 안내는 최초 1회만 — 다음을 누르면 봤다고 표시하고 이후로는 건너뛴다
+  const markClosetPermissionSeen = useOnboardingStore((state) => state.markClosetPermissionSeen);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
       <div className="flex flex-col flex-1 min-h-0 bg-white">
-        <OnboardingTopBar progress={300 / 375} showSkip onSkip={() => navigate('/closet')} />
+        <OnboardingTopBar
+          progress={300 / 375}
+          showBack
+          onBack={() => navigate(-1)}
+          showSkip
+          onSkip={() => navigate('/closet')}
+        />
 
         <div className="flex-1 overflow-y-auto">
           {/* 영수증 아이콘 48×48 — 진행 바 아래 80 (Figma top 187) */}
@@ -129,7 +142,10 @@ const ClosetPermissionPage = () => {
         <div className="w-full px-6 pt-3 pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
           <button
             type="button"
-            onClick={() => navigate('/closet/register/receipt-method')}
+            onClick={() => {
+              markClosetPermissionSeen();
+              navigate(pathAfterPermission(entry), { replace: true });
+            }}
             className="h-[58px] w-full cursor-pointer rounded-[32px] bg-[#1F2124] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
           >
             다음
