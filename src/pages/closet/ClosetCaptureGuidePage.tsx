@@ -36,7 +36,7 @@ const ClosetCaptureGuidePage = () => {
 
   return (
     <ReceiptGuideScreen
-      titleSecondLine="다음과 같이 영수증을 촬영해주세요"
+      titleSecondLine="다음과 같이 촬영해주세요"
       imageAlt="영수증 촬영 예시"
       lastNotice="밝은 곳에서 영수증을 촬영해주세요"
       ctaIcon={<CameraIcon />}

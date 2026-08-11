@@ -203,6 +203,11 @@ interface ClosetState {
    * 카메라로 찍어 온 사람에게 앨범을 열어주면 흐름이 끊긴다.
    */
   receiptMethod: 'camera' | 'album' | '';
+  /**
+   * 어느 갈래로 등록을 시작했는지 — 실물 영수증인지 구매내역(스마트 영수증)인지.
+   * 인식 실패분을 다시 시도할 때 안내가 다른 화면으로 돌려보내야 해서 기억한다.
+   */
+  registerEntry: 'receipt' | 'purchase' | '';
 
   // 액션 (API 연동 시 내부 구현만 서버 요청으로 교체)
   setItems: (items: ClothingItem[]) => void;
@@ -217,6 +222,7 @@ interface ClosetState {
   addOcrResult: (result: OcrResult) => void;
   setReceiptImages: (images: string[]) => void;
   setReceiptMethod: (method: 'camera' | 'album') => void;
+  setRegisterEntry: (entry: 'receipt' | 'purchase') => void;
   /** 등록 플로우를 새로 시작 — 지난 회차에 쌓인 영수증·선택값을 비운다 */
   startOcrFlow: () => void;
   reset: () => void;
@@ -229,6 +235,7 @@ const useClosetStore = create<ClosetState>((set) => ({
   ocrResults: mockOcrResults,
   receiptImages: [],
   receiptMethod: '',
+  registerEntry: '',
 
   setItems: (items) => set({ items }),
   addItem: (item) => set((state) => ({ items: [...state.items, item] })),
@@ -246,8 +253,15 @@ const useClosetStore = create<ClosetState>((set) => ({
   addOcrResult: (result) => set((state) => ({ ocrResults: [...state.ocrResults, result] })),
   setReceiptImages: (images) => set({ receiptImages: images }),
   setReceiptMethod: (method) => set({ receiptMethod: method }),
+  setRegisterEntry: (entry) => set({ registerEntry: entry }),
   startOcrFlow: () =>
-    set({ ocrResults: [], receiptImages: [], selectedPlatforms: [], receiptMethod: '' }),
+    set({
+      ocrResults: [],
+      receiptImages: [],
+      selectedPlatforms: [],
+      receiptMethod: '',
+      registerEntry: '',
+    }),
   reset: () =>
     set({
       items: mockClosetItems,
@@ -255,6 +269,7 @@ const useClosetStore = create<ClosetState>((set) => ({
       ocrResults: mockOcrResults,
       receiptImages: [],
       receiptMethod: '',
+      registerEntry: '',
     }),
 }));
 

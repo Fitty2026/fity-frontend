@@ -60,6 +60,7 @@ const ClosetReceiptMethodPage = () => {
   const navigate = useNavigate();
   // 고른 방식을 기억해 둔다 — 인식 실패분을 다시 시도할 때 같은 길로 돌려보내야 한다
   const setReceiptMethod = useClosetStore((state) => state.setReceiptMethod);
+  const setRegisterEntry = useClosetStore((state) => state.setRegisterEntry);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
@@ -82,6 +83,7 @@ const ClosetReceiptMethodPage = () => {
                 type="button"
                 onClick={() => {
                   setReceiptMethod(method.key);
+                  setRegisterEntry('receipt');
                   navigate(method.to);
                 }}
                 className="flex h-20 w-full cursor-pointer items-center gap-7 rounded-2xl bg-white/20 p-6 text-left shadow-[0_8px_16px_0_rgba(0,0,0,0.08)] backdrop-blur-md"

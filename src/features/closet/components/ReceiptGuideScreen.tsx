@@ -27,10 +27,16 @@ const COMMON_NOTICES = ['영수증 전체가 보이도록 해주세요', '영수
 interface ReceiptGuideScreenProps {
   /** 타이틀 두 번째 줄 (첫 줄은 '결제 정보가 잘 보이도록' 고정) */
   titleSecondLine: string;
+  /** 예시 이미지 — 없으면 영수증 예시를 쓴다 */
+  image?: string;
   /** 예시 이미지 alt */
   imageAlt: string;
-  /** 주의사항 마지막 줄 (촬영/업로드 문구가 다름) */
-  lastNotice: string;
+  /** 결제 정보 강조 점선 — 영수증 예시에 맞춰 잡은 위치라 다른 이미지면 끈다 */
+  showHighlight?: boolean;
+  /** 주의사항 마지막 줄 (촬영/업로드 문구가 다름). notices를 주면 무시된다 */
+  lastNotice?: string;
+  /** 주의사항 전체를 갈아끼울 때 (공통 2줄과 결이 다른 화면) */
+  notices?: string[];
   /** 예시 이미지 아래 보조 안내 (없으면 미노출) */
   hint?: ReactNode;
   /** CTA 좌측 아이콘 */
@@ -50,8 +56,11 @@ interface ReceiptGuideScreenProps {
  */
 const ReceiptGuideScreen = ({
   titleSecondLine,
+  image = receiptGuide,
   imageAlt,
+  showHighlight = true,
   lastNotice,
+  notices,
   hint,
   ctaIcon,
   ctaLabel,
@@ -78,13 +87,15 @@ const ReceiptGuideScreen = ({
         {/* 예시 이미지 — 188×250, radius 4, 타이틀 아래 40 (Figma) */}
         <div className="mt-10 flex justify-center">
           <div className="relative h-[250px] w-[188px]">
-            <img src={receiptGuide} alt={imageAlt} className="h-full w-full rounded-[4px] object-cover" />
+            <img src={image} alt={imageAlt} className="h-full w-full rounded-[4px] object-cover" />
             {/* 결제 정보 강조 — 1px dashed #9D98F0. 위치·크기는 눈으로 맞춘 값 (시안 91×37) */}
-            <span
-              aria-hidden
-              className="absolute h-[27px] w-[76px] rounded-[4px] border border-dashed border-[#9D98F0]"
-              style={{ left: 32, top: 61 }}
-            />
+            {showHighlight && (
+              <span
+                aria-hidden
+                className="absolute h-[27px] w-[76px] rounded-[4px] border border-dashed border-[#9D98F0]"
+                style={{ left: 32, top: 61 }}
+              />
+            )}
           </div>
         </div>
 
@@ -100,7 +111,7 @@ const ReceiptGuideScreen = ({
             </span>
             {/* Body/B6 — 14px SemiBold, LH 160%, LS -2% */}
             <ul className="flex flex-col gap-px text-[14px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#34363C]">
-              {[...COMMON_NOTICES, lastNotice].map((notice) => (
+              {(notices ?? [...COMMON_NOTICES, lastNotice ?? '']).map((notice) => (
                 <li key={notice}>{notice}</li>
               ))}
             </ul>

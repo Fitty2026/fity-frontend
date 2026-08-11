@@ -304,7 +304,12 @@ const ClosetHomePage = () => {
               </button>
               <button
                 type="button"
-                onClick={() => navigate('/closet/register/platform')}
+                // 여기로 바로 들어와도 권한 안내는 최초 1회 거쳐야 한다
+                onClick={() =>
+                  navigate(registerStartPath('purchase', permissionSeen), {
+                    state: { entry: 'purchase' },
+                  })
+                }
                 className="flex h-20 w-full cursor-pointer items-center gap-10 rounded-2xl bg-white/20 p-6 text-left shadow-[0_8px_16px_0_rgba(0,0,0,0.08)]"
               >
                 <BagIcon />

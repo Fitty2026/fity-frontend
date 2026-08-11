@@ -178,6 +178,11 @@ const router = createBrowserRouter([
     path: '/closet/register/upload-guide',
     element: <ProtectedRoute><ClosetUploadGuidePage /></ProtectedRoute>,
   },
+  // 구매내역(스마트 영수증) 업로드 — 같은 화면이 안내만 바꿔 뜬다
+  {
+    path: '/closet/register/purchase-guide',
+    element: <ProtectedRoute><ClosetUploadGuidePage /></ProtectedRoute>,
+  },
   {
     path: '/closet/register/receipt-check',
     element: <ProtectedRoute><ClosetReceiptCheckPage /></ProtectedRoute>,

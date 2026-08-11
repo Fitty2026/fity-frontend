@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
-import { OnboardingTopBar } from '@/features/closet/components';
+import { OnboardingTopBar, PhotoSourceSheet } from '@/features/closet/components';
 import useClosetStore from '@/store/closetStore';
 
 /** 직접 입력 — 20×20 연필, stroke 1.4 #1F2124 (viewBox 32 기준이라 두께를 2.24로 환산) */
@@ -87,8 +87,14 @@ const ClosetReceiptFailedPage = () => {
   // 카메라로 찍어 온 사람에게 앨범을 열어주면 흐름이 끊긴다 — 왔던 길로 되돌린다
   const receiptMethod = useClosetStore((state) => state.receiptMethod);
   const setReceiptMethod = useClosetStore((state) => state.setReceiptMethod);
+  // 구매내역은 촬영 갈래가 없어 항상 구매내역 업로드 안내로 돌아간다
+  const registerEntry = useClosetStore((state) => state.registerEntry);
   const retryPath =
-    receiptMethod === 'camera' ? '/closet/register/capture-guide' : '/closet/register/upload-guide';
+    registerEntry === 'purchase'
+      ? '/closet/register/purchase-guide'
+      : receiptMethod === 'camera'
+        ? '/closet/register/capture-guide'
+        : '/closet/register/upload-guide';
   const [uploadSheetOpen, setUploadSheetOpen] = useState(false);
 
   // 원본 인덱스를 함께 들고 다녀야 '영수증 N'과 다시 업로드 대상이 어긋나지 않는다
@@ -124,50 +130,44 @@ const ClosetReceiptFailedPage = () => {
             </div>
           </div>
 
-          {/* 이미지 업로드 시트 375×294 — radius 상단 56, padding 32/0/40, gap 40 */}
-          {uploadSheetOpen && (
-            <div
-              className="fixed inset-0 z-40 flex justify-center"
-              onClick={() => setUploadSheetOpen(false)}
-            >
-              <div className="relative w-full max-w-[430px]">
-                <div
-                  className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-10 rounded-t-[56px] bg-[#F6F7F8] pt-8 pb-10"
-                  style={{ boxShadow: '0 -1px 16px 0 rgba(0,0,0,0.16)' }}
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  {/* Title/T3 */}
-                  <p className="w-full text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
-                    이미지 업로드
-                  </p>
-
-                  {/* 줄 80 — padding 24/14/24/24, 아이콘↔라벨 40, 위 구분선 1 */}
-                  <div className="flex w-full flex-col">
-                    {[
-                      { key: 'camera' as const, icon: <CameraIcon />, label: '카메라로 촬영', to: '/closet/register/capture-guide' },
-                      { key: 'album' as const, icon: <PhotoIcon />, label: '앨범에서 선택', to: '/closet/register/upload-guide' },
-                    ].map((option) => (
-                      <button
-                        key={option.key}
-                        type="button"
-                        onClick={() => {
-                          setReceiptMethod(option.key);
-                          navigate(option.to);
-                        }}
-                        className="flex h-20 w-full cursor-pointer items-center gap-10 border-t border-[#E6E8EA] py-6 pl-6 pr-[14px] text-left"
-                      >
-                        <span className="shrink-0">{option.icon}</span>
-                        {/* Body/B1 */}
-                        <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">
-                          {option.label}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* 이미지 업로드 시트 375×294 — radius 상단 56, padding 32/0/40, gap 40.
+              구매내역은 촬영 갈래가 없어 앨범 한 줄만 둔다 */}
+          <PhotoSourceSheet
+            open={uploadSheetOpen}
+            onClose={() => setUploadSheetOpen(false)}
+            title="이미지 업로드"
+            options={
+              registerEntry === 'purchase'
+                ? [
+                    {
+                      key: 'album',
+                      icon: <PhotoIcon />,
+                      label: '앨범에서 선택',
+                      onSelect: () => navigate('/closet/register/purchase-guide'),
+                    },
+                  ]
+                : [
+                    {
+                      key: 'camera',
+                      icon: <CameraIcon />,
+                      label: '카메라로 촬영',
+                      onSelect: () => {
+                        setReceiptMethod('camera');
+                        navigate('/closet/register/capture-guide');
+                      },
+                    },
+                    {
+                      key: 'album',
+                      icon: <PhotoIcon />,
+                      label: '앨범에서 선택',
+                      onSelect: () => {
+                        setReceiptMethod('album');
+                        navigate('/closet/register/upload-guide');
+                      },
+                    },
+                  ]
+            }
+          />
         </div>
       </PageLayout>
     );

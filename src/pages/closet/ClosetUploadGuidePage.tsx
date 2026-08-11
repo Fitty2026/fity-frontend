@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PermissionDeniedAlert, ReceiptGuideScreen } from '@/features/closet/components';
 import useClosetStore from '@/store/closetStore';
+import uploadGuide from '@/assets/images/closet/upload-guide.png';
 
 /** 사진 — 24×24, stroke white (사진 업로드 버튼 좌측). 실 에셋 미수급 */
 const PhotoIcon = () => (
@@ -35,9 +36,11 @@ const InfoIcon = () => (
 const MAX_FILES = 5;
 
 /**
- * OCR 업로드 가이드 — 어떤 사진을 올려야 하는지 안내하고 앨범을 연다.
+ * 업로드 가이드 — 어떤 사진을 올려야 하는지 안내하고 앨범을 연다.
+ * 실물 영수증(/upload-guide)과 구매내역 캡처(/purchase-guide)가 올릴 대상만 다르고
+ * 나머지 동작은 같아서 한 컴포넌트가 두 주소를 맡는다.
+ * 안내를 주소로 가르는 이유 — 스토어 값으로 가르면 새로고침 때 초기화돼 엉뚱한 안내가 뜬다.
  * 화면 구조는 촬영 가이드와 공유한다 (ReceiptGuideScreen).
- * ※ 고른 파일을 어떻게 다루는지(미리보기·인식 요청)는 시안 미수급.
  */
 const ClosetUploadGuidePage = () => {
   const navigate = useNavigate();
@@ -46,6 +49,9 @@ const ClosetUploadGuidePage = () => {
   const setReceiptImages = useClosetStore((state) => state.setReceiptImages);
   const fileRef = useRef<HTMLInputElement>(null);
   const [showDeniedAlert, setShowDeniedAlert] = useState(false);
+
+  // 구매내역(스마트 영수증) 경로인지 — 안내 문구와 예시 이미지가 갈린다
+  const isPurchase = location.pathname.endsWith('/purchase-guide');
 
   // 인식 실패분 '다시 업로드' — 그 한 장만 교체하므로 다중 선택을 막는다
   const replaceIndex = (location.state as { replaceIndex?: number } | null)?.replaceIndex;
@@ -72,9 +78,21 @@ const ClosetUploadGuidePage = () => {
 
   return (
     <ReceiptGuideScreen
-      titleSecondLine="다음과 같이 영수증 사진을 업로드해주세요"
-      imageAlt="영수증 업로드 예시"
+      titleSecondLine="다음과 같이 업로드해주세요"
+      image={isPurchase ? uploadGuide : undefined}
+      imageAlt={isPurchase ? '주문상세 화면 업로드 예시' : '영수증 업로드 예시'}
+      // 강조 점선 좌표는 영수증 예시에 맞춘 값이라 구매내역 캡처에는 안 켠다 (시안 오면 위치 받아 켠다)
+      showHighlight={!isPurchase}
       lastNotice="밝은 곳에서 촬영한 영수증을 업로드해주세요"
+      notices={
+        isPurchase
+          ? [
+              '구매내역이 잘리거나 가려지지 않도록 해주세요',
+              '상품 정보가 모두 보이도록 해주세요',
+              '개인정보는 가려도 괜찮아요',
+            ]
+          : undefined
+      }
       hint={
         // 최대 장수 안내 — 이미지 아래 8, Caption 12px Regular LH165% (블록 138×20)
         <div className="mt-2 flex items-center justify-center gap-2 px-6">
