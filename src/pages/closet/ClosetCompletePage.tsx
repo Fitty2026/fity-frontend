@@ -1,13 +1,19 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
 import completeBgBlob from '@/assets/images/closet/complete-bg-blob.png';
+import useOnboardingStore from '@/store/onboardingStore';
 
 /**
  * 디지털 옷장 온보딩 완료 — "Fitty를 이용할 준비가 다 되었어요" + blob + 시작하기.
+ * 최초 1회만 거치는 화면이라, 옷 추가 완료 화면에서 누른 곳(state.next)으로 이어서 보낸다.
  */
 const ClosetCompletePage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const markClosetCompleteSeen = useOnboardingStore((state) => state.markClosetCompleteSeen);
+  // 어디서 왔는지 모르면(주소 직접 입력 등) 옷장 홈으로
+  const next = (location.state as { next?: string } | null)?.next ?? '/closet';
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
@@ -37,11 +43,14 @@ const ClosetCompletePage = () => {
           </p>
         </div>
 
-        {/* 시작하기 — 바닥 40, bg #1F2124 → 내 옷장 홈 */}
+        {/* 시작하기 — 바닥 40, bg #1F2124. 이 화면은 여기서 본 것으로 치고 다시 안 띄운다 */}
         <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
           <button
             type="button"
-            onClick={() => navigate('/closet')}
+            onClick={() => {
+              markClosetCompleteSeen();
+              navigate(next, { replace: true });
+            }}
             className="w-full h-[58px] rounded-[32px] bg-[#1F2124] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8] cursor-pointer"
           >
             시작하기

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
+import useOnboardingStore from '@/store/onboardingStore';
 import mockItem from '@/assets/images/closet/tag-mock.png';
 import mockLeft from '@/assets/images/closet/tag-mock2.png';
 import mockRight from '@/assets/images/closet/tag-mock3.png';
@@ -58,6 +59,12 @@ const CheckBadge = ({ filled }: { filled: boolean }) => (
  */
 const ClosetAddedPage = () => {
   const navigate = useNavigate();
+  // 옷장 준비 완료 화면은 최초 1회만 — 처음이면 거기를 거쳐서 원래 누른 곳으로 이어간다
+  const closetCompleteSeen = useOnboardingStore((state) => state.closetCompleteSeen);
+  const leaveTo = (path: string) =>
+    closetCompleteSeen
+      ? navigate(path)
+      : navigate('/closet/register/complete', { state: { next: path } });
   // 진입 1초 후 체크 배지 표시 → 다시 0.8초 후 반전(검정) 상태로 전환
   const [showCheck, setShowCheck] = useState(false);
   const [filledCheck, setFilledCheck] = useState(false);
@@ -146,7 +153,7 @@ const ClosetAddedPage = () => {
         <div className="mt-auto flex flex-col gap-2 px-6 pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
           <button
             type="button"
-            onClick={() => navigate('/closet')}
+            onClick={() => leaveTo('/closet')}
             className="w-full h-[58px] rounded-[32px] bg-[#F6F7F8] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124] cursor-pointer"
           >
             옷장 보러가기
@@ -154,7 +161,7 @@ const ClosetAddedPage = () => {
           {/* 코디 시작하기 — 체크 반전과 함께 검정으로 전환. 코디 생성 시작 화면(타 파트)으로 이동 */}
           <button
             type="button"
-            onClick={() => navigate('/styling')}
+            onClick={() => leaveTo('/styling')}
             className={`w-full h-[58px] rounded-[32px] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] cursor-pointer transition-colors duration-300 ${
               filledCheck ? 'bg-[#1F2124] text-[#F6F7F8]' : 'bg-[#F6F7F8] text-[#1F2124]'
             }`}
