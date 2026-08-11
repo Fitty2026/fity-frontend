@@ -46,12 +46,11 @@ const OnboardingTopBar = ({
           <button type="button" onClick={onBack} aria-label="뒤로" className="absolute left-6 cursor-pointer">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
               <path
-                d="M15.125 3.75L8.875 10L15.125 16.25"
-                stroke="#1F2124"
+                d="M15.75 19.5L8.25 12L15.75 4.5"
+                stroke="black"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                transform="translate(0 2)"
               />
             </svg>
           </button>

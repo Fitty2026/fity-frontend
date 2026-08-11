@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
@@ -64,9 +63,6 @@ const Chip = ({ label }: { label: string }) => (
 const ClosetProductImagesPage = () => {
   const navigate = useNavigate();
   const results = useClosetStore((state) => state.ocrResults);
-  const updateOcrResult = useClosetStore((state) => state.updateOcrResult);
-  // 카드마다 숨긴 input을 하나씩 두고, 누른 카드의 것만 연다
-  const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   // 인식 성공분만 상품 단위로 펼친다. 카드 순서가 곧 수정 화면의 ?product=N 순번이다
   const entries: ProductEntry[] = results.flatMap((result, receiptIndex) =>
@@ -84,21 +80,6 @@ const ClosetProductImagesPage = () => {
 
   const doneCount = entries.filter((entry) => entry.photo).length;
   const allDone = entries.length > 0 && doneCount === entries.length;
-
-  /** 고른 사진을 원본 결과에 되꽂는다 — products가 있으면 그 안에, 없으면 단일 상품 필드에 */
-  const setPhoto = (receiptIndex: number, productIndex: number, photo: string) => {
-    const result = results[receiptIndex];
-    if (result.products?.length) {
-      updateOcrResult(receiptIndex, {
-        ...result,
-        products: result.products.map((product, index) =>
-          index === productIndex ? { ...product, photo } : product,
-        ),
-      });
-      return;
-    }
-    updateOcrResult(receiptIndex, { ...result, photo });
-  };
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
@@ -154,31 +135,21 @@ const ClosetProductImagesPage = () => {
                         </button>
                       </div>
                     ) : (
-                      // 미등록 — 점선 자리를 누르면 앨범, 우상단 아이콘은 등록됨과 같이 수정 화면
-                      <div className="relative h-[102px] w-full">
-                        <button
-                          type="button"
-                          onClick={() => fileRefs.current[key]?.click()}
-                          // dash 5.29 = 1.76 × 3 이라 브라우저 기본 dashed 패턴과 같다
-                          className="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-[14.11px] border-[1.76px] border-dashed border-[#9D98F0]"
-                        >
-                          <AddPhotoIcon />
-                          {/* Caption/C6 */}
-                          <span className="text-[10px] font-semibold leading-[1.65] tracking-[-0.02em] text-[#34363C]">
-                            옷 이미지 추가
-                          </span>
-                        </button>
-                        <button
-                          type="button"
-                          aria-label={`${entry.name} 수정`}
-                          onClick={() =>
-                            navigate(`/closet/register/product-images/edit?product=${order + 1}`)
-                          }
-                          className="absolute right-2 top-2 flex h-4 w-4 cursor-pointer items-center justify-center rounded-full bg-black/50"
-                        >
-                          <EditPhotoIcon />
-                        </button>
-                      </div>
+                      // 미등록 — 박스를 누르면 수정 화면에서 사진을 고른다 (별도 수정 아이콘 없음)
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate(`/closet/register/product-images/edit?product=${order + 1}`)
+                        }
+                        // dash 5.29 = 1.76 × 3 이라 브라우저 기본 dashed 패턴과 같다
+                        className="flex h-[102px] w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-[14.11px] border-[1.76px] border-dashed border-[#9D98F0]"
+                      >
+                        <AddPhotoIcon />
+                        {/* Caption/C6 */}
+                        <span className="text-[10px] font-semibold leading-[1.65] tracking-[-0.02em] text-[#34363C]">
+                          옷 이미지 추가
+                        </span>
+                      </button>
                     )}
 
                     {/* 상품 정보 140×73, gap 4 */}
@@ -208,19 +179,6 @@ const ClosetProductImagesPage = () => {
                     </div>
                   </div>
 
-                  <input
-                    ref={(element) => {
-                      fileRefs.current[key] = element;
-                    }}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
-                      if (!file) return;
-                      setPhoto(entry.receiptIndex, entry.productIndex, URL.createObjectURL(file));
-                    }}
-                  />
                 </div>
               );
             })}
