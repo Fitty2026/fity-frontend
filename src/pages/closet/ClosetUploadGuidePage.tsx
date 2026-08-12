@@ -46,7 +46,8 @@ const ClosetUploadGuidePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const images = useClosetStore((state) => state.receiptImages);
-  const setReceiptImages = useClosetStore((state) => state.setReceiptImages);
+  const files = useClosetStore((state) => state.receiptFiles);
+  const setReceipts = useClosetStore((state) => state.setReceipts);
   const fileRef = useRef<HTMLInputElement>(null);
   const [showDeniedAlert, setShowDeniedAlert] = useState(false);
 
@@ -58,21 +59,23 @@ const ClosetUploadGuidePage = () => {
   const single = typeof replaceIndex === 'number';
 
   const handlePick = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files ?? []).slice(0, single ? 1 : MAX_FILES);
-    if (files.length === 0) return;
-    // 미리보기용 URL만 넘긴다. 실제 업로드는 OCR API 연동 시
-    const urls = files.map((file) => URL.createObjectURL(file));
+    const picked = Array.from(event.target.files ?? []).slice(0, single ? 1 : MAX_FILES);
+    if (picked.length === 0) return;
+    // 미리보기는 objectURL, 서버로는 파일 원본을 보낸다 — 순서를 맞춰 함께 보관한다
+    const urls = picked.map((file) => URL.createObjectURL(file));
 
     if (single) {
-      const next = [...images];
-      next[replaceIndex] = urls[0];
-      setReceiptImages(next);
+      const nextUrls = [...images];
+      const nextFiles = [...files];
+      nextUrls[replaceIndex] = urls[0];
+      nextFiles[replaceIndex] = picked[0];
+      setReceipts(nextUrls, nextFiles);
       // 어느 장을 다시 올린 것인지 인식 화면까지 넘긴다 — 그 장만 갱신해야 나머지가 살아남는다
-      navigate('/closet/register/receipt-recognizing', { state: { replaceIndex } });
+      navigate('/closet/register/receipt-recognizing', { replace: true, state: { replaceIndex } });
       return;
     }
 
-    setReceiptImages(urls);
+    setReceipts(urls, picked);
     navigate('/closet/register/receipt-check');
   };
 

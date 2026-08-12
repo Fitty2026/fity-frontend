@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
-import useClosetStore, { emptyOcrResult, makeMockOcrResults } from '@/store/closetStore';
+import useClosetStore, { emptyOcrResult } from '@/store/closetStore';
+import useReceiptOcr from '@/features/closet/hooks/useReceiptOcr';
+import { ocrErrorMessage } from '@/features/closet/api/ocrApi';
 
 /** 닫기 — 32×32, stroke #F6F7F8 */
 const CloseIcon = () => (
@@ -128,9 +130,6 @@ const InfoIcon = () => (
   </svg>
 );
 
-/** 인식 완료까지 걸리는 시간 — API 연동 전 임시값 (실제 성공 최대 10초) */
-const TEMP_READING_MS = 2000;
-
 /** 완료 표시를 보여주는 시간 — 지나면 결과 확인 화면으로 이동 */
 const DONE_HOLD_MS = 2000;
 
@@ -227,6 +226,12 @@ const ClosetCapturePage = () => {
   // 실패분 '다시 시도'로 들어온 경우 — 그 한 장만 다시 찍는다
   const replaceIndex = (location.state as { replaceIndex?: number } | null)?.replaceIndex;
   const videoRef = useRef<HTMLVideoElement>(null);
+  // 인식이 끝난 뒤 갈 곳 — 완료 표시를 잠깐 보여주고 이동한다
+  const nextPath = useRef('/closet/register/product-images');
+  const platform = useClosetStore((state) => state.selectedPlatforms[0] ?? '');
+  // 실물 영수증인지 구매내역 캡처인지 — 서버가 파싱 방식을 가른다
+  const registerEntry = useClosetStore((state) => state.registerEntry);
+  const { recognizeAsync } = useReceiptOcr();
   const [reading, setReading] = useState(false);
   const [readDone, setReadDone] = useState(false);
   // 찍어둔 프레임 — 인식 요청 전까지 메모리에만 들고 있는다 (서버 전송 후 폐기)
@@ -236,41 +241,15 @@ const ClosetCapturePage = () => {
   // 인식 완료 후 '영수증을 더 추가하시겠어요?' 단계
   const [asking, setAsking] = useState(false);
 
-  // OCR 연동 전 임시 — 실제로는 작업 상태 폴링으로 완료를 판단한다(성공 최대 10초).
-  useEffect(() => {
-    if (!reading) return;
-    const timer = setTimeout(() => setReadDone(true), TEMP_READING_MS);
-    return () => clearTimeout(timer);
-  }, [reading]);
-
   // 완료 표시를 잠깐 보여준 뒤 결과 확인 화면으로.
   // ocrResults는 구독하지 않고 필요할 때만 꺼낸다 — deps에 넣으면 여기서 스토어를 바꾸는 순간
   // 효과가 정리(clearTimeout)되고 다시 실행돼, 이동 타이머가 사라진다
   useEffect(() => {
     if (!readDone) return;
-    // 실패분 한 장만 다시 찍은 경우 — 그 장만 갱신하고 나머지는 건드리지 않는다
-    if (typeof replaceIndex === 'number') {
-      const before = useClosetStore.getState().ocrResults[replaceIndex];
-      // 목업은 계속 실패로 두고 시도 횟수만 올린다 (반복 실패 안내를 확인할 수 있게)
-      updateOcrResult(replaceIndex, {
-        ...emptyOcrResult,
-        ...before,
-        failed: true,
-        retryCount: (before?.retryCount ?? 0) + 1,
-      });
-      const timer = setTimeout(() => navigate('/closet/register/receipt-failed'), DONE_HOLD_MS);
-      return () => clearTimeout(timer);
-    }
-    // 찍은 장수만큼 영수증을 만든다 (업로드 플로우와 같은 길)
-    const results = makeMockOcrResults(Math.max(captured, 1));
-    setOcrResults(results);
-    // 실패분이 있으면 먼저 그것만 모아 보여주고, 없으면 바로 상품 이미지 등록으로
-    const next = results.some((result) => result.failed)
-      ? '/closet/register/receipt-failed'
-      : '/closet/register/product-images';
-    const timer = setTimeout(() => navigate(next), DONE_HOLD_MS);
+    // 인식이 끝나면 촬영 화면으로 되돌아가지 못하게 한다
+    const timer = setTimeout(() => navigate(nextPath.current, { replace: true }), DONE_HOLD_MS);
     return () => clearTimeout(timer);
-  }, [readDone, captured, replaceIndex, navigate, setOcrResults, updateOcrResult]);
+  }, [readDone, navigate]);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -333,10 +312,49 @@ const ClosetCapturePage = () => {
   };
 
   /** 다음 — 모아둔 프레임을 한 번에 인식 요청한다 */
-  const handleRecognize = () => {
-    // TODO: shots.current를 FormData(receiptImages)로 실어 OCR 요청 → 작업 상태 폴링
+  const handleRecognize = async () => {
     setAsking(false);
     setReading(true);
+
+    // 찍어둔 Blob을 파일로 바꿔 보낸다 (서버는 multipart 파일만 받는다)
+    const files = shots.current.map(
+      (blob, index) => new File([blob], `receipt-${index + 1}.jpg`, { type: 'image/jpeg' }),
+    );
+
+    try {
+      const recognized = await recognizeAsync({ importType: registerEntry === 'purchase' ? 'PURCHASE_LOG' : 'RECEIPT', platform, files });
+
+      if (typeof replaceIndex === 'number') {
+        // 실패분 한 장만 다시 찍은 경우 — 그 자리만 갱신한다
+        const before = useClosetStore.getState().ocrResults[replaceIndex];
+        updateOcrResult(
+          replaceIndex,
+          recognized[0] ?? {
+            ...emptyOcrResult,
+            ...before,
+            failed: true,
+            retryCount: (before?.retryCount ?? 0) + 1,
+          },
+        );
+        nextPath.current = '/closet/register/receipt-failed';
+      } else if (recognized.length === 0) {
+        setOcrResults(files.map(() => ({ ...emptyOcrResult, failed: true })));
+        nextPath.current = '/closet/register/receipt-failed';
+      } else {
+        setOcrResults(recognized);
+        nextPath.current = recognized.some((result) => result.failed)
+          ? '/closet/register/receipt-failed'
+          : '/closet/register/product-images';
+      }
+    } catch (error) {
+      setOcrResults(
+        files.map(() => ({ ...emptyOcrResult, failed: true, failReason: ocrErrorMessage(error) })),
+      );
+      nextPath.current = '/closet/register/receipt-failed';
+    }
+
+    // 응답이 와야 완료 표시를 띄운다 (그 전까지는 인식 중 오버레이)
+    setReadDone(true);
   };
 
   return (

@@ -19,6 +19,8 @@ export interface OcrProduct {
   photo?: string;
   /** 인식·분류로 붙은 태그 — 이미지 등록 화면의 칩으로 보여준다 */
   tags?: string[];
+  /** 메모 — OCR이 읽어오거나 사용자가 적는다 */
+  memo?: string;
   /**
    * 카테고리·세부 카테고리 — 등록 전 반드시 골라야 한다(수정·직접 입력 화면의 필수 항목).
    * 서버 응답에는 없는 필드라 화면에서 채워 넣는다. API에 생기면 그때 매핑한다.
@@ -52,6 +54,8 @@ export interface OcrResult {
   photo?: string;
   /** 단일 상품일 때의 태그 — products가 있으면 그쪽 값을 쓴다 */
   tags?: string[];
+  /** 단일 상품일 때의 메모 — products가 있으면 그쪽 값을 쓴다 */
+  memo?: string;
   /** 단일 상품일 때의 카테고리 — products가 있으면 그쪽 값을 쓴다 */
   category?: string;
   subCategory?: string;
@@ -83,6 +87,7 @@ export const receiptProducts = (result: OcrResult): OcrProduct[] =>
           price: result.price,
           photo: result.photo,
           tags: result.tags,
+          memo: result.memo,
           category: result.category,
           subCategory: result.subCategory,
         },
@@ -199,6 +204,11 @@ interface ClosetState {
   /** 업로드한 영수증 이미지 미리보기 URL (등록 플로우에서 화면 간 전달) */
   receiptImages: string[];
   /**
+   * 인식 요청에 실어 보낼 실제 파일 — 미리보기 URL로는 서버에 못 보낸다.
+   * receiptImages와 순서가 같아야 체크 화면에서 뺀 장이 정확히 제외된다.
+   */
+  receiptFiles: File[];
+  /**
    * 영수증을 가져온 방식 — 인식 실패분을 '다시 시도'할 때 같은 길로 돌려보내려고 기억한다.
    * 카메라로 찍어 온 사람에게 앨범을 열어주면 흐름이 끊긴다.
    */
@@ -220,7 +230,8 @@ interface ClosetState {
   updateOcrResult: (index: number, result: OcrResult) => void;
   /** 직접 입력으로 새 장을 추가 (붙는 위치 = 호출 전 ocrResults.length) */
   addOcrResult: (result: OcrResult) => void;
-  setReceiptImages: (images: string[]) => void;
+  /** 미리보기 URL과 파일을 함께 갱신 (순서를 맞춰 보관한다) */
+  setReceipts: (images: string[], files: File[]) => void;
   setReceiptMethod: (method: 'camera' | 'album') => void;
   setRegisterEntry: (entry: 'receipt' | 'purchase') => void;
   /** 등록 플로우를 새로 시작 — 지난 회차에 쌓인 영수증·선택값을 비운다 */
@@ -234,6 +245,7 @@ const useClosetStore = create<ClosetState>((set) => ({
   selectedPlatforms: [],
   ocrResults: mockOcrResults,
   receiptImages: [],
+  receiptFiles: [],
   receiptMethod: '',
   registerEntry: '',
 
@@ -251,13 +263,14 @@ const useClosetStore = create<ClosetState>((set) => ({
       ocrResults: state.ocrResults.map((item, i) => (i === index ? result : item)),
     })),
   addOcrResult: (result) => set((state) => ({ ocrResults: [...state.ocrResults, result] })),
-  setReceiptImages: (images) => set({ receiptImages: images }),
+  setReceipts: (images, files) => set({ receiptImages: images, receiptFiles: files }),
   setReceiptMethod: (method) => set({ receiptMethod: method }),
   setRegisterEntry: (entry) => set({ registerEntry: entry }),
   startOcrFlow: () =>
     set({
       ocrResults: [],
       receiptImages: [],
+      receiptFiles: [],
       selectedPlatforms: [],
       receiptMethod: '',
       registerEntry: '',
@@ -268,6 +281,7 @@ const useClosetStore = create<ClosetState>((set) => ({
       selectedPlatforms: [],
       ocrResults: mockOcrResults,
       receiptImages: [],
+      receiptFiles: [],
       receiptMethod: '',
       registerEntry: '',
     }),
