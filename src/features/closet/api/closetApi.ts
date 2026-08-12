@@ -170,10 +170,27 @@ export const getClosetItem = async (itemId: string): Promise<ClothingItem> => {
   return toClothingItem(data.result);
 };
 
-// ── CLOSET-05 아이템 정보·태그 수정 (PATCH /api/v1/closets/items/:itemId) ──
-// 요청 필드명 tag_values, 응답 필드명 tags (다름). category도 수정 가능하나
-// 현재 화면은 태그만 편집 → tag_values만 전송 (category 미확정 enum 역매핑 위험 회피).
-// 메모는 CLOSET-05에 없음 → 저장 안 됨. (참고사항)
+// ── CLOSET-05 아이템 정보 수정 (PATCH /api/v1/closets/items/:itemId) ──
+// 태그는 tag_values(요청)/tags(응답)로 이름이 다르다. brand·colorText·subCategory·memo는
+// 2026-08-13 BE 확장 완료(카일) — 노션 명세가 아직 옛 버전이라 필드명은 조회 응답과
+// 같다고 보고 보낸다(camel, 조회에서 확정된 표기). 빈 문자열·null을 보내면 서버가
+// null로 비운다 — 값을 유지하려면 필드를 아예 빼야 한다.
+
+/** FE 한글 라벨 → API 카테고리 enum. 모르는 라벨이면 undefined(전송 생략) */
+const toApiCategory = (label: string): ApiClosetCategory | undefined =>
+  Object.entries(CATEGORY_LABEL).find(([, value]) => value === label)?.[0] as
+    | ApiClosetCategory
+    | undefined;
+
+/** 수정할 값 — 화면이 편집하는 항목만. 안 바꾸는 필드는 undefined로 두면 전송에서 빠진다 */
+export interface UpdateClosetItemPatch {
+  /** FE 한글 라벨 (예: '아우터') */
+  category?: string;
+  tagValues?: string[];
+  brand?: string;
+  subCategory?: string;
+  memo?: string;
+}
 
 interface UpdateClosetItemRaw {
   item_id: number;
@@ -182,10 +199,17 @@ interface UpdateClosetItemRaw {
   updated_at: string;
 }
 
-export const updateClosetItemTags = async (itemId: string, tagValues: string[]) => {
+export const updateClosetItem = async (itemId: string, patch: UpdateClosetItemPatch) => {
   const { data } = await api.patch<ApiResponse<UpdateClosetItemRaw>>(
     `/api/v1/closets/items/${itemId}`,
-    { tag_values: tagValues },
+    {
+      // 라벨을 못 알아보면 category를 아예 안 보낸다 — 엉뚱한 값으로 분류를 덮지 않게
+      category: patch.category ? toApiCategory(patch.category) : undefined,
+      tag_values: patch.tagValues,
+      brand: patch.brand,
+      subCategory: patch.subCategory,
+      memo: patch.memo,
+    },
   );
   const r = data.result;
   return {
