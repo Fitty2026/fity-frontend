@@ -127,13 +127,82 @@ export const recognizeReceipts = async ({
   return mapExtractedItems(raw.extractedItems ?? []);
 };
 
+// ── PROFILE-07 의류 일괄 저장 (POST /api/v1/body-profiles/receipt-items) ──
+
+export const RECEIPT_ITEMS_PATH = '/api/v1/body-profiles/receipt-items';
+
+/** 한 번에 보낼 수 있는 상품 수 — 넘기면 OCR400_06 */
+export const MAX_RECEIPT_ITEMS = 5;
+
+/**
+ * 저장이 받는 카테고리 enum — 옷장 조회(CLOSET-03)와 달리 **BAG이 없다**.
+ * 목록 밖 값을 보내면 OCR400_09라, 가방은 ETC로 접어 보낸다.
+ * (BE에 BAG 추가 요청함. 추가되면 이 매핑을 지운다)
+ */
+const RECEIPT_CATEGORY: Record<string, string> = {
+  상의: 'TOP',
+  하의: 'BOTTOM',
+  아우터: 'OUTER',
+  신발: 'SHOES',
+  액세서리: 'ACCESSORY',
+  기타: 'ETC',
+  가방: 'ETC',
+};
+
+export const toReceiptCategory = (label: string): string => RECEIPT_CATEGORY[label] ?? 'ETC';
+
+/**
+ * 이미지 경로에서 imageId를 뽑는다.
+ *
+ * 저장은 imageUrl이 아니라 **imageId(정수)**를 받는데(OCR400_08),
+ * 업로드(IMAGE-01)도 연관 이미지 조회(PROFILE-06)도 `/api/v1/images/{id}/content`
+ * 형태의 경로만 돌려준다. 그래서 경로에서 되읽는다.
+ */
+export const imageIdFromUrl = (url: string): number | null => {
+  const match = /\/images\/(\d+)\/content/.exec(url);
+  return match ? Number(match[1]) : null;
+};
+
+/** 저장 요청 한 건 — 서버 saveBatchItems가 그대로 컬럼에 넣는다 */
+export interface ReceiptItemPayload {
+  /** 필수 — 없으면 OCR400_07 */
+  productName: string;
+  brand: string;
+  colorText: string;
+  /** 필수 — 없으면 OCR400_08 */
+  imageId: number;
+  /** RECEIPT_CATEGORY의 값. 목록 밖이면 OCR400_09 */
+  category: string;
+  subCategory?: string;
+  size?: string;
+  importType?: string;
+  tags?: string[];
+  memo?: string;
+}
+
+/** 저장 → 등록된 건수 */
+export const registerReceiptItems = async (items: ReceiptItemPayload[]): Promise<number> => {
+  const { data } = await api.post<ApiResponse<{ registeredCount?: number }>>(RECEIPT_ITEMS_PATH, {
+    items,
+  });
+  return data.result?.registeredCount ?? items.length;
+};
+
 /** 에러 코드별 안내. 모르는 코드면 서버 문구를 그대로 쓴다 */
 const OCR_ERROR_MESSAGE: Record<string, string> = {
+  // 인식 (PROFILE-05)
   OCR400_01: '영수증 이미지를 찾지 못했어요. 다시 올려주세요.',
   OCR400_02: '지원하지 않는 이미지 형식이에요. 다른 사진으로 시도해주세요.',
-  OCR400_03: '영수증은 한 번에 5장까지 올릴 수 있어요.',
+  OCR400_03: `영수증은 한 번에 ${MAX_RECEIPT_ITEMS}장까지 올릴 수 있어요.`,
   OCR400_04: '지원하지 않는 쇼핑몰이에요.',
   OCR500_01: '영수증 글자를 읽지 못했어요. 더 밝은 곳에서 다시 찍어주세요.',
+  // 저장 (PROFILE-07)
+  OCR400_05: '등록할 상품이 없어요.',
+  OCR400_06: `상품은 한 번에 ${MAX_RECEIPT_ITEMS}개까지 등록할 수 있어요.`,
+  OCR400_07: '브랜드·상품명·색상을 모두 채워주세요.',
+  OCR400_08: '모든 상품에 옷 이미지를 등록해주세요.',
+  OCR400_09: '카테고리를 다시 골라주세요.',
+  OCR500_02: '상품을 등록하지 못했어요. 잠시 후 다시 시도해주세요.',
 };
 
 export const ocrErrorMessage = (error: unknown): string => {

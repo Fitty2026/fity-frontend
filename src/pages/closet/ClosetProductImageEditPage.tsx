@@ -223,7 +223,7 @@ const ClosetProductImageEditPage = () => {
   const [pickedTags, setPickedTags] = useState<string[]>([]);
   // 태그 한 개를 눌러 선택하면 X가 붙는다 (삭제 전 단계)
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [memo, setMemo] = useState((draft?.memo as string) ?? '');
+  const [memo, setMemo] = useState((draft?.memo as string) ?? entry?.product.memo ?? '');
   const [category, setCategory] = useState(
     (draft?.category as string) ?? entry?.product.category ?? '',
   );
@@ -242,8 +242,13 @@ const ClosetProductImageEditPage = () => {
   // 순번이 어긋나면(주소 직접 입력 등) 목록으로 되돌린다
   if (!entry) return <Navigate to="/closet/register/product-images" replace />;
 
-  // 이미지·상품 이름·카테고리는 등록 전 반드시 채워야 한다
-  const canConfirm = Boolean(photo) && name.trim().length > 0 && category.length > 0;
+  /**
+   * 등록 전 반드시 채워야 하는 값.
+   * 브랜드·상품명·색상은 저장(PROFILE-07)의 필수값이고(없으면 OCR400_07),
+   * 이미지도 필수다(OCR400_08). 카테고리는 여기서 골라야 enum이 정해진다.
+   */
+  const canConfirm =
+    Boolean(photo) && name.trim().length > 0 && category.length > 0 && brand.length > 0 && colors.length > 0;
 
   /** 시트에서 고른 태그 + 직접 입력한 값을 한 번에 반영 */
   const handleConfirmTags = () => {
@@ -273,6 +278,7 @@ const ClosetProductImageEditPage = () => {
       brand,
       category,
       subCategory,
+      memo,
     };
     if (result.products?.length) {
       updateOcrResult(entry.receiptIndex, {

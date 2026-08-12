@@ -215,8 +215,13 @@ const ClosetManualInputPage = () => {
   const togglePickedTag = (tag: string) =>
     setPickedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
 
-  // 이미지·상품 이름·카테고리는 등록 전 반드시 채워야 한다
-  const canConfirm = Boolean(photo) && name.trim().length > 0 && category.length > 0;
+  /**
+   * 등록 전 반드시 채워야 하는 값.
+   * 브랜드·상품명·색상은 저장(PROFILE-07)의 필수값이고(없으면 OCR400_07),
+   * 이미지도 필수다(OCR400_08). 카테고리는 여기서 골라야 enum이 정해진다.
+   */
+  const canConfirm =
+    Boolean(photo) && name.trim().length > 0 && category.length > 0 && brand.length > 0 && colors.length > 0;
 
   /** 확인 — 실패분 자리를 덮어쓰거나 새 장으로 추가하고 이미지 등록 목록으로 */
   const handleConfirm = () => {
@@ -230,6 +235,7 @@ const ClosetManualInputPage = () => {
       color: colors[0] ?? { label: '', hex: '' },
       category,
       subCategory,
+      memo,
     };
     if (replacing) updateOcrResult(targetIndex, next);
     else addOcrResult(next);
