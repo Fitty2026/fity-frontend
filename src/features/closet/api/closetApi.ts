@@ -1,5 +1,6 @@
 import api from '@/lib/axios';
 import type { ApiResponse, ClothingCategory, ClothingItem } from '@/types';
+import { matchColorOption } from '../colors';
 
 // ── IMAGE-01 이미지 업로드 (POST /api/v1/images/upload) ──
 // multipart/form-data. 응답 imageUrl은 상대경로(예: /api/v1/images/12/content).
@@ -86,77 +87,87 @@ export const registerClosetItem = async (
   };
 };
 
-// ── CLOSET-03 옷장 목록 조회 (GET /api/v1/closets) ──
-// 미확정(백엔드 확인 대기, 참고사항 기재): 카테고리 쿼리 파라미터 / 페이지네이션 / category enum 전체.
-// → 현재는 전체를 한 번에 받아 클라이언트에서 필터·검색·정렬. 쿼리/페이지네이션은 답 오면 반영.
+// ── CLOSET-03 옷장 목록 조회 (GET /api/v1/closets/items) ──
+// 경로·응답은 2026-08-12 BE 회신 기준 — 문서의 /api/v1/closets는 404고,
+// result가 { category_count, closet_items[] }가 아니라 아이템 배열 그대로다.
+// 전체를 한 번에 받아 클라이언트에서 필터·검색·정렬한다 (페이지네이션 없음).
 
-/** API 카테고리(영문 enum) → FE 한글 라벨. TODO(BE3): enum 전체 확정 시 보강(액세서리 등) */
+/** API 카테고리(영문 enum) → FE 한글 라벨. 목록 밖 값은 '기타'로 접는다 */
 const CATEGORY_LABEL: Record<string, ClothingCategory> = {
   TOP: '상의',
   BOTTOM: '하의',
   OUTER: '아우터',
   SHOES: '신발',
-  BAG: '가방',
   ACCESSORY: '액세서리',
   ETC: '기타',
 };
 export const categoryLabel = (c: string): ClothingCategory => CATEGORY_LABEL[c] ?? '기타';
 
-interface ClosetListRaw {
-  category_count: Record<string, number>;
-  closet_items: {
-    item_id: number;
-    image_url: string;
-    category: string;
-    tags: string[];
-    created_at: string;
-  }[];
+interface ClosetItemRaw {
+  // ※ 필드 표기가 snake(item_id 등)와 camel(colorText 등)로 섞여 온다 — 서버 응답 그대로다
+  item_id: number;
+  /** 문서 예시엔 없지만 실응답에 온다(2026-08-13 실측). 아직 쓰는 화면은 없다 */
+  imageId?: number;
+  name?: string;
+  size?: string;
+  category: string;
+  import_type?: string;
+  brand?: string | null;
+  colorText?: string | null;
+  subCategory?: string | null;
+  memo?: string | null;
+  tags?: string[];
+  image_url: string;
+  created_at: string;
+  updated_at?: string;
 }
 
+/** 응답 한 건 → 화면이 쓰는 아이템. 목록과 상세가 같은 모양이라 같이 쓴다 */
+const toClothingItem = (it: ClosetItemRaw): ClothingItem => {
+  // 색상 원문("Black", "딥 인디고")을 팔레트 hex로 맞춘다 — 화면 칩은 hex만 안다
+  const color = matchColorOption(it.colorText ?? undefined);
+  return {
+    id: String(it.item_id),
+    name: it.name || undefined,
+    imageUrl: imageSrc(it.image_url), // 절대(S3)는 그대로, 상대(/api/..)는 baseURL 조합 → 렌더용 URL
+    category: categoryLabel(it.category),
+    tags: it.tags ?? [],
+    brand: it.brand || undefined,
+    subCategory: it.subCategory || undefined,
+    memo: it.memo || undefined,
+    colors: color.hex ? [color.hex] : undefined,
+    createdAt: it.created_at,
+  };
+};
+
 export interface ClosetList {
-  /** 원본 category_count (영문 enum 키 + total). 0개 카테고리 포함 여부는 백엔드 확인 대기 */
-  categoryCount: Record<string, number>;
+  /**
+   * 카테고리별 개수(영문 enum 키). 0개 카테고리는 키 자체가 없고
+   * 문서에 있던 total 키도 실응답엔 없다(2026-08-13 실측) — 쓰는 쪽이 폴백을 챙긴다.
+   */
+  categoryCount?: Record<string, number>;
   items: ClothingItem[];
 }
 
+interface ClosetListRaw {
+  category_count?: Record<string, number>;
+  closet_items?: ClosetItemRaw[];
+}
+
 export const getClosets = async (): Promise<ClosetList> => {
-  const { data } = await api.get<ApiResponse<ClosetListRaw>>('/api/v1/closets');
-  const r = data.result;
+  const { data } = await api.get<ApiResponse<ClosetListRaw>>('/api/v1/closets/items');
   return {
-    categoryCount: r.category_count,
-    items: r.closet_items.map((it) => ({
-      id: String(it.item_id),
-      imageUrl: imageSrc(it.image_url), // 절대(S3)는 그대로, 상대(/api/..)는 baseURL 조합 → 렌더용 URL
-      category: categoryLabel(it.category),
-      tags: it.tags,
-      createdAt: it.created_at,
-    })),
+    categoryCount: data.result?.category_count,
+    items: (data.result?.closet_items ?? []).map(toClothingItem),
   };
 };
 
 // ── CLOSET-04 옷장 아이템 상세 조회 (GET /api/v1/closets/items/:itemId) ──
-// 제공: image_url/category/import_type/tags/created_at.
-// 미제공(화면엔 있음): 세부카테고리·색상·브랜드·메모·세부이미지 → 백엔드 확인 대기(참고사항). 현재 '-'/빈값 폴백.
-
-interface ClosetItemDetailRaw {
-  item_id: number;
-  image_url: string;
-  category: string;
-  import_type: string;
-  tags: string[];
-  created_at: string;
-}
+// 응답이 목록의 한 건과 같은 모양이다 (2026-08-12 BE 회신 기준).
 
 export const getClosetItem = async (itemId: string): Promise<ClothingItem> => {
-  const { data } = await api.get<ApiResponse<ClosetItemDetailRaw>>(`/api/v1/closets/items/${itemId}`);
-  const r = data.result;
-  return {
-    id: String(r.item_id),
-    imageUrl: imageSrc(r.image_url),
-    category: categoryLabel(r.category),
-    tags: r.tags,
-    createdAt: r.created_at,
-  };
+  const { data } = await api.get<ApiResponse<ClosetItemRaw>>(`/api/v1/closets/items/${itemId}`);
+  return toClothingItem(data.result);
 };
 
 // ── CLOSET-05 아이템 정보·태그 수정 (PATCH /api/v1/closets/items/:itemId) ──
