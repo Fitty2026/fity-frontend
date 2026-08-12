@@ -9,6 +9,7 @@ import {
 } from '@/features/closet/components';
 import { COLOR_COLUMNS, COLOR_OPTIONS, colorChipStyle } from '@/features/closet/colors';
 import { SHOPPING_MALLS } from '@/features/closet/shoppingMalls';
+import useClothesImages from '@/features/closet/hooks/useClothesImages';
 import useClosetStore, { receiptProducts } from '@/store/closetStore';
 
 /** 이미지 추가 — 56.44×56.44 원형 플러스 (Figma: inset 12.5%, 선 2.65 #F6F7F8) */
@@ -185,14 +186,6 @@ const ClosetProductImageEditPage = () => {
     | null;
   const results = useClosetStore((state) => state.ocrResults);
   const updateOcrResult = useClosetStore((state) => state.updateOcrResult);
-  /**
-   * 다른 유저가 등록한 사진 — 개수가 정해져 있지 않다.
-   * 내가 처음 등록하는 옷이면 0개라 안내 문구까지 통째로 안 보여야 하고, 1개면 하나만 뜬다.
-   * ※ 지금은 목업(옷장 아이템 앞 3개). 별도 API가 붙으면 이 줄만 교체한다.
-   */
-  const suggestions = useClosetStore((state) => state.items)
-    .slice(0, 3)
-    .map((item) => item.imageUrl);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // 인식 성공분만 상품 단위로 펼친다 — 목록 화면과 순서가 같아야 순번이 맞는다
@@ -238,6 +231,16 @@ const ClosetProductImageEditPage = () => {
       (entry?.product.color.label ? [entry.product.color] : []),
   );
   const [openRow, setOpenRow] = useState<string | null>(null);
+
+  /**
+   * 다른 유저가 등록한 사진 — 개수가 정해져 있지 않다.
+   * 내가 처음 등록하는 옷이면 0개라 안내 문구까지 통째로 안 보여야 하고, 1개면 하나만 뜬다.
+   * 브랜드·상품명·색상이 다 차야 조회할 수 있고, 이름을 고치는 중에는 부르지 않는다.
+   */
+  const suggestions = useClothesImages(
+    { brand, productName: name.trim(), colorText: colors[0]?.label },
+    !nameEditing,
+  );
 
   // 순번이 어긋나면(주소 직접 입력 등) 목록으로 되돌린다
   if (!entry) return <Navigate to="/closet/register/product-images" replace />;

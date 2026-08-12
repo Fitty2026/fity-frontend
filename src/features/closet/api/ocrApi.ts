@@ -127,6 +127,33 @@ export const recognizeReceipts = async ({
   return mapExtractedItems(raw.extractedItems ?? []);
 };
 
+// ── PROFILE-06 연관 의류 이미지 조회 (GET /api/v1/body-profiles/clothes/search-image) ──
+
+/**
+ * 같은 옷을 이미 등록한 다른 사용자의 사진을 최대 3장 가져온다.
+ *
+ * ※ 서버는 brand·name·colorText **완전일치**로만 찾는다(prisma where 등가 비교).
+ *   글자가 한 자만 달라도 안 걸려서 대개 빈 배열이다 — 없는 게 정상이라 화면도 0장을 전제한다.
+ * ※ 셋 중 하나라도 비면 400(OCR400_10)이라 값이 다 찼을 때만 부른다.
+ */
+export const CLOTHES_IMAGE_SEARCH_PATH = '/api/v1/body-profiles/clothes/search-image';
+
+export interface ClothesImageSearchParams {
+  brand: string;
+  productName: string;
+  colorText: string;
+}
+
+/** 상대경로 이미지 URL 목록 (예: /api/v1/images/12/content) */
+export const searchClothesImages = async (
+  params: ClothesImageSearchParams,
+): Promise<string[]> => {
+  const { data } = await api.get<ApiResponse<{ images?: string[] }>>(CLOTHES_IMAGE_SEARCH_PATH, {
+    params,
+  });
+  return data.result?.images ?? [];
+};
+
 // ── PROFILE-07 의류 일괄 저장 (POST /api/v1/body-profiles/receipt-items) ──
 
 export const RECEIPT_ITEMS_PATH = '/api/v1/body-profiles/receipt-items';
@@ -203,6 +230,9 @@ const OCR_ERROR_MESSAGE: Record<string, string> = {
   OCR400_08: '모든 상품에 옷 이미지를 등록해주세요.',
   OCR400_09: '카테고리를 다시 골라주세요.',
   OCR500_02: '상품을 등록하지 못했어요. 잠시 후 다시 시도해주세요.',
+  // 연관 이미지 (PROFILE-06)
+  OCR400_10: '브랜드·상품명·색상이 있어야 사진을 찾을 수 있어요.',
+  OCR500_03: '연관 이미지를 불러오지 못했어요.',
 };
 
 export const ocrErrorMessage = (error: unknown): string => {
