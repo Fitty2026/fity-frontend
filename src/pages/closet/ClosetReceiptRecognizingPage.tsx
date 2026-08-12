@@ -6,9 +6,6 @@ import useClosetStore, { emptyOcrResult } from '@/store/closetStore';
 import useReceiptOcr from '@/features/closet/hooks/useReceiptOcr';
 import { ocrErrorMessage } from '@/features/closet/api/ocrApi';
 
-/** 한 장을 인식하는 데 걸리는 시간 — API 연동 전 임시값 */
-const STEP_MS = 2000;
-
 /** 인식 완료 — 24×24, 원 채움 #9D98F0 / 체크 흰색 */
 const DoneIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
@@ -86,18 +83,11 @@ const ClosetReceiptRecognizingPage = () => {
       : files;
   // 업로드분이 없으면(직접 진입) 최소 1장으로 화면을 유지
   const total = single ? 1 : Math.max(sending.length || images.length, 1);
-  // 지금까지 인식이 끝난 장수 — 응답을 기다리는 동안 진행 표시로만 쓴다
+  // 지금까지 인식이 끝난 장수 — 장마다 요청이 따로 나가 실제 응답 수를 센다
   const [doneCount, setDoneCount] = useState(0);
 
   // 요청을 두 번 보내지 않게 한 번만 통과시킨다
   const settled = useRef(false);
-
-  // 진행 표시 — 응답이 오기 전까지 장별 상태를 순서대로 채운다 (실제 진척도는 서버가 안 준다)
-  useEffect(() => {
-    if (doneCount >= total) return;
-    const timer = setTimeout(() => setDoneCount((count) => count + 1), STEP_MS);
-    return () => clearTimeout(timer);
-  }, [doneCount, total]);
 
   // 진입하자마자 인식 요청 — 응답이 오면 결과에 따라 화면을 나눈다
   useEffect(() => {
@@ -110,41 +100,39 @@ const ClosetReceiptRecognizingPage = () => {
       return;
     }
 
-    recognizeAsync({ importType: registerEntry === 'purchase' ? 'PURCHASE_LOG' : 'RECEIPT', platform, files: sending })
+    recognizeAsync({
+      importType: registerEntry === 'purchase' ? 'PURCHASE_LOG' : 'RECEIPT',
+      platform,
+      files: sending,
+      // 장마다 요청이 따로 끝나므로 진행 표시가 실제 진척도를 그린다
+      onSettled: setDoneCount,
+    })
+      // 요청을 장별로 나눠 보내므로 결과는 보낸 파일과 길이·순서가 같고,
+      // 실패한 장만 failed로 표시돼 온다 (한 장이 나머지를 끌고 내려가지 않는다)
       .then((recognized) => {
         if (single) {
-          // 다시 올린 장 — 읽혔으면 그 자리를 채우고, 못 읽었으면 시도 횟수만 올린다
+          // 다시 올린 장 — 읽혔으면 그 자리를 채우고, 또 실패했으면 시도 횟수만 올린다
           const before = useClosetStore.getState().ocrResults[replaceIndex];
+          const retried = recognized[0];
           updateOcrResult(
             replaceIndex,
-            recognized[0] ?? {
-              ...emptyOcrResult,
-              ...before,
-              failed: true,
-              retryCount: (before?.retryCount ?? 0) + 1,
-            },
+            retried && !retried.failed
+              ? retried
+              : {
+                  ...emptyOcrResult,
+                  ...before,
+                  failed: true,
+                  failReason: retried?.failReason ?? before?.failReason,
+                  retryCount: (before?.retryCount ?? 0) + 1,
+                },
           );
           navigate('/closet/register/receipt-failed', { replace: true });
           return;
         }
 
-        // 0건이면 읽어낸 상품이 하나도 없다는 뜻 — 전체 실패 화면이 받는다
-        if (recognized.length === 0) {
-          setOcrResults(sending.map(() => ({ ...emptyOcrResult, failed: true })));
-          navigate('/closet/register/receipt-failed', { replace: true });
-          return;
-        }
-
-        // 보낸 장수와 결과 수는 1:1이어야 한다(서버가 파일마다 한 건씩 넣는다).
-        // 모자라면 뒤쪽이 통째로 사라진 것이라 실패로 채워 사용자가 다시 시도할 수 있게 둔다
-        const filled = [
-          ...recognized,
-          ...sending.slice(recognized.length).map(() => ({ ...emptyOcrResult, failed: true })),
-        ];
-
-        setOcrResults(filled);
+        setOcrResults(recognized);
         navigate(
-          filled.some((result) => result.failed)
+          recognized.some((result) => result.failed)
             ? '/closet/register/receipt-failed'
             : '/closet/register/product-images',
           { replace: true },

@@ -311,7 +311,7 @@ const ClosetCapturePage = () => {
     videoRef.current?.play();
   };
 
-  /** 다음 — 모아둔 프레임을 한 번에 인식 요청한다 */
+  /** 다음 — 모아둔 프레임을 인식 요청한다 (장마다 요청이 따로 나간다) */
   const handleRecognize = async () => {
     setAsking(false);
     setReading(true);
@@ -322,23 +322,29 @@ const ClosetCapturePage = () => {
     );
 
     try {
-      const recognized = await recognizeAsync({ importType: registerEntry === 'purchase' ? 'PURCHASE_LOG' : 'RECEIPT', platform, files });
+      // 결과는 보낸 장과 길이·순서가 같고, 실패한 장만 failed로 표시돼 온다
+      const recognized = await recognizeAsync({
+        importType: registerEntry === 'purchase' ? 'PURCHASE_LOG' : 'RECEIPT',
+        platform,
+        files,
+      });
 
       if (typeof replaceIndex === 'number') {
         // 실패분 한 장만 다시 찍은 경우 — 그 자리만 갱신한다
         const before = useClosetStore.getState().ocrResults[replaceIndex];
+        const retried = recognized[0];
         updateOcrResult(
           replaceIndex,
-          recognized[0] ?? {
-            ...emptyOcrResult,
-            ...before,
-            failed: true,
-            retryCount: (before?.retryCount ?? 0) + 1,
-          },
+          retried && !retried.failed
+            ? retried
+            : {
+                ...emptyOcrResult,
+                ...before,
+                failed: true,
+                failReason: retried?.failReason ?? before?.failReason,
+                retryCount: (before?.retryCount ?? 0) + 1,
+              },
         );
-        nextPath.current = '/closet/register/receipt-failed';
-      } else if (recognized.length === 0) {
-        setOcrResults(files.map(() => ({ ...emptyOcrResult, failed: true })));
         nextPath.current = '/closet/register/receipt-failed';
       } else {
         setOcrResults(recognized);

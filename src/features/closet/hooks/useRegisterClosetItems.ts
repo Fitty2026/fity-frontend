@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { uploadImage } from '../api/closetApi';
+import { uploadImageAsset } from '../api/closetApi';
 import {
   MAX_RECEIPT_ITEMS,
   imageIdFromUrl,
@@ -36,18 +36,25 @@ const displayName = (product: OcrProduct) => product.name || '이름 없는 상�
  * 앨범·카메라로 고른 사진은 objectURL(blob:)이라 먼저 업로드(IMAGE-01)해야 한다.
  * 서버가 이미 준 경로(`/api/v1/images/{id}/content`)면 업로드 없이 id만 되읽는다.
  * 저장은 imageUrl이 아니라 imageId를 받는다(PROFILE-07, 없으면 OCR400_08).
+ *
+ * 업로드 응답이 imageId를 실어 주면 그걸 쓰고, 안 주면 경로에서 되읽는다.
+ * 경로 파싱은 형식이 바뀌면 깨지는 우회라 응답 값이 있으면 그쪽이 우선이다.
  */
 const toImageId = async (photo: string): Promise<number> => {
-  const url = photo.startsWith('blob:')
-    ? await uploadImage(
-        new File([await fetch(photo).then((response) => response.blob())], 'closet-item.jpg', {
-          type: 'image/jpeg',
-        }),
-        'CLOSET_ITEM',
-      )
-    : photo;
+  if (photo.startsWith('blob:')) {
+    const blob = await fetch(photo).then((response) => response.blob());
+    // 고른 파일의 형식을 그대로 싣는다 — jpeg로 고정하면 PNG를 올렸을 때
+    // 바이트와 선언이 어긋나 서버가 형식 오류로 되돌린다(IMAGE4151)
+    const type = blob.type || 'image/jpeg';
+    const extension = type.split('/')[1]?.split('+')[0] || 'jpg';
+    const file = new File([blob], `closet-item.${extension}`, { type });
+    const uploaded = await uploadImageAsset(file, 'CLOSET_ITEM');
+    const imageId = uploaded.imageId ?? imageIdFromUrl(uploaded.imageUrl);
+    if (imageId === null) throw new Error('이미지를 등록하지 못했어요.');
+    return imageId;
+  }
 
-  const imageId = imageIdFromUrl(url);
+  const imageId = imageIdFromUrl(photo);
   if (imageId === null) throw new Error('이미지를 등록하지 못했어요.');
   return imageId;
 };

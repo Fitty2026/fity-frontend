@@ -7,17 +7,36 @@ import type { ApiResponse, ClothingCategory, ClothingItem } from '@/types';
 
 export type ImageType = 'CLOSET_ITEM';
 
-/** 파일 업로드 → 상대경로 imageUrl 반환 */
-export const uploadImage = async (file: File, imageType: ImageType = 'CLOSET_ITEM'): Promise<string> => {
+export interface UploadedImage {
+  /**
+   * 영수증 상품 저장(PROFILE-07)이 필수로 받는 값 — 문서 확인됨(2026-08-12).
+   * 혹시 응답에 빠져 있으면 imageUrl 경로에서 되읽는 폴백이 받쳐준다.
+   */
+  imageId: number | null;
+  /** 상대경로 (예: /api/v1/images/12/content) */
+  imageUrl: string;
+}
+
+/** 파일 업로드 → imageUrl과, 있으면 imageId */
+export const uploadImageAsset = async (
+  file: File,
+  imageType: ImageType = 'CLOSET_ITEM',
+): Promise<UploadedImage> => {
   const form = new FormData();
   form.append('image', file);
   form.append('imageType', imageType);
   // FormData면 axios가 boundary 포함 multipart 헤더를 자동 설정하도록 기본 json 헤더 제거
-  const { data } = await api.post<ApiResponse<{ imageUrl: string }>>('/api/v1/images/upload', form, {
-    headers: { 'Content-Type': undefined },
-  });
-  return data.result.imageUrl;
+  const { data } = await api.post<ApiResponse<{ imageId?: number; imageUrl: string }>>(
+    '/api/v1/images/upload',
+    form,
+    { headers: { 'Content-Type': undefined } },
+  );
+  return { imageId: data.result.imageId ?? null, imageUrl: data.result.imageUrl };
 };
+
+/** 파일 업로드 → 상대경로 imageUrl 반환 */
+export const uploadImage = async (file: File, imageType: ImageType = 'CLOSET_ITEM'): Promise<string> =>
+  (await uploadImageAsset(file, imageType)).imageUrl;
 
 /** 상대경로 imageUrl → 렌더용 절대 URL (baseURL 조합은 표시할 때만) */
 export const imageSrc = (imageUrl: string): string =>
@@ -25,8 +44,8 @@ export const imageSrc = (imageUrl: string): string =>
 
 // ── CLOSET-02 옷장 아이템 등록 (POST /api/v1/closets/items) ──
 
-/** API 카테고리 enum (예: TOP). 전체 enum 확정 시 보강 */
-export type ApiClosetCategory = 'TOP' | 'BOTTOM' | 'OUTER' | 'SHOES' | 'BAG' | 'ACCESSORY' | 'ETC';
+/** API 카테고리 enum — 저장 검증 목록(OCR400_09)과 같은 6종. 시안 드롭다운에도 가방이 없다 */
+export type ApiClosetCategory = 'TOP' | 'BOTTOM' | 'OUTER' | 'SHOES' | 'ACCESSORY' | 'ETC';
 
 /** 등록 경로 — 서버가 그대로 저장 (카메라/앨범/쇼핑몰/영수증) */
 export type ImportType = '카메라' | '앨범' | '쇼핑몰' | '영수증';

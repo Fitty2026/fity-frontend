@@ -54,6 +54,8 @@ export interface RecognizeReceiptsRequest {
   /** 파싱 힌트 — 쇼핑몰 코드(MUSINSA|ZIGZAG|ABLY). 실물 영수증이면 생략 가능 */
   platform?: string;
   files: File[];
+  /** 한 장이 끝날 때마다 부른다 — 인식 중 화면의 진행 표시가 이 값으로 움직인다 */
+  onSettled?: (doneCount: number) => void;
 }
 
 /**
@@ -103,19 +105,19 @@ export const mapExtractedItems = (items: ExtractedItem[]): OcrResult[] =>
     };
   });
 
-/** 영수증 이미지를 보내 상품을 읽어온다 */
-export const recognizeReceipts = async ({
-  importType,
-  platform,
-  files,
-}: RecognizeReceiptsRequest): Promise<OcrResult[]> => {
+/** 영수증 한 장을 보내 상품을 읽어온다 */
+const recognizeOne = async (
+  importType: OcrImportType,
+  platform: string | undefined,
+  file: File,
+): Promise<OcrResult[]> => {
   const form = new FormData();
   form.append('importType', importType);
   // 실물 영수증은 쇼핑몰을 안 고르고 오므로 값이 있을 때만 싣는다
   if (platform) form.append('platform', platform);
   // 문서에는 images로 적혀 있으나 서버가 실제로 받는 키는 receiptImages다.
   // (images/images[]/image/files/file 전부 OCR400_03 = 파일 못 찾음, receiptImages만 OCR을 시도)
-  files.forEach((file) => form.append('receiptImages', file, file.name || 'receipt.jpg'));
+  form.append('receiptImages', file, file.name || 'receipt.jpg');
 
   const { data } = await api.post<ApiResponse<RecognizeReceiptsRaw>>(OCR_RECOGNIZE_PATH, form, {
     // FormData면 axios가 boundary 포함 multipart 헤더를 자동 설정하도록 기본 json 헤더 제거
@@ -125,6 +127,43 @@ export const recognizeReceipts = async ({
 
   const raw = data.result ?? {};
   return mapExtractedItems(raw.extractedItems ?? []);
+};
+
+/**
+ * 영수증 여러 장을 인식한다 — **장마다 요청을 따로 보낸다.**
+ *
+ * 서버는 한 요청 안에서 한 장만 실패해도 전체를 500으로 끊는다
+ * (`receipt.service.js` processOcr의 catch가 throw). 그래서 묶어 보내면
+ * 5장 중 1장이 흐려도 나머지 4장까지 함께 날아가고, 어느 장이 문제인지도 알 수 없다.
+ * 장별 실패 화면과 장별 재시도가 성립하려면 요청을 나누는 수밖에 없다.
+ *
+ * 나눠도 비용은 같다 — 서버가 어차피 파일마다 CLOVA를 한 번씩 부른다.
+ * 늘어나는 건 HTTP 왕복뿐이고 최대 5장이라 병렬로 함께 던진다.
+ *
+ * 반환 배열은 보낸 파일과 **길이·순서가 같다.** 실패한 장은 failed로 채워 자리를 지킨다.
+ */
+export const recognizeReceipts = async ({
+  importType,
+  platform,
+  files,
+  onSettled,
+}: RecognizeReceiptsRequest): Promise<OcrResult[]> => {
+  let done = 0;
+
+  return Promise.all(
+    files.map(async (file) => {
+      try {
+        const [result] = await recognizeOne(importType, platform, file);
+        // 200인데 빈 배열이면 글자는 읽었으나 상품을 못 뽑은 것이다
+        return result ?? { ...emptyOcrResult, failed: true, failReason: '상품 정보를 읽지 못했어요.' };
+      } catch (error) {
+        return { ...emptyOcrResult, failed: true, failReason: ocrErrorMessage(error) };
+      } finally {
+        done += 1;
+        onSettled?.(done);
+      }
+    }),
+  );
 };
 
 // ── PROFILE-06 연관 의류 이미지 조회 (GET /api/v1/body-profiles/clothes/search-image) ──
@@ -162,9 +201,9 @@ export const RECEIPT_ITEMS_PATH = '/api/v1/body-profiles/receipt-items';
 export const MAX_RECEIPT_ITEMS = 5;
 
 /**
- * 저장이 받는 카테고리 enum — 옷장 조회(CLOSET-03)와 달리 **BAG이 없다**.
- * 목록 밖 값을 보내면 OCR400_09라, 가방은 ETC로 접어 보낸다.
- * (BE에 BAG 추가 요청함. 추가되면 이 매핑을 지운다)
+ * 저장이 받는 카테고리 enum — 시안의 5개(상의/아우터/하의/액세서리/신발)와
+ * 서버 목록(OCR400_09)이 겹치는 값들. 목록 밖 값은 ETC로 접는다 —
+ * OCR이 모르는 값을 줘도 등록이 막히지 않게 한다.
  */
 const RECEIPT_CATEGORY: Record<string, string> = {
   상의: 'TOP',
@@ -173,7 +212,6 @@ const RECEIPT_CATEGORY: Record<string, string> = {
   신발: 'SHOES',
   액세서리: 'ACCESSORY',
   기타: 'ETC',
-  가방: 'ETC',
 };
 
 export const toReceiptCategory = (label: string): string => RECEIPT_CATEGORY[label] ?? 'ETC';
@@ -181,9 +219,10 @@ export const toReceiptCategory = (label: string): string => RECEIPT_CATEGORY[lab
 /**
  * 이미지 경로에서 imageId를 뽑는다.
  *
- * 저장은 imageUrl이 아니라 **imageId(정수)**를 받는데(OCR400_08),
- * 업로드(IMAGE-01)도 연관 이미지 조회(PROFILE-06)도 `/api/v1/images/{id}/content`
- * 형태의 경로만 돌려준다. 그래서 경로에서 되읽는다.
+ * 저장은 imageUrl이 아니라 **imageId(정수)**를 받는다(OCR400_08).
+ * 업로드(IMAGE-01)는 응답에 imageId를 실어 줘서 이게 필요 없지만,
+ * 연관 이미지 조회(PROFILE-06)는 `/api/v1/images/{id}/content` 경로만
+ * 돌려줘서 그쪽 사진을 고르면 여기로 되읽는다. 업로드 응답의 폴백도 겸한다.
  */
 export const imageIdFromUrl = (url: string): number | null => {
   const match = /\/images\/(\d+)\/content/.exec(url);
