@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import type { ClothingItem } from '../types';
-import { mockClosetItems } from '../mocks/data/closet';
 
 /** 영수증 한 장에 찍힌 상품 하나 — 영수증에는 상품이 여러 개 있을 수 있다 */
 export interface OcrProduct {
@@ -19,6 +18,8 @@ export interface OcrProduct {
   photo?: string;
   /** 인식·분류로 붙은 태그 — 이미지 등록 화면의 칩으로 보여준다 */
   tags?: string[];
+  /** 메모 — OCR이 읽어오거나 사용자가 적는다 */
+  memo?: string;
   /**
    * 카테고리·세부 카테고리 — 등록 전 반드시 골라야 한다(수정·직접 입력 화면의 필수 항목).
    * 서버 응답에는 없는 필드라 화면에서 채워 넣는다. API에 생기면 그때 매핑한다.
@@ -52,6 +53,8 @@ export interface OcrResult {
   photo?: string;
   /** 단일 상품일 때의 태그 — products가 있으면 그쪽 값을 쓴다 */
   tags?: string[];
+  /** 단일 상품일 때의 메모 — products가 있으면 그쪽 값을 쓴다 */
+  memo?: string;
   /** 단일 상품일 때의 카테고리 — products가 있으면 그쪽 값을 쓴다 */
   category?: string;
   subCategory?: string;
@@ -83,6 +86,7 @@ export const receiptProducts = (result: OcrResult): OcrProduct[] =>
           price: result.price,
           photo: result.photo,
           tags: result.tags,
+          memo: result.memo,
           category: result.category,
           subCategory: result.subCategory,
         },
@@ -100,96 +104,6 @@ export const emptyOcrResult: OcrResult = {
   purchasedAt: '',
 };
 
-/** 인식에 성공한 영수증 목업 — 장수만큼 돌려 쓴다. API 연동 시 서버 응답으로 교체 */
-const successOcrResults: OcrResult[] = [
-  {
-    brand: '무신사 스탠다드 우먼',
-    name: '패널드 데님 맥시 드레스',
-    quantity: '1',
-    size: 'M',
-    color: { label: '네이비', hex: '#052D78' },
-    price: '79,900원',
-    tags: ['캐주얼', 'Y2K'],
-    store: 'MUSINSA',
-    purchasedAt: '2026.06.28. 13:45:55',
-  },
-  {
-    brand: '온앤온',
-    name: '오버사이즈 울 블렌드 코트',
-    quantity: '1',
-    size: 'L',
-    color: { label: '베이지', hex: '#E3DACD' },
-    price: '139,000원',
-    tags: ['미니멀', '오피스'],
-    store: 'ABLY',
-    purchasedAt: '2026.07.11. 17:02:31',
-  },
-  // 한 장에 상품이 두 개 — 카드 주문상품 영역이 줄로 쌓인다.
-  // 단일 상품 필드는 첫 상품과 같게 둔다 (수정 화면이 아직 한 개만 다뤄서 그쪽이 읽는다)
-  {
-    products: [
-      {
-        brand: '마뗑킴',
-        name: '릴렉스드 크롭 니트 가디건',
-        quantity: '1',
-        size: 'FREE',
-        color: { label: '그린', hex: '#1F7A4D' },
-        price: '89,000원',
-        tags: ['데일리', '러블리'],
-      },
-      {
-        brand: '리엔',
-        name: '와이드 코튼 슬랙스',
-        quantity: '2',
-        size: 'S',
-        color: { label: '블랙', hex: '#1F2124' },
-        price: '59,000원',
-        tags: ['출근', '모던'],
-      },
-    ],
-    brand: '마뗑킴',
-    name: '릴렉스드 크롭 니트 가디건',
-    quantity: '1',
-    size: 'FREE',
-    color: { label: '그린', hex: '#1F7A4D' },
-    price: '89,000원',
-    tags: ['데일리', '러블리'],
-    store: 'ZIGZAG',
-    purchasedAt: '2026.07.24. 20:15:08',
-  },
-];
-
-/**
- * 인식 실패 목업 — 실패해도 상호·날짜는 읽히는 경우를 상정한 값. API 연동 시 서버 응답으로 교체.
- * ※ 실패 사유 문구를 서버가 내려주는지 FE가 코드로 매핑하는지는 미확정.
- */
-const failedSamples = [
-  { storeLabel: '무신사 스토어', purchasedAt: '2026.06.28.', failReason: '영수증이 너무 흐려요' },
-  { storeLabel: 'ZARA 코엑스점', purchasedAt: '2026.07.24.', failReason: '글자가 잘렸어요' },
-];
-
-/**
- * 스토어 초기값 — 실패 카드까지 확인할 수 있게 섞어둔다 (직접 주소로 목록에 들어올 때만 보인다).
- * 마지막 한 건은 이미 여러 번 다시 올려 실패한 상태라, 목록에 들어가면 직접 입력 유도 안내가 뜬다.
- */
-const mockOcrResults: OcrResult[] = [
-  ...successOcrResults,
-  { ...emptyOcrResult, ...failedSamples[0], failed: true },
-  { ...emptyOcrResult, ...failedSamples[1], failed: true, retryCount: 2 },
-];
-
-/**
- * 인식한 장수만큼 결과를 만든다 — 찍은/올린 장수와 개수를 맞춘다.
- * 세 장마다 한 장은 인식 실패로 둬서 목록의 실패 카드도 플로우에서 확인할 수 있다.
- * API 연동 시 이 호출을 서버 응답으로 갈아끼우면 된다.
- */
-export const makeMockOcrResults = (count: number): OcrResult[] =>
-  Array.from({ length: count }, (_, index) =>
-    index % 3 === 2
-      ? { ...emptyOcrResult, ...failedSamples[index % failedSamples.length], failed: true }
-      : { ...successOcrResults[index % successOcrResults.length] },
-  );
-
 interface ClosetState {
   items: ClothingItem[];
   /** 쇼핑몰 연동 시 선택한 플랫폼 이름 (등록 플로우에서 화면 간 전달) */
@@ -198,6 +112,11 @@ interface ClosetState {
   ocrResults: OcrResult[];
   /** 업로드한 영수증 이미지 미리보기 URL (등록 플로우에서 화면 간 전달) */
   receiptImages: string[];
+  /**
+   * 인식 요청에 실어 보낼 실제 파일 — 미리보기 URL로는 서버에 못 보낸다.
+   * receiptImages와 순서가 같아야 체크 화면에서 뺀 장이 정확히 제외된다.
+   */
+  receiptFiles: File[];
   /**
    * 영수증을 가져온 방식 — 인식 실패분을 '다시 시도'할 때 같은 길로 돌려보내려고 기억한다.
    * 카메라로 찍어 온 사람에게 앨범을 열어주면 흐름이 끊긴다.
@@ -220,7 +139,8 @@ interface ClosetState {
   updateOcrResult: (index: number, result: OcrResult) => void;
   /** 직접 입력으로 새 장을 추가 (붙는 위치 = 호출 전 ocrResults.length) */
   addOcrResult: (result: OcrResult) => void;
-  setReceiptImages: (images: string[]) => void;
+  /** 미리보기 URL과 파일을 함께 갱신 (순서를 맞춰 보관한다) */
+  setReceipts: (images: string[], files: File[]) => void;
   setReceiptMethod: (method: 'camera' | 'album') => void;
   setRegisterEntry: (entry: 'receipt' | 'purchase') => void;
   /** 등록 플로우를 새로 시작 — 지난 회차에 쌓인 영수증·선택값을 비운다 */
@@ -228,12 +148,19 @@ interface ClosetState {
   reset: () => void;
 }
 
-/** 옷장 아이템 스토어 — mock 시드, 새로고침 시 초기화 */
+/**
+ * 옷장 등록 플로우 스토어 — 새로고침 시 초기화.
+ *
+ * `items`는 서버(CLOSET-03)가 소스라 여기서는 비워 둔다.
+ * 예전엔 목업을 시드로 깔아 화면이 늘 차 있었는데, 조회가 실패해도 옷이 있는 것처럼
+ * 보여서 문제를 가렸다. 이제 비어 있으면 비어 있는 대로 보인다.
+ */
 const useClosetStore = create<ClosetState>((set) => ({
-  items: mockClosetItems,
+  items: [],
   selectedPlatforms: [],
-  ocrResults: mockOcrResults,
+  ocrResults: [],
   receiptImages: [],
+  receiptFiles: [],
   receiptMethod: '',
   registerEntry: '',
 
@@ -251,23 +178,25 @@ const useClosetStore = create<ClosetState>((set) => ({
       ocrResults: state.ocrResults.map((item, i) => (i === index ? result : item)),
     })),
   addOcrResult: (result) => set((state) => ({ ocrResults: [...state.ocrResults, result] })),
-  setReceiptImages: (images) => set({ receiptImages: images }),
+  setReceipts: (images, files) => set({ receiptImages: images, receiptFiles: files }),
   setReceiptMethod: (method) => set({ receiptMethod: method }),
   setRegisterEntry: (entry) => set({ registerEntry: entry }),
   startOcrFlow: () =>
     set({
       ocrResults: [],
       receiptImages: [],
+      receiptFiles: [],
       selectedPlatforms: [],
       receiptMethod: '',
       registerEntry: '',
     }),
   reset: () =>
     set({
-      items: mockClosetItems,
+      items: [],
       selectedPlatforms: [],
-      ocrResults: mockOcrResults,
+      ocrResults: [],
       receiptImages: [],
+      receiptFiles: [],
       receiptMethod: '',
       registerEntry: '',
     }),

@@ -67,7 +67,8 @@ const AddIcon = () => (
 const ClosetReceiptCheckPage = () => {
   const navigate = useNavigate();
   const images = useClosetStore((state) => state.receiptImages);
-  const setImages = useClosetStore((state) => state.setReceiptImages);
+  const files = useClosetStore((state) => state.receiptFiles);
+  const setReceipts = useClosetStore((state) => state.setReceipts);
   const fileRef = useRef<HTMLInputElement>(null);
   // 인식에 쓸 사진 — 처음엔 전부 선택
   const [excluded, setExcluded] = useState<Set<number>>(new Set());
@@ -82,7 +83,10 @@ const ClosetReceiptCheckPage = () => {
 
   /** 사진 자체를 뺀다 — 뒤 사진들의 번호가 당겨지므로 제외 표시도 같이 옮긴다 */
   const remove = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
+    setReceipts(
+      images.filter((_, i) => i !== index),
+      files.filter((_, i) => i !== index),
+    );
     setExcluded((prev) => {
       const next = new Set<number>();
       prev.forEach((i) => {
@@ -97,7 +101,7 @@ const ClosetReceiptCheckPage = () => {
     const picked = Array.from(event.target.files ?? []);
     if (picked.length === 0) return;
     const urls = picked.map((file) => URL.createObjectURL(file));
-    setImages([...images, ...urls].slice(0, MAX_FILES));
+    setReceipts([...images, ...urls].slice(0, MAX_FILES), [...files, ...picked].slice(0, MAX_FILES));
     event.target.value = '';
   };
 
@@ -193,7 +197,14 @@ const ClosetReceiptCheckPage = () => {
           <button
             type="button"
             disabled={selectedCount === 0}
-            onClick={() => navigate('/closet/register/receipt-recognizing')}
+            // 체크를 뺀 장은 인식에 보내지 않는다 — 남길 장의 위치를 넘긴다
+            onClick={() =>
+              navigate('/closet/register/receipt-recognizing', {
+                // 인식을 시작하면 이전 화면으로 돌아가지 못하게 한다 (같은 요청이 두 번 나간다)
+                replace: true,
+                state: { keep: images.map((_, i) => i).filter((i) => !excluded.has(i)) },
+              })
+            }
             className={[
               'h-[58px] w-full rounded-[32px] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em]',
               selectedCount > 0

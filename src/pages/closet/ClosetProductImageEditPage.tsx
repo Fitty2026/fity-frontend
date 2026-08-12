@@ -9,6 +9,7 @@ import {
 } from '@/features/closet/components';
 import { COLOR_COLUMNS, COLOR_OPTIONS, colorChipStyle } from '@/features/closet/colors';
 import { SHOPPING_MALLS } from '@/features/closet/shoppingMalls';
+import useClothesImages from '@/features/closet/hooks/useClothesImages';
 import useClosetStore, { receiptProducts } from '@/store/closetStore';
 
 /** 이미지 추가 — 56.44×56.44 원형 플러스 (Figma: inset 12.5%, 선 2.65 #F6F7F8) */
@@ -95,11 +96,11 @@ const AddTagIcon = () => (
 );
 
 /**
- * 카테고리 — API enum(TOP/BOTTOM/OUTER/SHOES/BAG/ACCESSORY/ETC)의 한글 라벨과 1:1.
- * closetApi의 CATEGORY_LABEL과 어긋나면 저장 시 분류가 뒤집히므로 임의로 줄이지 않는다.
- * (옷장 홈에서 상의·아우터를 한 행에 묶는 건 그 화면의 표시 규칙이라 여기와 무관)
+ * 카테고리 — 시안 드롭다운의 5개, 순서도 시안대로(상의/아우터/하의/액세서리/신발).
+ * 가방·기타는 시안에 없어 뺐다 — 저장 enum(OCR400_09 목록)에도 BAG이 없어서
+ * 어차피 보낼 수 없다. 표기는 시안이 '악세사리'지만 다른 화면과 맞춰 '액세서리'로 쓴다.
  */
-const CATEGORY_OPTIONS = ['상의', '하의', '아우터', '신발', '가방', '액세서리', '기타'];
+const CATEGORY_OPTIONS = ['상의', '아우터', '하의', '액세서리', '신발'];
 
 /** 세부 카테고리 — 시안에 '상의'만 있어 나머지는 목록 대기. 서버 미제공 필드 */
 const SUB_CATEGORY_OPTIONS: Record<string, string[]> = {
@@ -115,7 +116,15 @@ const MAX_COLORS = 2;
 /** 태그 추가 시트의 추천 태그 — 추천 API가 없어 시안 값 고정 (옷장 상세와 같은 값) */
 const RECOMMENDED_TAGS = ['#데일리', '#출근', '#캐주얼', '#미니멀'];
 
-/** 라벨 + 값 + 화살표 한 줄 — 335×26, 라벨 좌측 8 들여쓰기 */
+/** 목록에 없는 값을 직접 적을 때 고르는 항목 */
+const CUSTOM_OPTION = '직접 입력';
+
+/**
+ * 라벨 + 값 + 화살표 한 줄 — 335×26, 라벨 좌측 8 들여쓰기.
+ *
+ * `allowCustom`이면 목록 끝에 '직접 입력'이 붙고, 고르면 그 자리가 입력칸이 된다.
+ * 브랜드처럼 후보를 다 나열할 수 없는 값에 쓴다.
+ */
 const SelectRow = ({
   label,
   value,
@@ -123,6 +132,7 @@ const SelectRow = ({
   open,
   onToggle,
   onSelect,
+  allowCustom = false,
 }: {
   label: string;
   value: string;
@@ -130,42 +140,73 @@ const SelectRow = ({
   open: boolean;
   onToggle: () => void;
   onSelect: (option: string) => void;
-}) => (
-  <div className="relative flex h-[26px] items-center justify-between pl-2">
-    {/* Body/B2 */}
-    <span className="text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">{label}</span>
-    <button
-      type="button"
-      onClick={onToggle}
-      aria-expanded={open}
-      className="flex cursor-pointer items-center gap-2 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#959BA7]"
-    >
-      {value}
-      <ChevronIcon />
-    </button>
+  allowCustom?: boolean;
+}) => {
+  const [typing, setTyping] = useState(false);
+  const items = allowCustom ? [...options, CUSTOM_OPTION] : options;
 
-    {open && options.length > 0 && (
-      <ul
-        className="absolute right-0 top-[26px] z-20 w-[88px] overflow-hidden rounded bg-[#F6F7F8]"
-        style={{ boxShadow: '0 4px 10px 0 rgba(0,0,0,0.24)' }}
-      >
-        {options.map((option) => (
-          <li key={option}>
-            <button
-              type="button"
-              onClick={() => onSelect(option)}
-              className={`flex h-[30px] w-full cursor-pointer items-center justify-center whitespace-nowrap border-b border-[#E6E8EA] px-2 py-1 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] ${
-                option === value ? 'text-[#9D98F0]' : 'text-[#1F2124]'
-              }`}
-            >
-              {option}
-            </button>
-          </li>
-        ))}
-      </ul>
-    )}
-  </div>
-);
+  return (
+    <div className="relative flex h-[26px] items-center justify-between pl-2">
+      {/* Body/B2 */}
+      <span className="text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">{label}</span>
+      {typing ? (
+        <input
+          autoFocus
+          value={value}
+          onChange={(event) => onSelect(event.target.value)}
+          onBlur={() => setTyping(false)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === 'Escape') setTyping(false);
+          }}
+          aria-label={label}
+          placeholder={`${label} 입력`}
+          className="w-[160px] rounded border border-[#E6E8EA] px-2 text-right text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#1F2124] outline-none placeholder:text-[#B2B8BD]"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={open}
+          className="flex cursor-pointer items-center gap-2 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#959BA7]"
+        >
+          {/* 아직 고르지 않았으면 자리표시자 — 입력칸에는 빈 값이 그대로 가야 한다 */}
+          {value || '-'}
+          <ChevronIcon />
+        </button>
+      )}
+
+      {open && items.length > 0 && (
+        <ul
+          className="absolute right-0 top-[26px] z-20 w-[88px] overflow-hidden rounded bg-[#F6F7F8]"
+          style={{ boxShadow: '0 4px 10px 0 rgba(0,0,0,0.24)' }}
+        >
+          {items.map((option) => (
+            <li key={option}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (option === CUSTOM_OPTION) {
+                    // 값은 비우고 입력칸으로 바꾼다 — 고른 값이 남아 있으면 지우고 써야 한다
+                    onSelect('');
+                    setTyping(true);
+                    onToggle();
+                    return;
+                  }
+                  onSelect(option);
+                }}
+                className={`flex h-[30px] w-full cursor-pointer items-center justify-center whitespace-nowrap border-b border-[#E6E8EA] px-2 py-1 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] ${
+                  option === value ? 'text-[#9D98F0]' : 'text-[#1F2124]'
+                }`}
+              >
+                {option}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
 
 /**
  * 상품 이미지·정보 수정 — 이미지 등록 목록(/closet/register/product-images)의 수정에서 들어온다.
@@ -185,14 +226,6 @@ const ClosetProductImageEditPage = () => {
     | null;
   const results = useClosetStore((state) => state.ocrResults);
   const updateOcrResult = useClosetStore((state) => state.updateOcrResult);
-  /**
-   * 다른 유저가 등록한 사진 — 개수가 정해져 있지 않다.
-   * 내가 처음 등록하는 옷이면 0개라 안내 문구까지 통째로 안 보여야 하고, 1개면 하나만 뜬다.
-   * ※ 지금은 목업(옷장 아이템 앞 3개). 별도 API가 붙으면 이 줄만 교체한다.
-   */
-  const suggestions = useClosetStore((state) => state.items)
-    .slice(0, 3)
-    .map((item) => item.imageUrl);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // 인식 성공분만 상품 단위로 펼친다 — 목록 화면과 순서가 같아야 순번이 맞는다
@@ -223,7 +256,7 @@ const ClosetProductImageEditPage = () => {
   const [pickedTags, setPickedTags] = useState<string[]>([]);
   // 태그 한 개를 눌러 선택하면 X가 붙는다 (삭제 전 단계)
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [memo, setMemo] = useState((draft?.memo as string) ?? '');
+  const [memo, setMemo] = useState((draft?.memo as string) ?? entry?.product.memo ?? '');
   const [category, setCategory] = useState(
     (draft?.category as string) ?? entry?.product.category ?? '',
   );
@@ -239,11 +272,26 @@ const ClosetProductImageEditPage = () => {
   );
   const [openRow, setOpenRow] = useState<string | null>(null);
 
+  /**
+   * 다른 유저가 등록한 사진 — 개수가 정해져 있지 않다.
+   * 내가 처음 등록하는 옷이면 0개라 안내 문구까지 통째로 안 보여야 하고, 1개면 하나만 뜬다.
+   * 브랜드·상품명·색상이 다 차야 조회할 수 있고, 이름을 고치는 중에는 부르지 않는다.
+   */
+  const suggestions = useClothesImages(
+    { brand, productName: name.trim(), colorText: colors[0]?.label },
+    !nameEditing,
+  );
+
   // 순번이 어긋나면(주소 직접 입력 등) 목록으로 되돌린다
   if (!entry) return <Navigate to="/closet/register/product-images" replace />;
 
-  // 이미지·상품 이름·카테고리는 등록 전 반드시 채워야 한다
-  const canConfirm = Boolean(photo) && name.trim().length > 0 && category.length > 0;
+  /**
+   * 등록 전 반드시 채워야 하는 값.
+   * 브랜드·상품명·색상은 저장(PROFILE-07)의 필수값이고(없으면 OCR400_07),
+   * 이미지도 필수다(OCR400_08). 카테고리는 여기서 골라야 enum이 정해진다.
+   */
+  const canConfirm =
+    Boolean(photo) && name.trim().length > 0 && category.length > 0 && brand.length > 0 && colors.length > 0;
 
   /** 시트에서 고른 태그 + 직접 입력한 값을 한 번에 반영 */
   const handleConfirmTags = () => {
@@ -273,6 +321,7 @@ const ClosetProductImageEditPage = () => {
       brand,
       category,
       subCategory,
+      memo,
     };
     if (result.products?.length) {
       updateOcrResult(entry.receiptIndex, {
@@ -390,7 +439,7 @@ const ClosetProductImageEditPage = () => {
             <div className="flex flex-col gap-4">
               <SelectRow
                 label="카테고리"
-                value={category || '-'}
+                value={category}
                 options={CATEGORY_OPTIONS}
                 open={openRow === 'category'}
                 onToggle={() => setOpenRow((prev) => (prev === 'category' ? null : 'category'))}
@@ -403,7 +452,7 @@ const ClosetProductImageEditPage = () => {
               />
               <SelectRow
                 label="세부 카테고리"
-                value={subCategory || '-'}
+                value={subCategory}
                 options={SUB_CATEGORY_OPTIONS[category] ?? []}
                 open={openRow === 'subCategory'}
                 onToggle={() => setOpenRow((prev) => (prev === 'subCategory' ? null : 'subCategory'))}
@@ -490,10 +539,13 @@ const ClosetProductImageEditPage = () => {
                 )}
               </div>
 
+              {/* 브랜드는 저장 필수값인데 목록이 쇼핑몰 3곳뿐이라 직접 입력을 연다 —
+                  인식이 '무신사 스탠다드' 같은 값을 줘도 목록으로는 고칠 수가 없다 */}
               <SelectRow
                 label="브랜드"
-                value={brand || '-'}
+                value={brand}
                 options={BRAND_OPTIONS}
+                allowCustom
                 open={openRow === 'brand'}
                 onToggle={() => setOpenRow((prev) => (prev === 'brand' ? null : 'brand'))}
                 onSelect={(option) => {

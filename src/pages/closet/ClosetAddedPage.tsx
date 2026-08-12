@@ -3,16 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
 import useOnboardingStore from '@/store/onboardingStore';
-import mockItem from '@/assets/images/closet/tag-mock.png';
-import mockLeft from '@/assets/images/closet/tag-mock2.png';
-import mockRight from '@/assets/images/closet/tag-mock3.png';
-import top2Img from '@/assets/images/items/top2.jpg';
-import shoesImg from '@/assets/images/items/shoes.jpg';
-
-// 이번에 추가된 옷 목록 (TODO: 등록 플로우 실제 추가 결과와 연동 — 현재 목업)
-const ADDED_ITEMS = [mockLeft, mockItem, mockRight, top2Img, shoesImg];
-// 시안 기준 초기 중앙 = 줄무늬 나시(mockItem)
-const INITIAL_ACTIVE = 1;
+import useClosetStore, { receiptProducts } from '@/store/closetStore';
 
 // 캐러셀 슬롯 — 중앙(155×200 정면) + 좌/우(126×152 기울임). offset(=i-active)별 위치.
 type Slot = { left: string; top: number; w: number; h: number; rot: number; z: number; op: number };
@@ -59,6 +50,15 @@ const CheckBadge = ({ filled }: { filled: boolean }) => (
  */
 const ClosetAddedPage = () => {
   const navigate = useNavigate();
+  // 이번 회차에 등록한 옷 사진 — 인식 성공분의 상품 사진을 등록한 순서대로 늘어놓는다
+  const results = useClosetStore((state) => state.ocrResults);
+  const addedItems = results
+    .filter((result) => !result.failed)
+    .flatMap((result) => receiptProducts(result))
+    .map((product) => product.photo)
+    .filter((photo): photo is string => Boolean(photo));
+  // 시안 기준 초기 중앙은 두 번째 — 한 장뿐이면 그 한 장이 중앙
+  const initialActive = addedItems.length > 1 ? 1 : 0;
   // 옷장 준비 완료 화면은 최초 1회만 — 처음이면 거기를 거쳐서 원래 누른 곳으로 이어간다
   const closetCompleteSeen = useOnboardingStore((state) => state.closetCompleteSeen);
   const leaveTo = (path: string) =>
@@ -70,11 +70,11 @@ const ClosetAddedPage = () => {
   const [filledCheck, setFilledCheck] = useState(false);
 
   // 캐러셀 다이얼 — 스와이프/탭으로 추가된 옷 전체 순회
-  const [active, setActive] = useState(INITIAL_ACTIVE);
+  const [active, setActive] = useState(initialActive);
   const dragStartX = useRef<number | null>(null);
   const dragged = useRef(false);
 
-  const go = (next: number) => setActive((a) => Math.min(ADDED_ITEMS.length - 1, Math.max(0, next ?? a)));
+  const go = (next: number) => setActive((a) => Math.min(addedItems.length - 1, Math.max(0, next ?? a)));
 
   const onPointerDown = (e: PointerEvent) => {
     dragStartX.current = e.clientX;
@@ -121,7 +121,7 @@ const ClosetAddedPage = () => {
           onPointerDown={onPointerDown}
           onPointerUp={onPointerUp}
         >
-          {ADDED_ITEMS.map((src, i) => {
+          {addedItems.map((src, i) => {
             const offset = i - active;
             const s = slotFor(offset);
             const isCenter = offset === 0;

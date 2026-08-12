@@ -5,7 +5,6 @@ import { ClosetBottomNav, ClosetSearchField, ClosetTopBar } from '@/features/clo
 import { matchesQuery } from '@/features/closet/searchItems';
 import { registerStartPath } from '@/features/closet/registerFlow';
 import useOnboardingStore from '@/store/onboardingStore';
-import useClosetStore from '@/store/closetStore';
 import useClosets from '@/features/closet/hooks/useClosets';
 import type { ClothingItem } from '@/types';
 
@@ -151,14 +150,13 @@ const ClothesRow = ({ items, onItemClick, likedIds, onToggleLike }: ClothesRowPr
 
 /**
  * 내 옷장 홈 — 등록된 옷 없음(빈 상태) / 있음(목록) 두 상태.
- * 데이터: mockClosetItems (백엔드 연결 시 API 응답으로 대체)
+ * 데이터: CLOSET-03 조회 결과
  */
 const ClosetHomePage = () => {
   const navigate = useNavigate();
-  // 서버(CLOSET-03) 우선, 미연결(백엔드 대기) 시 mock 폴백 — 실서버 붙으면 실제 데이터로 표시
+  // 목록은 서버(CLOSET-03)가 소스다. 못 받으면 빈 옷장으로 보여준다
   const { data } = useClosets();
-  const mockItems = useClosetStore((state) => state.items);
-  const items = data?.items ?? mockItems;
+  const items = data?.items ?? [];
   const filled = items.length > 0;
   const [search, setSearch] = useState('');
   const [showAddSheet, setShowAddSheet] = useState(false);

@@ -2,10 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
-import useClosetStore, { emptyOcrResult, makeMockOcrResults } from '@/store/closetStore';
-
-/** 한 장을 인식하는 데 걸리는 시간 — API 연동 전 임시값 */
-const STEP_MS = 2000;
+import useClosetStore, { emptyOcrResult } from '@/store/closetStore';
+import useReceiptOcr from '@/features/closet/hooks/useReceiptOcr';
+import { ocrErrorMessage } from '@/features/closet/api/ocrApi';
 
 /** 인식 완료 — 24×24, 원 채움 #9D98F0 / 체크 흰색 */
 const DoneIcon = () => (
@@ -65,50 +64,90 @@ const ClosetReceiptRecognizingPage = () => {
 
   const location = useLocation();
   const images = useClosetStore((state) => state.receiptImages);
-  const results = useClosetStore((state) => state.ocrResults);
+  const files = useClosetStore((state) => state.receiptFiles);
+  const platform = useClosetStore((state) => state.selectedPlatforms[0] ?? '');
+  // 실물 영수증인지 구매내역 캡처인지 — 서버가 파싱 방식을 가른다
+  const registerEntry = useClosetStore((state) => state.registerEntry);
   const setOcrResults = useClosetStore((state) => state.setOcrResults);
   const updateOcrResult = useClosetStore((state) => state.updateOcrResult);
+  const { recognizeAsync } = useReceiptOcr();
   // 실패분 한 장만 다시 올린 경우 — 그 장만 인식하고 나머지는 건드리지 않는다
   const replaceIndex = (location.state as { replaceIndex?: number } | null)?.replaceIndex;
   const single = typeof replaceIndex === 'number';
+  // 체크 화면에서 뺀 장은 보내지 않는다. 지정이 없으면 전부
+  const keep = (location.state as { keep?: number[] } | null)?.keep;
+  const sending = single
+    ? files.slice(replaceIndex, replaceIndex + 1)
+    : keep
+      ? keep.map((i) => files[i]).filter(Boolean)
+      : files;
   // 업로드분이 없으면(직접 진입) 최소 1장으로 화면을 유지
-  const total = single ? 1 : Math.max(images.length, 1);
-  // 지금까지 인식이 끝난 장수
+  const total = single ? 1 : Math.max(sending.length || images.length, 1);
+  // 지금까지 인식이 끝난 장수 — 장마다 요청이 따로 나가 실제 응답 수를 센다
   const [doneCount, setDoneCount] = useState(0);
 
-  // 결과를 두 번 쓰지 않게 한 번만 통과시킨다 (스토어가 바뀌면 이 효과가 다시 돈다)
+  // 요청을 두 번 보내지 않게 한 번만 통과시킨다
   const settled = useRef(false);
 
-  // 장당 STEP_MS씩 진행하고, 마지막 장이 끝나면 결과 화면으로
+  // 진입하자마자 인식 요청 — 응답이 오면 결과에 따라 화면을 나눈다
   useEffect(() => {
-    if (doneCount >= total) {
-      if (settled.current) return;
-      settled.current = true;
-      if (single) {
-        // 다시 올린 장 — 목업은 계속 실패로 두고 시도 횟수만 올린다 (반복 실패 안내를 확인할 수 있게)
-        const before = results[replaceIndex];
-        updateOcrResult(replaceIndex, {
-          ...emptyOcrResult,
-          failed: true,
-          retryCount: (before?.retryCount ?? 0) + 1,
-        });
-        navigate('/closet/register/receipt-failed');
-        return;
-      }
-      // 결과 목록이 업로드한 장수와 같아야 다음 화면에서 장별로 짚어볼 수 있다
-      const next = makeMockOcrResults(total);
-      setOcrResults(next);
-      // 실패분이 있으면 먼저 그것만 모아 보여주고, 없으면 바로 전체 목록으로
-      navigate(
-        next.some((result) => result.failed)
-          ? '/closet/register/receipt-failed'
-          : '/closet/register/product-images',
-      );
+    if (settled.current) return;
+    settled.current = true;
+
+    // 보낼 파일이 없으면(주소 직접 진입 등) 더 진행할 수 없다
+    if (sending.length === 0) {
+      navigate('/closet/register/receipt-failed', { replace: true });
       return;
     }
-    const timer = setTimeout(() => setDoneCount((count) => count + 1), STEP_MS);
-    return () => clearTimeout(timer);
-  }, [doneCount, total, single, replaceIndex, results, navigate, setOcrResults, updateOcrResult]);
+
+    recognizeAsync({
+      importType: registerEntry === 'purchase' ? 'PURCHASE_LOG' : 'RECEIPT',
+      platform,
+      files: sending,
+      // 장마다 요청이 따로 끝나므로 진행 표시가 실제 진척도를 그린다
+      onSettled: setDoneCount,
+    })
+      // 요청을 장별로 나눠 보내므로 결과는 보낸 파일과 길이·순서가 같고,
+      // 실패한 장만 failed로 표시돼 온다 (한 장이 나머지를 끌고 내려가지 않는다)
+      .then((recognized) => {
+        if (single) {
+          // 다시 올린 장 — 읽혔으면 그 자리를 채우고, 또 실패했으면 시도 횟수만 올린다
+          const before = useClosetStore.getState().ocrResults[replaceIndex];
+          const retried = recognized[0];
+          updateOcrResult(
+            replaceIndex,
+            retried && !retried.failed
+              ? retried
+              : {
+                  ...emptyOcrResult,
+                  ...before,
+                  failed: true,
+                  failReason: retried?.failReason ?? before?.failReason,
+                  retryCount: (before?.retryCount ?? 0) + 1,
+                },
+          );
+          navigate('/closet/register/receipt-failed', { replace: true });
+          return;
+        }
+
+        setOcrResults(recognized);
+        navigate(
+          recognized.some((result) => result.failed)
+            ? '/closet/register/receipt-failed'
+            : '/closet/register/product-images',
+          { replace: true },
+        );
+      })
+      .catch((error) => {
+        // 실패 사유는 실패 화면이 한 줄로 보여준다
+        setOcrResults(
+          sending.map(() => ({ ...emptyOcrResult, failed: true, failReason: ocrErrorMessage(error) })),
+        );
+        navigate('/closet/register/receipt-failed', { replace: true });
+      });
+    // 마운트 시 한 번만 — settled로 막고 있어 의존성 변화로 다시 보내지 않는다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { ClosetSearchField, ClosetTopBar, CtaButton } from '@/features/closet/components';
-import useClosetStore from '@/store/closetStore';
 import useClosetItem from '@/features/closet/hooks/useClosetItem';
 import useUpdateClosetItem from '@/features/closet/hooks/useUpdateClosetItem';
 
@@ -139,10 +138,9 @@ const SelectRow = ({
 const ClosetItemDetailPage = () => {
   const navigate = useNavigate();
   const { itemId } = useParams<{ itemId: string }>();
-  // 서버(CLOSET-04) 우선, 미연결 시 mock 폴백
+  // 상세는 서버(CLOSET-04)가 소스다
   const { data: serverItem, isPending } = useClosetItem(itemId);
-  const mockItem = useClosetStore((state) => state.items.find((it) => it.id === itemId));
-  const item = serverItem ?? mockItem;
+  const item = serverItem;
   const { saveAsync, isSaving, error: saveError } = useUpdateClosetItem(itemId);
 
   // 수정하기 = 태그 저장(CLOSET-05). 성공 시 목록/상세 최신화 후 뒤로
@@ -187,7 +185,7 @@ const ClosetItemDetailPage = () => {
     setSelectedTag(null);
     setOpenRow(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serverItem, mockItem]);
+  }, [serverItem]);
 
   // 드롭다운 바깥을 누르면 닫는다
   useEffect(() => {
@@ -215,7 +213,7 @@ const ClosetItemDetailPage = () => {
     setPickedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
 
   if (!item) {
-    if (isPending) return null; // 조회 중엔 표시 보류 (미연결 시 mock 폴백)
+    if (isPending) return null; // 조회 중엔 표시 보류
     return (
       <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
         <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-white">

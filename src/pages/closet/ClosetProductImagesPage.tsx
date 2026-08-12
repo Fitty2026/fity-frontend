@@ -1,8 +1,12 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
 import { colorChipStyle } from '@/features/closet/colors';
 import useClosetStore, { receiptProducts } from '@/store/closetStore';
+import useRegisterClosetItems from '@/features/closet/hooks/useRegisterClosetItems';
+import type { OcrImportType } from '@/features/closet/api/ocrApi';
+import { getErrorMessage } from '@/lib/apiError';
 
 /** 이미지 추가 — 34×34 원형 플러스, 원 #9D98F0 / 선 #F6F7F8 */
 const AddPhotoIcon = () => (
@@ -63,6 +67,10 @@ const Chip = ({ label }: { label: string }) => (
 const ClosetProductImagesPage = () => {
   const navigate = useNavigate();
   const results = useClosetStore((state) => state.ocrResults);
+  // 어느 갈래로 왔는지가 서버에 남길 등록 경로가 된다
+  const registerEntry = useClosetStore((state) => state.registerEntry);
+  const { registerAsync, isLoading } = useRegisterClosetItems();
+  const [saveError, setSaveError] = useState('');
 
   // 인식 성공분만 상품 단위로 펼친다. 카드 순서가 곧 수정 화면의 ?product=N 순번이다
   const entries: ProductEntry[] = results.flatMap((result, receiptIndex) =>
@@ -80,6 +88,32 @@ const ClosetProductImagesPage = () => {
 
   const doneCount = entries.filter((entry) => entry.photo).length;
   const allDone = entries.length > 0 && doneCount === entries.length;
+
+  /** 다음 — 상품마다 사진을 올리고 옷장에 등록한 뒤 완료 화면으로 */
+  const handleNext = async () => {
+    setSaveError('');
+    const targets = results
+      .filter((result) => !result.failed)
+      .flatMap((result) =>
+        receiptProducts(result).map((product) => ({
+          product,
+          // 서버가 그대로 저장하는 등록 경로 — 인식 요청에 실었던 값과 같게 맞춘다
+          importType: (registerEntry === 'purchase' ? 'PURCHASE_LOG' : 'RECEIPT') as OcrImportType,
+        })),
+      );
+
+    try {
+      const { failed, reason } = await registerAsync(targets);
+      // 일부만 실패해도 등록된 것은 살린다 — 처음부터 다시 하게 만들지 않는다
+      if (failed.length) {
+        setSaveError(reason ?? `${failed.length}건을 등록하지 못했어요. 다시 시도해주세요.`);
+        return;
+      }
+      navigate('/closet/register/added');
+    } catch (error) {
+      setSaveError(getErrorMessage(error));
+    }
+  };
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
@@ -187,13 +221,19 @@ const ClosetProductImagesPage = () => {
 
         {/* 하단 CTA — 327×58 (px 24), 하단 40 */}
         <div className="w-full px-6 pt-[10px] pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
+          {/* 등록 실패 안내 — 문구·위치 시안 미수급이라 임시 */}
+          {saveError && (
+            <p className="mb-2 text-center text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#C74440]">
+              {saveError}
+            </p>
+          )}
           <button
             type="button"
-            disabled={!allDone}
-            onClick={() => navigate('/closet/register/added')}
+            disabled={!allDone || isLoading}
+            onClick={handleNext}
             className="h-[58px] w-full cursor-pointer rounded-[32px] bg-[#1F2124] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            다음
+            {isLoading ? '등록 중...' : '다음'}
           </button>
         </div>
       </div>

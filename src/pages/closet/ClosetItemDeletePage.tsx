@@ -1,7 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { ClosetTopBar, CtaButton } from '@/features/closet/components';
-import useClosetStore from '@/store/closetStore';
 import useClosets from '@/features/closet/hooks/useClosets';
 import useDeleteClosetItem from '@/features/closet/hooks/useDeleteClosetItem';
 
@@ -12,22 +11,15 @@ import useDeleteClosetItem from '@/features/closet/hooks/useDeleteClosetItem';
 const ClosetItemDeletePage = () => {
   const navigate = useNavigate();
   const { itemId } = useParams<{ itemId: string }>();
-  // 삭제 카드 이미지 — 서버(CLOSET-03) 우선, 미연결 시 mock 폴백
+  // 삭제 카드 이미지 — 서버(CLOSET-03)가 소스다
   const { data } = useClosets();
-  const mockItem = useClosetStore((state) => state.items.find((it) => it.id === itemId));
-  const item = data?.items.find((it) => it.id === itemId) ?? mockItem;
+  const item = data?.items.find((it) => it.id === itemId);
 
-  const removeItem = useClosetStore((state) => state.removeItem);
-  const addItem = useClosetStore((state) => state.addItem);
   const { remove } = useDeleteClosetItem();
 
   const handleConfirm = () => {
-    if (itemId && item) {
-      const snapshot = item;
-      removeItem(itemId); // 즉시 반영(낙관적)
-      // CLOSET-06 — 성공 시 목록 invalidate, 실패 시 store 롤백(서버 미삭제와 화면 일치)
-      remove(itemId, { onError: () => addItem(snapshot) });
-    }
+    // CLOSET-06 — 성공하면 목록 캐시가 무효화돼 옷장이 알아서 최신화된다
+    if (itemId && item) remove(itemId);
     navigate('/closet');
   };
 
