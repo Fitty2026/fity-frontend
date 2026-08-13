@@ -102,8 +102,10 @@ const ClosetReceiptFailedPage = () => {
     .map((result, index) => ({ result, index }))
     .filter(({ result }) => result.failed);
 
-  // 한 건도 못 읽었으면 보여줄 목록이 없다 — 다시 올리는 것 말고는 할 게 없는 화면
+  // 한 건도 못 읽었으면 보여줄 목록이 없다
   const nothingRecognized = results.length > 0 && failed.length === results.length;
+  // 전부 실패한 사유 — 장별로 같은 이유인 게 보통이라 첫 사유를 대표로 보여준다
+  const failReason = failed[0]?.result.failReason;
 
   if (nothingRecognized) {
     return (
@@ -125,13 +127,33 @@ const ClosetReceiptFailedPage = () => {
               <p className="w-full text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
                 인식된 상품이 없어요
               </p>
-              <button
-                type="button"
-                onClick={() => setUploadSheetOpen(true)}
-                className="w-full cursor-pointer text-center text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#5A6169] underline"
-              >
-                다시 업로드하기
-              </button>
+              {/* 실패 사유 — 에러 코드별 안내가 여기서만 보인다(전부 실패가 가장 흔한 갈래).
+                  배치는 시안 미수급이라 임시 */}
+              {failReason && (
+                <p className="w-full text-center text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#6F7881]">
+                  {failReason}
+                </p>
+              )}
+              {/* 복구 수단 두 개를 한 줄에 — 직접 입력은 일부 실패 목록에는 있는 수단이라
+                  전부 실패에서만 없으면 안 된다 */}
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate('/closet/register/manual?receipt=1', { state: { from: 'failed' } })
+                  }
+                  className="cursor-pointer text-center text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#5A6169] underline"
+                >
+                  직접 입력하기
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUploadSheetOpen(true)}
+                  className="cursor-pointer text-center text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#5A6169] underline"
+                >
+                  다시 업로드하기
+                </button>
+              </div>
             </div>
           </div>
 

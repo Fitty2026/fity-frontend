@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { PermissionDeniedAlert, ReceiptGuideScreen } from '@/features/closet/components';
 import useClosetStore from '@/store/closetStore';
 import uploadGuide from '@/assets/images/closet/upload-guide.png';
@@ -53,10 +53,16 @@ const ClosetUploadGuidePage = () => {
 
   // 구매내역(스마트 영수증) 경로인지 — 안내 문구와 예시 이미지가 갈린다
   const isPurchase = location.pathname.endsWith('/purchase-guide');
+  const registerEntry = useClosetStore((state) => state.registerEntry);
 
   // 인식 실패분 '다시 업로드' — 그 한 장만 교체하므로 다중 선택을 막는다
   const replaceIndex = (location.state as { replaceIndex?: number } | null)?.replaceIndex;
   const single = typeof replaceIndex === 'number';
+
+  // 새로고침 가드 — 스토어가 메모리뿐이라 새로고침하면 등록 갈래·쇼핑몰 선택이 사라진다.
+  // 그 상태로 진행하면 구매내역 캡처가 영수증(RECEIPT)으로 전송돼 원인 모를 실패가 된다.
+  // 화면(주소)은 남았는데 갈래 값이 비었으면 처음부터 다시 고르게 되돌린다.
+  if (!registerEntry) return <Navigate to="/closet/register" replace />;
 
   const handlePick = (event: React.ChangeEvent<HTMLInputElement>) => {
     const picked = Array.from(event.target.files ?? []).slice(0, single ? 1 : MAX_FILES);
