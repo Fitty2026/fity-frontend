@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
  * 비로그인 시 /login으로 리다이렉트
  */
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { isLoggedIn } = useAuthStore();
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;

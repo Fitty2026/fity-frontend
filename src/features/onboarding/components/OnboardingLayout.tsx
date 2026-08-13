@@ -1,4 +1,4 @@
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/components/layout/PageLayout';
 
 interface OnboardingLayoutProps {
   /** 진행 바 비율 (0~1) */
