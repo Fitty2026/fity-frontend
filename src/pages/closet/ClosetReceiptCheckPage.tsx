@@ -193,7 +193,7 @@ const ClosetReceiptCheckPage = () => {
           <input
             ref={fileRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             multiple
             className="hidden"
             onChange={handleAdd}

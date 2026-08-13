@@ -9,6 +9,7 @@ import {
   type ReceiptItemPayload,
 } from '../api/ocrApi';
 import { getErrorMessage } from '@/lib/apiError';
+import { toColorHex } from '../colors';
 import type { OcrProduct } from '@/store/closetStore';
 
 /** 등록할 상품 한 건 — 화면이 모은 값 그대로 */
@@ -63,9 +64,9 @@ const toImageId = async (photo: string): Promise<number> => {
 const toPayload = async (
   { product, importType }: RegisterTarget,
 ): Promise<ReceiptItemPayload> => {
-  const colorText = product.colors?.[0]?.label || product.color.label;
+  const color = product.colors?.[0] ?? product.color;
   // 서버 검증(OCR400_07)과 같은 조건 — 미리 걸러 요청 한 번을 아낀다
-  if (!product.name || !product.brand || !colorText) {
+  if (!product.name || !product.brand || !color.label) {
     throw new Error('브랜드·상품명·색상을 모두 채워주세요.');
   }
   if (!product.photo) throw new Error('옷 이미지를 등록해주세요.');
@@ -73,7 +74,8 @@ const toPayload = async (
   return {
     productName: product.name,
     brand: product.brand,
-    colorText,
+    colorText: color.label,
+    colorHex: toColorHex(color),
     imageId: await toImageId(product.photo),
     category: toReceiptCategory(product.category ?? ''),
     subCategory: product.subCategory || undefined,

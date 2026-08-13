@@ -182,7 +182,7 @@ const ClosetPhotoPage = () => {
         </button>
 
         {/* 갤러리 — 좌 24, 하단 40. 파일 선택 후 분석으로 */}
-        <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={handlePickFile} />
+        <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePickFile} />
         <button
           type="button"
           onClick={() => fileInput.current?.click()}

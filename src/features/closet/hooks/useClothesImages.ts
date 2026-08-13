@@ -10,12 +10,12 @@ import { searchClothesImages, type ClothesImageSearchParams } from '../api/ocrAp
  * 실패해도 화면을 막지 않는다(있으면 좋은 정보라 재시도도 하지 않는다).
  */
 const useClothesImages = (params: Partial<ClothesImageSearchParams>, enabled = true) => {
-  const { brand = '', productName = '', colorText = '' } = params;
+  const { brand = '', productName = '', colorText = '', colorHex = '' } = params;
   const ready = Boolean(brand && productName && colorText);
 
   const query = useQuery({
     queryKey: ['clothes-images', brand, productName, colorText],
-    queryFn: () => searchClothesImages({ brand, productName, colorText }),
+    queryFn: () => searchClothesImages({ brand, productName, colorText, colorHex }),
     enabled: enabled && ready,
     retry: false,
     staleTime: Infinity,

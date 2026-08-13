@@ -7,7 +7,7 @@ import {
   CtaButton,
   PhotoSourceSheet,
 } from '@/features/closet/components';
-import { COLOR_COLUMNS, COLOR_OPTIONS, colorChipStyle } from '@/features/closet/colors';
+import { COLOR_COLUMNS, COLOR_OPTIONS, colorChipStyle, toColorHex } from '@/features/closet/colors';
 import { SHOPPING_MALLS } from '@/features/closet/shoppingMalls';
 import useClothesImages from '@/features/closet/hooks/useClothesImages';
 import useClosetStore, { receiptProducts } from '@/store/closetStore';
@@ -278,7 +278,13 @@ const ClosetProductImageEditPage = () => {
    * 브랜드·상품명·색상이 다 차야 조회할 수 있고, 이름을 고치는 중에는 부르지 않는다.
    */
   const suggestions = useClothesImages(
-    { brand, productName: name.trim(), colorText: colors[0]?.label },
+    {
+      brand,
+      productName: name.trim(),
+      colorText: colors[0]?.label,
+      // hex도 같이 — 서버가 colorText→colorHex로 넘어가는 과도기 호환 (저장과 같은 규칙)
+      colorHex: colors[0] ? toColorHex(colors[0]) : undefined,
+    },
     !nameEditing,
   );
 
@@ -369,7 +375,7 @@ const ClosetProductImageEditPage = () => {
           <input
             ref={fileRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             className="hidden"
             onChange={(event) => {
               const file = event.target.files?.[0];
