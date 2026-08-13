@@ -110,8 +110,11 @@ export const getGenerationJob = async (jobId: string): Promise<GenerationJob> =>
 
 /** 생성된 코디 저장 */
 export const saveGeneratedOutfit = async (outfit: Outfit): Promise<Outfit> => {
-  const { data } = await api.post<ApiResponse<OutfitRaw>>('/api/v1/outfits/save', {
-    outfit_id: Number(outfit.id),
+  const { data } = await api.post<ApiResponse<OutfitRaw>>('/api/v1/outfits/saved', {
+    outfitResultId: Number(outfit.id),
+    name: '생성된 코디',
+    tags: outfit.styleTags,
+    memo: outfit.memo,
   });
   const saved = toOutfit(data.result);
 

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import PageLayout from '@/components/layout/PageeLayout';
@@ -5,14 +6,27 @@ import LoadingScreen from '@/components/ui/LoadingScreen';
 import useGeneratedOutfit from '@/features/codyplay/hooks/useGeneratedOutfit';
 import useSaveGeneratedOutfit from '@/features/codyplay/hooks/useSaveGeneratedOutfit';
 import useStylingStore from '@/store/stylingStore';
+import { imageSrc } from '@/features/closet/api/closetApi';
+import type { Outfit } from '@/types';
 
 const CodyPlayPage = () => {
   const { state } = useLocation() as {
-    state: { outfitResultId?: number } | null;
+    state: { outfitResultId?: number; generatedImageUrl?: string } | null;
   };
-  const { outfit: result, error, isPending, retry } = useGeneratedOutfit(
-    state?.outfitResultId ? String(state.outfitResultId) : undefined,
+  const routeOutfit: Outfit | undefined = useMemo(
+    () => state?.outfitResultId && state.generatedImageUrl
+      ? {
+          id: String(state.outfitResultId),
+          imageUrl: imageSrc(state.generatedImageUrl),
+          items: [],
+          styleTags: [],
+          createdAt: new Date().toISOString(),
+          isSaved: false,
+        }
+      : undefined,
+    [state?.generatedImageUrl, state?.outfitResultId],
   );
+  const { outfit: result, error, isPending, retry } = useGeneratedOutfit(undefined, routeOutfit);
   const setGeneratedOutfit = useStylingStore((state) => state.setGeneratedOutfit);
   const saveMutation = useSaveGeneratedOutfit();
   const navigate = useNavigate();

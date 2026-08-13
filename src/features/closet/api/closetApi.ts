@@ -40,8 +40,12 @@ export const uploadImage = async (file: File, imageType: ImageType = 'CLOSET_ITE
   (await uploadImageAsset(file, imageType)).imageUrl;
 
 /** 상대경로 imageUrl → 렌더용 절대 URL (baseURL 조합은 표시할 때만) */
-export const imageSrc = (imageUrl: string): string =>
-  imageUrl.startsWith('http') ? imageUrl : `${import.meta.env.VITE_API_BASE_URL}${imageUrl}`;
+export const imageSrc = (imageUrl: string): string => {
+  if (!imageUrl) return '';
+  if (/^https?:\/\//.test(imageUrl)) return imageUrl;
+  const baseUrl = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '');
+  return `${baseUrl}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+};
 
 // ── CLOSET-02 옷장 아이템 등록 (POST /api/v1/closets/items) ──
 

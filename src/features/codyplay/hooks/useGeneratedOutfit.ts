@@ -6,8 +6,9 @@ import {
   getGenerationJob,
 } from '@/features/codyplay/api/codyPlayApi';
 import useStylingStore from '@/store/stylingStore';
+import type { Outfit } from '@/types';
 
-const useGeneratedOutfit = (initialJobId?: string) => {
+const useGeneratedOutfit = (initialJobId?: string, initialOutfit?: Outfit) => {
   const hasRequestedRef = useRef(false);
   const selectedDate = useStylingStore((state) => state.selectedDate);
   const selectedContext = useStylingStore((state) => state.selectedContext);
@@ -21,7 +22,7 @@ const useGeneratedOutfit = (initialJobId?: string) => {
   const jobQuery = useQuery({
     queryKey: ['outfit-generation-job', jobId],
     queryFn: () => getGenerationJob(jobId as string),
-    enabled: Boolean(jobId) && !generatedOutfit && !createdOutfit,
+    enabled: Boolean(jobId) && !initialOutfit && !generatedOutfit && !createdOutfit,
     refetchInterval: (query) =>
       query.state.data?.status === 'COMPLETED' || query.state.data?.status === 'FAILED'
         ? false
@@ -29,7 +30,7 @@ const useGeneratedOutfit = (initialJobId?: string) => {
   });
 
   useEffect(() => {
-    if (initialJobId || generatedOutfit || hasRequestedRef.current) return;
+    if (initialJobId || initialOutfit || generatedOutfit || hasRequestedRef.current) return;
     hasRequestedRef.current = true;
     createJobMutation.mutate({
       date: selectedDate ?? undefined,
@@ -40,6 +41,7 @@ const useGeneratedOutfit = (initialJobId?: string) => {
   }, [
     createJobMutation,
     generatedOutfit,
+    initialOutfit,
     initialJobId,
     selectedBaseItem?.id,
     selectedContext,
@@ -47,22 +49,25 @@ const useGeneratedOutfit = (initialJobId?: string) => {
     selectedMood,
   ]);
 
-  const completedOutfit = createdOutfit ?? jobQuery.data?.result;
+  const completedOutfit = initialOutfit ?? createdOutfit ?? jobQuery.data?.result;
   const completedStatus = createJobMutation.data?.status ?? jobQuery.data?.status;
   useEffect(() => {
-    if (completedStatus === 'COMPLETED' && completedOutfit) {
+    if (initialOutfit) {
+      setGeneratedOutfit(initialOutfit);
+    } else if (completedStatus === 'COMPLETED' && completedOutfit) {
       setGeneratedOutfit(completedOutfit);
     }
-  }, [completedOutfit, completedStatus, setGeneratedOutfit]);
+  }, [completedOutfit, completedStatus, initialOutfit, setGeneratedOutfit]);
 
   return {
-    outfit: generatedOutfit ?? completedOutfit,
+    outfit: initialOutfit ?? generatedOutfit ?? completedOutfit,
     isPending:
+      !initialOutfit &&
       !generatedOutfit &&
       (createJobMutation.isPending ||
         (!createdOutfit && Boolean(jobId) && jobQuery.isPending)),
     error:
-      createJobMutation.error ??
+      (initialOutfit ? null : createJobMutation.error) ??
       jobQuery.error ??
       (completedStatus === 'FAILED' ? new Error('코디 생성에 실패했습니다.') : null),
     retry: () => {
