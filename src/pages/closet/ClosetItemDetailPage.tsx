@@ -163,10 +163,18 @@ const ClosetItemDetailPage = () => {
   const item = serverItem;
   const { saveAsync, isSaving, error: saveError } = useUpdateClosetItem(itemId);
 
-  // 수정하기 = 태그 저장(CLOSET-05). 성공 시 목록/상세 최신화 후 뒤로
+  // 수정하기 = 편집한 값 저장(CLOSET-05). 성공 시 목록/상세 최신화 후 뒤로.
+  // 빈 값도 그대로 보낸다 — 사용자가 지운 것이니 서버도 null로 비우는 게 맞다.
+  // (색상은 이 화면에 편집 UI가 없어 보내지 않는다 → 서버 값 유지)
   const handleSave = async () => {
     try {
-      await saveAsync(tags);
+      await saveAsync({
+        category,
+        subCategory,
+        brand,
+        memo,
+        tagValues: tags,
+      });
       navigate(-1);
     } catch {
       // 실패 메시지는 saveError로 표시
@@ -186,11 +194,10 @@ const ClosetItemDetailPage = () => {
   const [pickedTags, setPickedTags] = useState<string[]>([]);
   // 좋아요 — 저장 API가 없어 화면 안에서만 유지 (TODO: 옷장 API에 좋아요 붙으면 연동)
   const [liked, setLiked] = useState(false);
-  // 상품명 — 수정 화면과 같은 인라인 편집. 저장 API가 name을 받지 않아 값은 화면 안에서만 유지
-  // (TODO: 수정 API에 name 추가되면 연동)
+  // 상품명 — 수정 화면과 같은 인라인 편집. 저장 API(CLOSET-05)가 name을 받지 않아
+  // 값은 화면 안에서만 유지 (TODO: 수정 API에 name 추가되면 연동)
   const [name, setName] = useState('');
   const [nameEditing, setNameEditing] = useState(false);
-  // 카테고리 — 저장은 태그만 하므로 선택값은 화면 안에서만 유지 (TODO: 수정 API에 카테고리 추가되면 연동)
   const [category, setCategory] = useState('');
   const [subCategory, setSubCategory] = useState('');
   const [brand, setBrand] = useState('');
