@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import useClosetStore from '@/store/closetStore';
+import useClosets from '../hooks/useClosets';
 
 /** 뒤로가기 — 24×24 */
 const BackIcon = () => (
@@ -23,11 +23,14 @@ interface ClosetTopBarProps {
 }
 
 /**
- * 옷장 공통 상단바 — 좌측 뒤로가기 / 가운데 "옷장" / 우측 보유 개수(스토어 기준).
+ * 옷장 공통 상단바 — 좌측 뒤로가기 / 가운데 "옷장" / 우측 보유 개수.
+ *
+ * 개수는 서버(CLOSET-03)가 소스다. 여러 화면이 같이 써도 react-query가 묶어준다.
  */
 const ClosetTopBar = ({ showBack = true, height = 53 }: ClosetTopBarProps) => {
   const navigate = useNavigate();
-  const count = useClosetStore((state) => state.items.length);
+  const { data } = useClosets();
+  const count = data?.items.length ?? 0;
 
   return (
     <div

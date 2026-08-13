@@ -1,52 +1,75 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
+import { registerStartPath } from '@/features/closet/registerFlow';
+import useOnboardingStore from '@/store/onboardingStore';
 import registerBgBlob from '@/assets/images/closet-register-bg-blob.png';
+import useClosetStore from '@/store/closetStore';
 
-const AlbumIcon = () => (
-  <svg width="32" height="32" viewBox="0 0 28 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M1 16L7.87867 9.12133C8.15724 8.84275 8.48796 8.62177 8.85194 8.47101C9.21592 8.32024 9.60603 8.24264 10 8.24264C10.394 8.24264 10.7841 8.32024 11.1481 8.47101C11.512 8.62177 11.8428 8.84275 12.1213 9.12133L19 16M17 14L18.8787 12.1213C19.1572 11.8428 19.488 11.6218 19.8519 11.471C20.2159 11.3202 20.606 11.2426 21 11.2426C21.394 11.2426 21.7841 11.3202 22.1481 11.471C22.512 11.6218 22.8428 11.8428 23.1213 12.1213L27 16M3 21H25C25.5304 21 26.0391 20.7893 26.4142 20.4142C26.7893 20.0391 27 19.5304 27 19V3C27 2.46957 26.7893 1.96086 26.4142 1.58579C26.0391 1.21071 25.5304 1 25 1H3C2.46957 1 1.96086 1.21071 1.58579 1.58579C1.21071 1.96086 1 2.46957 1 3V19C1 19.5304 1.21071 20.0391 1.58579 20.4142C1.96086 20.7893 2.46957 21 3 21ZM17 6H17.0107V6.01067H17V6ZM17.5 6C17.5 6.13261 17.4473 6.25979 17.3536 6.35355C17.2598 6.44732 17.1326 6.5 17 6.5C16.8674 6.5 16.7402 6.44732 16.6464 6.35355C16.5527 6.25979 16.5 6.13261 16.5 6C16.5 5.86739 16.5527 5.74022 16.6464 5.64645C16.7402 5.55268 16.8674 5.5 17 5.5C17.1326 5.5 17.2598 5.55268 17.3536 5.64645C17.4473 5.74022 17.5 5.86739 17.5 6Z" stroke="#1F2124" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-const CameraIcon = () => (
-  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M9.10267 8.23361C8.86265 8.61349 8.54243 8.93625 8.16445 9.17925C7.78647 9.42225 7.3599 9.57961 6.91467 9.64027C6.408 9.71227 5.90533 9.78961 5.40267 9.87361C3.99867 10.1069 3 11.3429 3 12.7656V24.0003C3 24.7959 3.31607 25.559 3.87868 26.1216C4.44129 26.6842 5.20435 27.0003 6 27.0003H26C26.7957 27.0003 27.5587 26.6842 28.1213 26.1216C28.6839 25.559 29 24.7959 29 24.0003V12.7656C29 11.3429 28 10.1069 26.5973 9.87361C26.0943 9.78979 25.5902 9.71201 25.0853 9.64027C24.6403 9.57942 24.214 9.42198 23.8363 9.17899C23.4586 8.936 23.1385 8.61333 22.8987 8.23361L21.8027 6.47894C21.5565 6.07907 21.2176 5.7444 20.8147 5.50325C20.4118 5.26211 19.9567 5.1216 19.488 5.09361C17.1643 4.9688 14.8357 4.9688 12.512 5.09361C12.0433 5.1216 11.5882 5.26211 11.1853 5.50325C10.7824 5.7444 10.4435 6.07907 10.1973 6.47894L9.10267 8.23361Z" stroke="#34363C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M22 17C22 18.5913 21.3679 20.1174 20.2426 21.2426C19.1174 22.3679 17.5913 23 16 23C14.4087 23 12.8826 22.3679 11.7574 21.2426C10.6321 20.1174 10 18.5913 10 17C10 15.4087 10.6321 13.8826 11.7574 12.7574C12.8826 11.6321 14.4087 11 16 11C17.5913 11 19.1174 11.6321 20.2426 12.7574C21.3679 13.8826 22 15.4087 22 17ZM25 14H25.0107V14.0107H25V14Z" stroke="#34363C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-const BagIcon = () => (
-  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M21 14V8C21 6.67392 20.4732 5.40215 19.5355 4.46447C18.5978 3.52678 17.3261 3 16 3C14.6739 3 13.4021 3.52678 12.4644 4.46447C11.5268 5.40215 11 6.67392 11 8V14M26.1413 11.3427L27.8253 27.3427C27.9186 28.2293 27.2253 29 26.3333 29H5.66665C5.45626 29.0002 5.24817 28.9562 5.05591 28.8708C4.86365 28.7853 4.69151 28.6604 4.55068 28.5041C4.40984 28.3478 4.30347 28.1636 4.23845 27.9635C4.17344 27.7634 4.15125 27.5519 4.17331 27.3427L5.85865 11.3427C5.89752 10.9741 6.07148 10.6329 6.34698 10.385C6.62248 10.1371 6.98002 9.99993 7.35065 10H24.6493C25.4173 10 26.0613 10.58 26.1413 11.3427ZM11.5 14C11.5 14.1326 11.4473 14.2598 11.3535 14.3536C11.2598 14.4473 11.1326 14.5 11 14.5C10.8674 14.5 10.7402 14.4473 10.6464 14.3536C10.5527 14.2598 10.5 14.1326 10.5 14C10.5 13.8674 10.5527 13.7402 10.6464 13.6464C10.7402 13.5527 10.8674 13.5 11 13.5C11.1326 13.5 11.2598 13.5527 11.3535 13.6464C11.4473 13.7402 11.5 13.8674 11.5 14ZM21.5 14C21.5 14.1326 21.4473 14.2598 21.3535 14.3536C21.2598 14.4473 21.1326 14.5 21 14.5C20.8674 14.5 20.7402 14.4473 20.6464 14.3536C20.5527 14.2598 20.5 14.1326 20.5 14C20.5 13.8674 20.5527 13.7402 20.6464 13.6464C20.7402 13.5527 20.8674 13.5 21 13.5C21.1326 13.5 21.2598 13.5527 21.3535 13.6464C21.4473 13.7402 21.5 13.8674 21.5 14Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
+/** 영수증 — 32×32 */
 const ReceiptIcon = () => (
-  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M3 11H29M3 12H29M7 19H15M7 22H11M6 26H26C26.7957 26 27.5587 25.6839 28.1213 25.1213C28.6839 24.5587 29 23.7956 29 23V9C29 8.20435 28.6839 7.44129 28.1213 6.87868C27.5587 6.31607 26.7957 6 26 6H6C5.20435 6 4.44129 6.31607 3.87868 6.87868C3.31607 7.44129 3 8.20435 3 9V23C3 23.7956 3.31607 24.5587 3.87868 25.1213C4.44129 25.6839 5.20435 26 6 26Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path
+      d="M3 11H29M3 12H29M7 19H15M7 22H11M6 26H26C26.7957 26 27.5587 25.6839 28.1213 25.1213C28.6839 24.5587 29 23.7956 29 23V9C29 8.20435 28.6839 7.44129 28.1213 6.87868C27.5587 6.31607 26.7957 6 26 6H6C5.20435 6 4.44129 6.31607 3.87868 6.87868C3.31607 7.44129 3 8.20435 3 9V23C3 23.7956 3.31607 24.5587 3.87868 25.1213C4.44129 25.6839 5.20435 26 6 26Z"
+      stroke="black"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
+/** 직접 입력 — 32×32 */
+const PencilIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path
+      d="M22.4827 5.983L24.732 3.73233C25.2009 3.26343 25.8369 3 26.5 3C27.1631 3 27.7991 3.26343 28.268 3.73233C28.7369 4.20123 29.0003 4.8372 29.0003 5.50033C29.0003 6.16346 28.7369 6.79943 28.268 7.26833L14.1093 21.427C13.4044 22.1315 12.5352 22.6493 11.58 22.9337L8 24.0003L9.06667 20.4203C9.35104 19.4652 9.86885 18.5959 10.5733 17.891L22.4827 5.983ZM22.4827 5.983L26 9.50033M24 18.667V25.0003C24 25.796 23.6839 26.559 23.1213 27.1216C22.5587 27.6843 21.7956 28.0003 21 28.0003H7C6.20435 28.0003 5.44129 27.6843 4.87868 27.1216C4.31607 26.559 4 25.796 4 25.0003V11.0003C4 10.2047 4.31607 9.44162 4.87868 8.87901C5.44129 8.3164 6.20435 8.00033 7 8.00033H13.3333"
+      stroke="black"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+/**
+ * 등록 방식 — 영수증 / 구매내역. 둘 다 권한 안내를 먼저 거치고, 그 다음이 갈린다.
+ * 영수증  → 촬영·앨범 방식 선택(receipt-method)
+ * 구매내역 → 쇼핑몰 선택(platform) → 앨범 업로드(upload-guide)
+ */
 const OPTIONS = [
-  { key: 'album', label: '앨범에서 선택', icon: <AlbumIcon />, to: '/closet/register/upload' },
-  { key: 'camera', label: '카메라로 촬영', icon: <CameraIcon />, to: '/closet/register/photo' },
-  // OCR(구매내역) 방식으로 전환 예정 — 라벨은 임시, 라우트는 화면 확정 후 변경
-  { key: 'platform', label: '구매내역으로 등록하기', icon: <BagIcon />, to: '/closet/register/platform' },
-  { key: 'receipt', label: '영수증 불러오기', icon: <ReceiptIcon />, to: '/closet/register/receipt' },
+  {
+    key: 'receipt' as const,
+    label: '영수증 불러오기',
+    icon: <ReceiptIcon />,
+  },
+  {
+    key: 'purchase' as const,
+    label: '구매내역 불러오기',
+    icon: <PencilIcon />,
+  },
 ];
 
 /**
- * 옷장 등록 방식 선택 (자동/직접).
- * 타이틀 + 4가지 등록 방식(앨범/카메라/구매내역/영수증) 그룹 카드.
+ * 옷장 등록 방식 선택 — 안내 문구 + 등록 방식 카드 2개.
  */
 const ClosetRegisterPage = () => {
   const navigate = useNavigate();
+  const startOcrFlow = useClosetStore((state) => state.startOcrFlow);
+  // 권한 안내는 최초 1회만 거친다
+  const permissionSeen = useOnboardingStore((state) => state.closetPermissionSeen);
+
+  // 등록 플로우의 시작점 — 지난 회차 영수증이 남아 장수가 계속 불어나지 않게 여기서 비운다
+  useEffect(() => {
+    startOcrFlow();
+  }, [startOcrFlow]);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
       <div className="relative flex flex-col flex-1 min-h-0 bg-white overflow-hidden">
-        {/* 배경 blob — Figma: 1078.79², top 0, left -451, angle 10.07°(=CSS -10.07°) */}
+        {/* 배경 blob — Figma: 1078.79², top 0, left -451, angle 10.07°(=CSS -10.07°).
+            좌표는 Figma 그대로가 아니라 화면에서 맞춰 본 값이다(스펙대로 넣으면 어긋난다) */}
         <img
           src={registerBgBlob}
           alt=""
@@ -57,7 +80,6 @@ const ClosetRegisterPage = () => {
             top: '50px',
             left: '-351px',
             transform: 'rotate(-10.07deg)',
-            opacity: 1,
           }}
           draggable={false}
         />
@@ -65,30 +87,42 @@ const ClosetRegisterPage = () => {
         <OnboardingTopBar progress={300 / 375} showSkip onSkip={() => navigate('/closet')} />
 
         <div className="relative flex-1 overflow-y-auto px-6 pt-[68px]">
-          {/* 타이틀 (Figma: Pretendard 700 / 24px / lh150% / -2%) */}
+          {/* 문구 블록 327×120 — 진행 바 아래 68 (Figma top 175) */}
           <h1 className="text-[24px] font-bold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
             옷을 등록해
             <br />
             코디를 완성해보세요
           </h1>
-          {/* 부제 (Figma: Pretendard 500 / 14px / lh160% / -2% / #5A6169) */}
+          {/* Body/B7 — 14px Medium, Primary/600 */}
           <p className="mt-1 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#5A6169]">
             보유한 옷을 추가하면
             <br />
             더 정확한 코디를 추천해드려요
           </p>
 
-          {/* 옵션 그룹 카드 (Figma: bg #FFF 20%, radius16, shadow 0/8/16 #000 8%, backdrop blur) */}
-          <div className="mt-[111px] overflow-hidden rounded-2xl bg-white/20 shadow-[0_8px_16px_0_rgba(0,0,0,0.08)] backdrop-blur-md">
-            {OPTIONS.map((opt) => (
+          {/* 등록 방식 카드 — 327×80, 카드 간 12 (Figma 568/660).
+              문구 블록(120)이 앱 125에서 끝나므로 518에 놓으려면 273 띄운다 */}
+          <div className="mt-[273px] flex flex-col gap-3 pb-10">
+            {OPTIONS.map((option) => (
               <button
-                key={opt.key}
+                key={option.key}
                 type="button"
-                onClick={() => navigate(opt.to)}
-                className="flex items-center gap-[40px] w-full h-20 pl-6 pr-[14px] text-left cursor-pointer border-b border-[#E6E8EA] last:border-b-0"
+                // 어느 쪽으로 들어왔는지 넘긴다 — 다음 목적지가 갈린다.
+                // 권한 안내를 이미 봤으면 그 화면은 건너뛴다
+                onClick={() =>
+                  navigate(registerStartPath(option.key, permissionSeen), {
+                    state: { entry: option.key },
+                  })
+                }
+                // padding 24, radius 16, bg 흰색 20%, shadow 0 8 16 #00000014
+                className="flex h-20 w-full cursor-pointer items-center gap-7 rounded-2xl bg-white/20 p-6 text-left shadow-[0_8px_16px_0_#00000014] backdrop-blur-md"
               >
-                <span className="shrink-0">{opt.icon}</span>
-                <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">{opt.label}</span>
+                {/* 아이콘만 12 오른쪽으로 (라벨 위치는 그대로 유지하려고 gap을 28로) */}
+                <span className="ml-3 shrink-0">{option.icon}</span>
+                {/* Body/B1 — 16px Bold */}
+                <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">
+                  {option.label}
+                </span>
               </button>
             ))}
           </div>

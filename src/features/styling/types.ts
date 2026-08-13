@@ -40,16 +40,16 @@ export const TERMINAL_JOB_STATUSES: OutfitJobStatus[] = ['completed', 'failed', 
 /** 상황 (OUTFIT-01 situation) */
 export type OutfitSituation = 'DATE' | 'WORK' | 'SCHOOL' | 'TRAVEL';
 
-/** 날씨 상태 (OUTFIT-01 weather.condition) */
-export type WeatherCondition = 'SUNNY' | 'CLOUDY' | 'RAINY' | 'SNOWY' | 'UNKNOWN';
+/** 날씨 상태 (OUTFIT-01 weather.condition) — 2026-08-13 BE 확정 6종 */
+export type WeatherCondition = 'SUNNY' | 'CLOUDY' | 'RAINY' | 'SNOWY' | 'WINDY' | 'UNKNOWN';
 
-/** 화면 날씨 종류 → API condition. 바람은 대응 값이 없어 UNKNOWN (WINDY 추가 요청 중) */
+/** 화면 날씨 종류 → API condition */
 export const WEATHER_CONDITION: Record<string, WeatherCondition> = {
   sun: 'SUNNY',
   cloud: 'CLOUDY',
   rain: 'RAINY',
   snow: 'SNOWY',
-  wind: 'UNKNOWN',
+  wind: 'WINDY',
 };
 
 /** 화면 상황 옵션 id → API situation */
@@ -60,7 +60,7 @@ export const SITUATION_VALUE: Record<string, OutfitSituation> = {
   travel: 'TRAVEL',
 };
 
-/** 기온은 화면에 표기가 없어 없을 수 있다 (condition만 보내도 되는지 백엔드 확인 중) */
+/** condition만 필수, 기온은 선택 (2026-08-13 BE 확정) */
 export interface OutfitWeather {
   temperature?: number;
   condition: WeatherCondition;
@@ -87,6 +87,16 @@ export interface OutfitJobAccepted {
   expiresAt?: string;
 }
 
+/**
+ * 실패·만료 사유 — failed/expired에서 온다.
+ * 만료(JOB_TIMEOUT)는 HTTP 오류가 아니라 정상 200 응답의 status: expired로 온다.
+ */
+export interface OutfitJobFailure {
+  /** 예: JOB_TIMEOUT */
+  code: string;
+  message: string;
+}
+
 /** OUTFIT-02 상태 조회 응답 — 결과 필드는 completed에서만 채워진다 */
 export interface OutfitJob {
   jobId: number;
@@ -95,6 +105,7 @@ export interface OutfitJob {
   progress: number;
   outfitResultId?: number;
   generatedImageUrl?: string;
+  failure?: OutfitJobFailure;
   createdAt?: string;
   completedAt?: string;
   expiresAt?: string;

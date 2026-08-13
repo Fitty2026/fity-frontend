@@ -13,6 +13,10 @@ interface OnboardingState {
   analysisResult: BodyAnalyzeResult | null;
   isOnboardingComplete: boolean;
   marketingAgreed: boolean;
+  /** 옷장 준비 완료 화면(/closet/register/complete)을 이미 봤는지 — 최초 1회만 보여준다 */
+  closetCompleteSeen: boolean;
+  /** 옷 등록 권한 안내(/closet/register/permission)를 이미 봤는지 — 최초 1회만 거친다 */
+  closetPermissionSeen: boolean;
 
   toggleStyle: (style: StyleTag) => void;
   setBodyType: (type: BodyType) => void;
@@ -26,6 +30,8 @@ interface OnboardingState {
   
   setMarketingAgreed: (agreed: boolean) => void;
   completeOnboarding: () => void;
+  markClosetCompleteSeen: () => void;
+  markClosetPermissionSeen: () => void;
   reset: () => void;
 }
 
@@ -38,6 +44,8 @@ const useOnboardingStore = create<OnboardingState>()(
       analysisResult: null,
       isOnboardingComplete: false,
       marketingAgreed: false,
+      closetCompleteSeen: false,
+      closetPermissionSeen: false,
 
       // 스타일 태그 토글 (다중 선택)
       toggleStyle: (style) =>
@@ -65,6 +73,10 @@ const useOnboardingStore = create<OnboardingState>()(
 
       completeOnboarding: () => set({ isOnboardingComplete: true }),
 
+      markClosetCompleteSeen: () => set({ closetCompleteSeen: true }),
+
+      markClosetPermissionSeen: () => set({ closetPermissionSeen: true }),
+
       reset: () =>
         set({
           selectedStyles: [],
@@ -73,6 +85,8 @@ const useOnboardingStore = create<OnboardingState>()(
           analysisResult: null,
           isOnboardingComplete: false,
           marketingAgreed: false,
+          closetCompleteSeen: false,
+          closetPermissionSeen: false,
         }),
     }),
     {
@@ -83,6 +97,8 @@ const useOnboardingStore = create<OnboardingState>()(
         bodyType: state.bodyType,
         isOnboardingComplete: state.isOnboardingComplete,
         marketingAgreed: state.marketingAgreed,
+        closetCompleteSeen: state.closetCompleteSeen,
+        closetPermissionSeen: state.closetPermissionSeen,
       }),
     },
   ),

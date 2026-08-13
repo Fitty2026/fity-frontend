@@ -3,12 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { ClosetBottomNav, ClosetSearchField, ClosetTopBar } from '@/features/closet/components';
 import { matchesQuery } from '@/features/closet/searchItems';
-import useClosetStore from '@/store/closetStore';
+import { registerStartPath } from '@/features/closet/registerFlow';
+import useOnboardingStore from '@/store/onboardingStore';
 import useClosets from '@/features/closet/hooks/useClosets';
 import type { ClothingItem } from '@/types';
 
-/** 카테고리 행 노출 순서 (해당 카테고리 옷이 있을 때만 표시) */
-const ROW_CATEGORIES = ['아우터', '상의', '하의', '신발', '가방', '액세서리'] as const;
+/**
+ * 카테고리 행 노출 순서 (해당 카테고리 옷이 있을 때만 표시).
+ * 한 행이 여러 카테고리를 묶을 수 있다 — 아우터는 상의와 같은 행에 둔다(디자이너 요청).
+ * 저장되는 분류는 그대로 7종이고, 여기서 보여줄 때만 접는다.
+ */
+const ROW_CATEGORIES = [
+  { key: '상의', categories: ['상의', '아우터'] },
+  { key: '하의', categories: ['하의'] },
+  { key: '신발', categories: ['신발'] },
+  { key: '가방', categories: ['가방'] },
+  { key: '액세서리', categories: ['액세서리'] },
+] as const;
 
 /** 현황 카테고리 아이콘 — 32×32, #5A6169 */
 const StatIcon = ({ kind }: { kind: 'top' | 'bottom' | 'shoes' | 'etc' }) => (
@@ -57,20 +68,37 @@ const BagIcon = () => (
   </svg>
 );
 
-/** 바텀시트 카메라 아이콘 — 32×32, stroke #34363C (Figma) */
-const SheetCameraIcon = () => (
-  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M9.10267 8.23361C8.86265 8.61349 8.54243 8.93625 8.16445 9.17925C7.78647 9.42225 7.3599 9.57961 6.91467 9.64027C6.408 9.71227 5.90533 9.78961 5.40267 9.87361C3.99867 10.1069 3 11.3429 3 12.7656V24.0003C3 24.7959 3.31607 25.559 3.87868 26.1216C4.44129 26.6842 5.20435 27.0003 6 27.0003H26C26.7957 27.0003 27.5587 26.6842 28.1213 26.1216C28.6839 25.559 29 24.7959 29 24.0003V12.7656C29 11.3429 28 10.1069 26.5973 9.87361C26.0943 9.78979 25.5902 9.71201 25.0853 9.64027C24.6403 9.57942 24.214 9.42198 23.8363 9.17899C23.4586 8.936 23.1385 8.61333 22.8987 8.23361L21.8027 6.47894C21.5565 6.07907 21.2176 5.7444 20.8147 5.50325C20.4118 5.26211 19.9567 5.1216 19.488 5.09361C17.1643 4.9688 14.8357 4.9688 12.512 5.09361C12.0433 5.1216 11.5882 5.26211 11.1853 5.50325C10.7824 5.7444 10.4435 6.07907 10.1973 6.47894L9.10267 8.23361Z" stroke="#34363C" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M22 17C22 18.5913 21.3679 20.1174 20.2426 21.2426C19.1174 22.3679 17.5913 23 16 23C14.4087 23 12.8826 22.3679 11.7574 21.2426C10.6321 20.1174 10 18.5913 10 17C10 15.4087 10.6321 13.8826 11.7574 12.7574C12.8826 11.6321 14.4087 11 16 11C17.5913 11 19.1174 11.6321 20.2426 12.7574C21.3679 13.8826 22 15.4087 22 17ZM25 14H25.0107V14.0107H25V14Z" stroke="#34363C" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+/** 영수증 — 32×32, stroke 2.2 #34363C (등록 화면과 같은 도형) */
+const SheetReceiptIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path
+      d="M3 11H29M3 12H29M7 19H15M7 22H11M6 26H26C26.7957 26 27.5587 25.6839 28.1213 25.1213C28.6839 24.5587 29 23.7956 29 23V9C29 8.20435 28.6839 7.44129 28.1213 6.87868C27.5587 6.31607 26.7957 6 26 6H6C5.20435 6 4.44129 6.31607 3.87868 6.87868C3.31607 7.44129 3 8.20435 3 9V23C3 23.7956 3.31607 24.5587 3.87868 25.1213C4.44129 25.6839 5.20435 26 6 26Z"
+      stroke="#34363C"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
-/** 바텀시트 앨범 아이콘 — 32×32, stroke #1F2124 (Figma) */
-const SheetAlbumIcon = () => (
-  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M3 21L9.87867 14.1213C10.1572 13.8428 10.488 13.6218 10.8519 13.471C11.2159 13.3202 11.606 13.2426 12 13.2426C12.394 13.2426 12.7841 13.3202 13.1481 13.471C13.512 13.6218 13.8428 13.8428 14.1213 14.1213L21 21M19 19L20.8787 17.1213C21.1572 16.8428 21.488 16.6218 21.8519 16.471C22.2159 16.3202 22.606 16.2426 23 16.2426C23.394 16.2426 23.7841 16.3202 24.1481 16.471C24.512 16.6218 24.8428 16.8428 25.1213 17.1213L29 21M5 26H27C27.5304 26 28.0391 25.7893 28.4142 25.4142C28.7893 25.0391 29 24.5304 29 24V8C29 7.46957 28.7893 6.96086 28.4142 6.58579C28.0391 6.21071 27.5304 6 27 6H5C4.46957 6 3.96086 6.21071 3.58579 6.58579C3.21071 6.96086 3 7.46957 3 8V24C3 24.5304 3.21071 25.0391 3.58579 25.4142C3.96086 25.7893 4.46957 26 5 26ZM19 11H19.0107V11.0107H19V11ZM19.5 11C19.5 11.1326 19.4473 11.2598 19.3536 11.3536C19.2598 11.4473 19.1326 11.5 19 11.5C18.8674 11.5 18.7402 11.4473 18.6464 11.3536C18.5527 11.2598 18.5 11.1326 18.5 11C18.5 10.8674 18.5527 10.7402 18.6464 10.6464C18.7402 10.5527 18.8674 10.5 19 10.5C19.1326 10.5 19.2598 10.5527 19.3536 10.6464C19.4473 10.7402 19.5 10.8674 19.5 11Z" stroke="#1F2124" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+/** 구매내역 — 32×32, stroke 2 #34363C */
+const SheetPencilIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path
+      d="M22.4827 5.983L24.732 3.73233C25.2009 3.26343 25.8369 3 26.5 3C27.1631 3 27.7991 3.26343 28.268 3.73233C28.7369 4.20123 29.0003 4.8372 29.0003 5.50033C29.0003 6.16346 28.7369 6.79943 28.268 7.26833L14.1093 21.427C13.4044 22.1315 12.5352 22.6493 11.58 22.9337L8 24.0003L9.06667 20.4203C9.35104 19.4652 9.86885 18.5959 10.5733 17.891L22.4827 5.983ZM22.4827 5.983L26 9.50033M24 18.667V25.0003C24 25.796 23.6839 26.559 23.1213 27.1216C22.5587 27.6843 21.7956 28.0003 21 28.0003H7C6.20435 28.0003 5.44129 27.6843 4.87868 27.1216C4.31607 26.559 4 25.796 4 25.0003V11.0003C4 10.2047 4.31607 9.44162 4.87868 8.87901C5.44129 8.3164 6.20435 8.00033 7 8.00033H13.3333"
+      stroke="#34363C"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
+
+/** 아이템 추가 시트의 등록 방식 — /closet/register의 두 갈래와 같다 */
+const ADD_OPTIONS = [
+  { key: 'receipt' as const, icon: <SheetReceiptIcon />, label: '영수증 불러오기' },
+  { key: 'purchase' as const, icon: <SheetPencilIcon />, label: '구매내역 불러오기' },
+];
 
 /** 좋아요 하트 — 16×16, stroke #1F2124. 누르면 채워진다 */
 const HeartIcon = ({ liked }: { liked: boolean }) => (
@@ -122,17 +150,18 @@ const ClothesRow = ({ items, onItemClick, likedIds, onToggleLike }: ClothesRowPr
 
 /**
  * 내 옷장 홈 — 등록된 옷 없음(빈 상태) / 있음(목록) 두 상태.
- * 데이터: mockClosetItems (백엔드 연결 시 API 응답으로 대체)
+ * 데이터: CLOSET-03 조회 결과
  */
 const ClosetHomePage = () => {
   const navigate = useNavigate();
-  // 서버(CLOSET-03) 우선, 미연결(백엔드 대기) 시 mock 폴백 — 실서버 붙으면 실제 데이터로 표시
+  // 목록은 서버(CLOSET-03)가 소스다. 못 받으면 빈 옷장으로 보여준다
   const { data } = useClosets();
-  const mockItems = useClosetStore((state) => state.items);
-  const items = data?.items ?? mockItems;
+  const items = data?.items ?? [];
   const filled = items.length > 0;
   const [search, setSearch] = useState('');
   const [showAddSheet, setShowAddSheet] = useState(false);
+  // 권한 안내는 최초 1회만 거친다
+  const permissionSeen = useOnboardingStore((state) => state.closetPermissionSeen);
   // 좋아요 — 저장 API가 없어 화면 안에서만 유지 (TODO: 옷장 API에 좋아요 붙으면 연동)
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
 
@@ -146,20 +175,22 @@ const ClosetHomePage = () => {
 
   // 현황 카드 카운트 — items 바뀔 때만 재계산 (검색과 무관, 전체 기준)
   const counts = useMemo(() => {
-    const countOf = (category: string) => items.filter((item) => item.category === category).length;
-    const top = countOf('상의');
+    const countOf = (...categories: string[]) =>
+      items.filter((item) => categories.includes(item.category)).length;
+    // 상의는 아우터를 포함한다 — 행 묶음과 같은 기준
+    const top = countOf('상의', '아우터');
     const bottom = countOf('하의');
     const shoes = countOf('신발');
-    // 기타 = 상의/하의/신발 외 전부 (아우터·가방·액세서리)
+    // 기타 = 위 셋 외 전부 (가방·액세서리)
     return { top, bottom, shoes, etc: items.length - top - bottom - shoes };
   }, [items]);
 
   // 검색 결과를 카테고리 행으로 분할 — items·search 바뀔 때만 재계산
   const rows = useMemo(() => {
     const visibleItems = items.filter((item) => matchesQuery(item, search));
-    return ROW_CATEGORIES.map((category) => ({
-      category,
-      items: visibleItems.filter((item) => item.category === category),
+    return ROW_CATEGORIES.map((row) => ({
+      key: row.key,
+      items: visibleItems.filter((item) => row.categories.some((c) => c === item.category)),
     })).filter((row) => row.items.length > 0);
   }, [items, search]);
 
@@ -229,7 +260,7 @@ const ClosetHomePage = () => {
             <div className="mt-4 flex flex-col gap-4 pb-6">
               {rows.map((row) => (
                 <ClothesRow
-                  key={row.category}
+                  key={row.key}
                   items={row.items}
                   onItemClick={(id) => navigate(`/closet/items/${id}`)}
                   likedIds={likedIds}
@@ -271,7 +302,12 @@ const ClosetHomePage = () => {
               </button>
               <button
                 type="button"
-                onClick={() => navigate('/closet/register/platform')}
+                // 여기로 바로 들어와도 권한 안내는 최초 1회 거쳐야 한다
+                onClick={() =>
+                  navigate(registerStartPath('purchase', permissionSeen), {
+                    state: { entry: 'purchase' },
+                  })
+                }
                 className="flex h-20 w-full cursor-pointer items-center gap-10 rounded-2xl bg-white/20 p-6 text-left shadow-[0_8px_16px_0_rgba(0,0,0,0.08)]"
               >
                 <BagIcon />
@@ -303,22 +339,25 @@ const ClosetHomePage = () => {
               <h2 className="mb-6 text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
                 아이템 추가하기
               </h2>
-              <button
-                type="button"
-                onClick={() => navigate('/closet/register/photo')}
-                className="flex h-20 w-full items-center gap-10 border-b border-[#E6E8EA] pl-6 pr-3.5 text-left cursor-pointer"
-              >
-                <SheetCameraIcon />
-                <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">카메라로 촬영</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/closet/register/upload')}
-                className="flex h-20 w-full items-center gap-10 pl-6 pr-3.5 text-left cursor-pointer"
-              >
-                <SheetAlbumIcon />
-                <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">앨범에서 선택</span>
-              </button>
+              {/* 등록 방식 — 등록 화면과 같은 두 갈래. 어느 쪽으로 들어왔는지 권한 안내까지 넘긴다 */}
+              {ADD_OPTIONS.map((option) => (
+                <button
+                  key={option.key}
+                  type="button"
+                  // 권한 안내를 이미 봤으면 그 화면은 건너뛴다
+                  onClick={() =>
+                    navigate(registerStartPath(option.key, permissionSeen), {
+                      state: { entry: option.key },
+                    })
+                  }
+                  className="flex h-20 w-full items-center gap-10 pl-6 pr-3.5 text-left cursor-pointer"
+                >
+                  {option.icon}
+                  <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">
+                    {option.label}
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
         </div>

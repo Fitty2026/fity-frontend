@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { ClosetSearchField, ClosetTopBar, CtaButton } from '@/features/closet/components';
-import useClosetStore from '@/store/closetStore';
 import useClosetItem from '@/features/closet/hooks/useClosetItem';
 import useUpdateClosetItem from '@/features/closet/hooks/useUpdateClosetItem';
 
@@ -51,6 +50,26 @@ const PlusIcon = () => (
     <defs>
       <clipPath id="clip0_1606_125338">
         <rect width="24" height="24" fill="white" />
+      </clipPath>
+    </defs>
+  </svg>
+);
+
+/** 상품명 편집 — 16×16 연필, stroke 1.2 #959BA7 */
+const PencilIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <g clipPath="url(#closet-item-detail-pencil)">
+      <path
+        d="M11.2413 2.9915L12.366 1.86616C12.6005 1.63171 12.9184 1.5 13.25 1.5C13.5816 1.5 13.8995 1.63171 14.134 1.86616C14.3685 2.10062 14.5002 2.4186 14.5002 2.75016C14.5002 3.08173 14.3685 3.39971 14.134 3.63416L4.55467 13.2135C4.20222 13.5657 3.76758 13.8246 3.29 13.9668L1.5 14.5002L2.03333 12.7102C2.17552 12.2326 2.43442 11.7979 2.78667 11.4455L11.242 2.9915H11.2413ZM11.2413 2.9915L13 4.75016"
+        stroke="#959BA7"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </g>
+    <defs>
+      <clipPath id="closet-item-detail-pencil">
+        <rect width="16" height="16" fill="white" />
       </clipPath>
     </defs>
   </svg>
@@ -139,16 +158,23 @@ const SelectRow = ({
 const ClosetItemDetailPage = () => {
   const navigate = useNavigate();
   const { itemId } = useParams<{ itemId: string }>();
-  // 서버(CLOSET-04) 우선, 미연결 시 mock 폴백
+  // 상세는 서버(CLOSET-04)가 소스다
   const { data: serverItem, isPending } = useClosetItem(itemId);
-  const mockItem = useClosetStore((state) => state.items.find((it) => it.id === itemId));
-  const item = serverItem ?? mockItem;
+  const item = serverItem;
   const { saveAsync, isSaving, error: saveError } = useUpdateClosetItem(itemId);
 
-  // 수정하기 = 태그 저장(CLOSET-05). 성공 시 목록/상세 최신화 후 뒤로
+  // 수정하기 = 편집한 값 저장(CLOSET-05). 성공 시 목록/상세 최신화 후 뒤로.
+  // 빈 값도 그대로 보낸다 — 사용자가 지운 것이니 서버도 null로 비우는 게 맞다.
+  // (색상은 이 화면에 편집 UI가 없어 보내지 않는다 → 서버 값 유지)
   const handleSave = async () => {
     try {
-      await saveAsync(tags);
+      await saveAsync({
+        category,
+        subCategory,
+        brand,
+        memo,
+        tagValues: tags,
+      });
       navigate(-1);
     } catch {
       // 실패 메시지는 saveError로 표시
@@ -168,7 +194,10 @@ const ClosetItemDetailPage = () => {
   const [pickedTags, setPickedTags] = useState<string[]>([]);
   // 좋아요 — 저장 API가 없어 화면 안에서만 유지 (TODO: 옷장 API에 좋아요 붙으면 연동)
   const [liked, setLiked] = useState(false);
-  // 카테고리 — 저장은 태그만 하므로 선택값은 화면 안에서만 유지 (TODO: 수정 API에 카테고리 추가되면 연동)
+  // 상품명 — 수정 화면과 같은 인라인 편집. 저장 API(CLOSET-05)가 name을 받지 않아
+  // 값은 화면 안에서만 유지 (TODO: 수정 API에 name 추가되면 연동)
+  const [name, setName] = useState('');
+  const [nameEditing, setNameEditing] = useState(false);
   const [category, setCategory] = useState('');
   const [subCategory, setSubCategory] = useState('');
   const [brand, setBrand] = useState('');
@@ -180,6 +209,8 @@ const ClosetItemDetailPage = () => {
   useEffect(() => {
     setTags(item?.tags ?? []);
     setMemo(item?.memo ?? '');
+    setName(item?.name ?? '');
+    setNameEditing(false);
     setCategory(item?.category ?? '');
     setSubCategory(item?.subCategory ?? '');
     setBrand(item?.brand ?? '');
@@ -187,7 +218,7 @@ const ClosetItemDetailPage = () => {
     setSelectedTag(null);
     setOpenRow(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serverItem, mockItem]);
+  }, [serverItem]);
 
   // 드롭다운 바깥을 누르면 닫는다
   useEffect(() => {
@@ -215,7 +246,7 @@ const ClosetItemDetailPage = () => {
     setPickedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
 
   if (!item) {
-    if (isPending) return null; // 조회 중엔 표시 보류 (미연결 시 mock 폴백)
+    if (isPending) return null; // 조회 중엔 표시 보류
     return (
       <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
         <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-white">
@@ -283,6 +314,36 @@ const ClosetItemDetailPage = () => {
 
           {/* 정보 행 — 327 너비, 이미지 아래 12, 행 간격 12 (태그→메모만 14) */}
           <div className="mt-3 flex flex-col gap-3">
+            {/* 상품명 36 — border 1 #E6E8EA r8, padding 4/12/4/8.
+                평소엔 읽기만 하고, 연필을 눌러야 그 자리에서 고칠 수 있다 (수정 화면과 동일) */}
+            <div className="flex h-9 items-center justify-between rounded-lg border border-[#E6E8EA] py-1 pl-2 pr-3">
+              {nameEditing ? (
+                <input
+                  autoFocus
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  onBlur={() => setNameEditing(false)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === 'Escape') setNameEditing(false);
+                  }}
+                  aria-label="상품명"
+                  className="min-w-0 flex-1 text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124] outline-none"
+                />
+              ) : (
+                <span className="min-w-0 flex-1 truncate text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">
+                  {name}
+                </span>
+              )}
+              <button
+                type="button"
+                aria-label="상품명 수정"
+                onClick={() => setNameEditing(true)}
+                className="shrink-0 cursor-pointer"
+              >
+                <PencilIcon />
+              </button>
+            </div>
+
             <SelectRow
               label="카테고리"
               value={category || item.category}

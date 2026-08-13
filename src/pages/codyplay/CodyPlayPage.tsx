@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import PageLayout from '@/components/layout/PageeLayout';
 import LoadingScreen from '@/components/ui/LoadingScreen';
@@ -7,7 +7,12 @@ import useSaveGeneratedOutfit from '@/features/codyplay/hooks/useSaveGeneratedOu
 import useStylingStore from '@/store/stylingStore';
 
 const CodyPlayPage = () => {
-  const { outfit: result, error, isPending, retry } = useGeneratedOutfit();
+  const { state } = useLocation() as {
+    state: { outfitResultId?: number } | null;
+  };
+  const { outfit: result, error, isPending, retry } = useGeneratedOutfit(
+    state?.outfitResultId ? String(state.outfitResultId) : undefined,
+  );
   const setGeneratedOutfit = useStylingStore((state) => state.setGeneratedOutfit);
   const saveMutation = useSaveGeneratedOutfit();
   const navigate = useNavigate();

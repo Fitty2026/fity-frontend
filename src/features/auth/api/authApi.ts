@@ -25,17 +25,14 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface LoginUser {
-  id: number;
-  username: string;
-  email: string;
-  name: string;
-}
-
+/**
+ * AUTH-02 명세 응답은 {accessToken, userId} (임시 백엔드는 nickname도 내려줌).
+ * 나머지 사용자 정보는 이어지는 USER-04 프로필 조회로 채운다.
+ */
 export interface LoginResult {
   accessToken: string;
-  tokenType: string;
-  user: LoginUser;
+  userId: number;
+  nickname?: string;
 }
 
 export const login = async (body: LoginRequest): Promise<LoginResult> => {
@@ -44,6 +41,8 @@ export const login = async (body: LoginRequest): Promise<LoginResult> => {
 };
 
 // ── AUTH-03 로그아웃 ──
+// 서버에 로그아웃 엔드포인트가 아직 없어 404가 나지만,
+// useLogout이 성공/실패와 무관하게 로컬 세션을 정리하므로 동작에는 문제 없다
 export const logout = async (): Promise<void> => {
   await api.post('/api/v1/auth/logout');
 };
@@ -53,8 +52,8 @@ export const socialLogin = async (provider: SocialProvider): Promise<LoginResult
   await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
   return {
     accessToken: `mock-token-${provider}`,
-    tokenType: 'Bearer',
-    user: { id: 1, username: `${provider}_user`, email: `${provider}@fitty.mock`, name: '피티' },
+    userId: 0,
+    nickname: '피티',
   };
 };
 

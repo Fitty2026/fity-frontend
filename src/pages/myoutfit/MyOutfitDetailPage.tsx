@@ -1,20 +1,34 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import PageLayout from '@/features/myoutfit/components/MyOutfitPageLayout';
 import ErrorScreen from '@/components/ui/ErrorScreen';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 import OutfitItem from '@/features/myoutfit/components/OutfitItem';
 import { useMyOutfit } from '@/features/myoutfit/hooks/useMyOutfits';
-import type { ClothingCategory } from '@/types';
+import useRecentlyDeletedOutfitActions from '@/features/myoutfit/hooks/useRecentlyDeletedOutfitActions';
+import type { ClothingCategory, Outfit } from '@/types';
 
 const BASE_CATEGORIES: ClothingCategory[] = ['아우터', '상의', '하의', '액세서리', '신발'];
 
 const MyOutfitDetailPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { outfitId } = useParams();
-  const { data: outfit, error, isPending, refetch } = useMyOutfit(outfitId);
+  const recentlyDeletedOutfit = (
+    location.state as { recentlyDeletedOutfit?: Outfit } | null
+  )?.recentlyDeletedOutfit;
+  const {
+    data: fetchedOutfit,
+    error,
+    isPending,
+    refetch,
+  } = useMyOutfit(recentlyDeletedOutfit ? undefined : outfitId);
+  const outfit = recentlyDeletedOutfit ?? fetchedOutfit;
+  const { restoreMutation, permanentDeleteMutation } = useRecentlyDeletedOutfitActions();
+  const actionError = restoreMutation.error ?? permanentDeleteMutation.error;
+  const isActionPending = restoreMutation.isPending || permanentDeleteMutation.isPending;
 
-  if (isPending) {
+  if (!recentlyDeletedOutfit && isPending) {
     return (
       <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="룩북">
         <LoadingScreen message="코디 상세 정보를 불러오는 중이에요." />
@@ -111,12 +125,46 @@ const MyOutfitDetailPage = () => {
       </div>
 
       <div className="mt-[43px] mx-[24px] flex flex-col gap-[6px] ">
-        <button
-          onClick={() => navigate(`/myoutfit/edit/${outfit.id}`)}
-          className="bg-[#F6F7F8] rounded-[32px] py-[16px] text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
-        >
-          수정하기
-        </button>
+        {recentlyDeletedOutfit ? (
+          <>
+            {actionError ? (
+              <p className="mb-[8px] text-center text-[13px] text-red-500">
+                {actionError.message}
+              </p>
+            ) : null}
+            <button
+              type="button"
+              disabled={isActionPending}
+              onClick={() =>
+                restoreMutation.mutate(outfit.id, {
+                  onSuccess: () => navigate('/myoutfit/recently-deleted', { replace: true }),
+                })
+              }
+              className="bg-[#F6F7F8] rounded-[32px] py-[16px] text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%] disabled:text-[#B2B8BD]"
+            >
+              {restoreMutation.isPending ? '복구 중...' : '복구하기'}
+            </button>
+            <button
+              type="button"
+              disabled={isActionPending}
+              onClick={() =>
+                permanentDeleteMutation.mutate(outfit.id, {
+                  onSuccess: () => navigate('/myoutfit/recently-deleted', { replace: true }),
+                })
+              }
+              className="bg-[#1F2124] rounded-[32px] py-[16px] text-[#F6F7F8] text-[16px] font-[600] leading-[160%] tracking-[-2%] disabled:bg-[#B2B8BD]"
+            >
+              {permanentDeleteMutation.isPending ? '삭제 중...' : '영구 삭제하기'}
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => navigate(`/myoutfit/edit/${outfit.id}`)}
+            className="bg-[#F6F7F8] rounded-[32px] py-[16px] text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
+          >
+            수정하기
+          </button>
+        )}
       </div>
     </PageLayout>
   );

@@ -25,20 +25,23 @@ import ClosetPlatformPage from '../pages/closet/ClosetPlatformPage';
 import ClosetPermissionPage from '../pages/closet/ClosetPermissionPage';
 import ClosetCaptureGuidePage from '../pages/closet/ClosetCaptureGuidePage';
 import ClosetCapturePage from '../pages/closet/ClosetCapturePage';
-import ClosetTagConfirmPage from '../pages/closet/ClosetTagConfirmPage';
-import ClosetPhotoEditPage from '../pages/closet/ClosetPhotoEditPage';
-import ClosetTagEditPage from '../pages/closet/ClosetTagEditPage';
-import ClosetRecognizingPage from '../pages/closet/ClosetRecognizingPage';
-import ClosetReceiptPage from '../pages/closet/ClosetReceiptPage';
+import ClosetManualInputPage from '../pages/closet/ClosetManualInputPage';
+import ClosetReceiptMethodPage from '../pages/closet/ClosetReceiptMethodPage';
+import ClosetUploadGuidePage from '../pages/closet/ClosetUploadGuidePage';
+import ClosetReceiptCheckPage from '../pages/closet/ClosetReceiptCheckPage';
+import ClosetReceiptRecognizingPage from '../pages/closet/ClosetReceiptRecognizingPage';
+import ClosetReceiptFailedPage from '../pages/closet/ClosetReceiptFailedPage';
+import ClosetProductImagesPage from '../pages/closet/ClosetProductImagesPage';
+import ClosetProductImageEditPage from '../pages/closet/ClosetProductImageEditPage';
 import ClosetPhotoPage from '../pages/closet/ClosetPhotoPage';
-import ClosetUploadPage from '../pages/closet/ClosetUploadPage';
-import ClosetLoadingPage from '../pages/closet/ClosetLoadingPage';
 import ClosetAddedPage from '../pages/closet/ClosetAddedPage';
 import ClosetCompletePage from '../pages/closet/ClosetCompletePage';
 import ClosetItemDetailPage from '../pages/closet/ClosetItemDetailPage';
 import ClosetItemDeletePage from '../pages/closet/ClosetItemDeletePage';
 import ClosetItemListPage from '../pages/closet/ClosetItemListPage';
 import ClosetIntroPage from '../pages/closet/ClosetIntroPage';
+
+// 3. 홈
 
 // 4. 코디 생성
 import StylingStartPage from '../pages/styling/StylingStartPage';
@@ -64,6 +67,11 @@ import MyOutfitDetailPage from '../pages/myoutfit/MyOutfitDetailPage';
 
 // 8. 마이페이지
 import MyPage from '../pages/mypage/MyPage';
+import ProfileEditPage from '../pages/mypage/ProfileEditPage';
+import NameEditPage from '../pages/mypage/NameEditPage';
+import StyleEditPage from '../pages/mypage/StyleEditPage';
+import BodyEditPage from '../pages/mypage/BodyEditPage';
+import WithdrawPage from '../pages/mypage/WithdrawPage';
 
 // 9. 에러
 import RouteErrorPage from '../pages/error/RouteErrorPage';
@@ -128,7 +136,7 @@ const router = createBrowserRouter([
 
     // ── 메인 (로그인 필요) ────────────────────────
     {
-      // 홈 탭 = 코디 시작 홈 (Figma '코디 시작_홈')
+      // 홈 탭 = 코디 시작 홈 (develop에서 빈 홈 화면을 걷어냄)
       path: '/home',
       element: <ProtectedRoute><StylingStartPage /></ProtectedRoute>,
     },
@@ -162,38 +170,48 @@ const router = createBrowserRouter([
     path: '/closet/register/capture',
     element: <ProtectedRoute><ClosetCapturePage /></ProtectedRoute>,
   },
+  // 직접 입력 — ?receipt=N이면 그 장(인식 실패분)을 덮어쓰고, 없으면 새 장으로 추가된다
+  {
+    path: '/closet/register/manual',
+    element: <ProtectedRoute><ClosetManualInputPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/receipt-method',
+    element: <ProtectedRoute><ClosetReceiptMethodPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/upload-guide',
+    element: <ProtectedRoute><ClosetUploadGuidePage /></ProtectedRoute>,
+  },
+  // 구매내역(스마트 영수증) 업로드 — 같은 화면이 안내만 바꿔 뜬다
+  {
+    path: '/closet/register/purchase-guide',
+    element: <ProtectedRoute><ClosetUploadGuidePage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/receipt-check',
+    element: <ProtectedRoute><ClosetReceiptCheckPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/receipt-recognizing',
+    element: <ProtectedRoute><ClosetReceiptRecognizingPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/receipt-failed',
+    element: <ProtectedRoute><ClosetReceiptFailedPage /></ProtectedRoute>,
+  },
+  {
+    path: '/closet/register/product-images',
+    element: <ProtectedRoute><ClosetProductImagesPage /></ProtectedRoute>,
+  },
+  // 상품 하나를 ?product=N(평탄화한 순번, 1부터)으로 지정한다
+  {
+    path: '/closet/register/product-images/edit',
+    element: <ProtectedRoute><ClosetProductImageEditPage /></ProtectedRoute>,
+  },
   {
     path: '/closet/register/photo',
     element: <ProtectedRoute><ClosetPhotoPage /></ProtectedRoute>,
-  },
-  {
-    path: '/closet/register/upload',
-    element: <ProtectedRoute><ClosetUploadPage /></ProtectedRoute>,
-  },
-  {
-    path: '/closet/register/receipt',
-    element: <ProtectedRoute><ClosetReceiptPage /></ProtectedRoute>,
-  },
-  {
-    path: '/closet/register/recognizing',
-    element: <ProtectedRoute><ClosetRecognizingPage /></ProtectedRoute>,
-  },
-  {
-    path: '/closet/register/analyzing',
-    element: <ProtectedRoute><ClosetLoadingPage variant="analyze" /></ProtectedRoute>,
-  },
-  {
-    path: '/closet/register/tags',
-    element: <ProtectedRoute><ClosetTagConfirmPage /></ProtectedRoute>,
-  },
-  {
-    // 옷 사진 수정 — 시안 대기(빈 화면)
-    path: '/closet/register/tags/photo',
-    element: <ProtectedRoute><ClosetPhotoEditPage /></ProtectedRoute>,
-  },
-  {
-    path: '/closet/register/tags/edit',
-    element: <ProtectedRoute><ClosetTagEditPage /></ProtectedRoute>,
   },
   {
     path: '/closet/register/added',
@@ -299,12 +317,30 @@ const router = createBrowserRouter([
   },
 
   // 마이페이지
-  // TODO(담당자): 시안이 2026-07-29에 추가됨. 화면 구현·API 연동 미착수 — 연동 보류
-  // 프로필(이름·체형·취향), 스타일 통계(옷 등록/코디 생성/코디 저장), 좋아요·최근 삭제된 코디·스타 충전 등
-    {
-      path: '/mypage',
-      element: <ProtectedRoute><MyPage /></ProtectedRoute>,
-    },
+  {
+    path: '/mypage',
+    element: <ProtectedRoute><MyPage /></ProtectedRoute>,
+  },
+  {
+    path: '/mypage/profile',
+    element: <ProtectedRoute><ProfileEditPage /></ProtectedRoute>,
+  },
+  {
+    path: '/mypage/profile/name',
+    element: <ProtectedRoute><NameEditPage /></ProtectedRoute>,
+  },
+  {
+    path: '/mypage/profile/style',
+    element: <ProtectedRoute><StyleEditPage /></ProtectedRoute>,
+  },
+  {
+    path: '/mypage/profile/body',
+    element: <ProtectedRoute><BodyEditPage /></ProtectedRoute>,
+  },
+  {
+    path: '/mypage/withdraw',
+    element: <ProtectedRoute><WithdrawPage /></ProtectedRoute>,
+  },
 
     // 없는 경로 → 404
     { path: '*', element: <NotFoundPage /> },

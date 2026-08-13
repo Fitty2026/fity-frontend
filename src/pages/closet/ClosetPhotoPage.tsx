@@ -1,7 +1,6 @@
-import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
-import cameraMock from '@/assets/images/closet/camera-mock.png';
 
 /** 닫기 X — 32×32, stroke #F6F7F8 */
 const CloseIcon = () => (
@@ -53,27 +52,99 @@ const FlashIcon = ({ on }: { on: boolean }) => (
 /**
  * 옷 사진 직접 등록 — 카메라 촬영 화면.
  * 상단 닫기/플래시, 중앙 프리뷰, 하단 갤러리/셔터/저장.
- * (카메라 연동 전 — 프리뷰는 목업 이미지 전체 배경)
  */
 const ClosetPhotoPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [flashOn, setFlashOn] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  // 촬영/갤러리 선택 후 이동 — 기존 라우트 유지 (분석 화면 경유 여부는 시안 확인 대기)
-  const goNext = () => navigate('/closet/register/added');
+  // 다른 화면이 옷 사진을 찍으러 보낸 경우 — 돌아갈 주소와 그때 들고 갈 값을 함께 받는다
+  const caller = location.state as
+    | { returnTo?: string; returnState?: Record<string, unknown> }
+    | null;
+
+  /**
+   * 촬영/갤러리 선택 후 이동.
+   * 부른 화면이 있으면 사진만 얹어 그리로 되돌리고(편집 중이던 값은 returnState로 보존),
+   * 없으면 기존 등록 완료 경로를 탄다.
+   */
+  const goNext = (photo: string) => {
+    if (caller?.returnTo) {
+      navigate(caller.returnTo, {
+        replace: true,
+        state: { ...caller.returnState, photo },
+      });
+      return;
+    }
+    navigate('/closet/register/added');
+  };
+
+  // 후면 카메라 프리뷰 — 언마운트 시 트랙을 반드시 정리한다(영수증 촬영 화면과 같은 방식)
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    let cancelled = false;
+
+    const start = async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } },
+          audio: false,
+        });
+        // 언마운트 후 응답이 오면 스트림만 정리하고 붙이지 않는다
+        if (cancelled) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+        if (videoRef.current) videoRef.current.srcObject = stream;
+      } catch {
+        // 권한 거부 / 카메라 없음 / http 환경(보안 컨텍스트 아님) → 온 곳으로 되돌린다
+        if (!cancelled) navigate(-1);
+      }
+    };
+
+    start();
+
+    return () => {
+      cancelled = true;
+      stream?.getTracks().forEach((track) => track.stop());
+    };
+  }, [navigate]);
+
+  /** 셔터 — 현재 프레임을 잡아 사진으로 넘긴다 */
+  const handleShoot = () => {
+    const video = videoRef.current;
+    if (!video?.videoWidth) return; // 프리뷰가 아직 안 붙었으면 아무 것도 하지 않는다
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d')?.drawImage(video, 0, 0);
+    canvas.toBlob(
+      (blob) => {
+        if (blob) goNext(URL.createObjectURL(blob));
+      },
+      'image/jpeg',
+      0.92,
+    );
+  };
 
   const handlePickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.length) goNext();
+    const file = e.target.files?.[0];
+    if (file) goNext(URL.createObjectURL(file));
   };
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
-      <div className="relative flex flex-col flex-1 min-h-0 bg-[#4B4B4B]">
-        {/* 목업 프리뷰 — crop(cover) + opacity 20% */}
-        <div
-          className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-20"
-          style={{ backgroundImage: `url(${cameraMock})` }}
+      <div className="relative flex flex-col flex-1 min-h-0 overflow-hidden bg-black">
+        {/* 카메라 프리뷰 */}
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="absolute inset-0 h-full w-full object-cover"
         />
 
         {/* 닫기 X — 상태바 아래 14px, 좌 24px */}
@@ -102,7 +173,7 @@ const ClosetPhotoPage = () => {
         {/* 셔터 — 하단 40px, 가로 중앙 */}
         <button
           type="button"
-          onClick={goNext}
+          onClick={handleShoot}
           className="absolute left-1/2 -translate-x-1/2 cursor-pointer"
           style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 40px)' }}
           aria-label="촬영"
@@ -125,7 +196,7 @@ const ClosetPhotoPage = () => {
         {/* 저장 — 우 24, 하단 40 (갤러리와 대칭). 동작 정의 대기 → 임시로 다음 화면 진행 */}
         <button
           type="button"
-          onClick={goNext}
+          onClick={handleShoot}
           className="absolute right-6 cursor-pointer"
           style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 40px)' }}
           aria-label="저장"

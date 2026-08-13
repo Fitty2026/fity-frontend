@@ -54,7 +54,7 @@ const StyleConfirmPage = () => {
         </div>
 
         <div className="mt-6 px-6">
-          <Button label="다음" shape="pill" fullWidth onClick={handleNext} />
+          <Button label="확인" shape="pill" fullWidth onClick={handleNext} />
         </div>
       </div>
     </OnboardingLayout>

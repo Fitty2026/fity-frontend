@@ -35,13 +35,13 @@ interface OutfitRaw {
 interface GenerationJobRaw {
   job_id?: number;
   jobId?: number;
-  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  status: string;
   result?: OutfitRaw;
 }
 
 export interface GenerationJob {
   jobId: string;
-  status: GenerationJobRaw['status'];
+  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
   result?: Outfit;
 }
 
@@ -74,9 +74,15 @@ const toOutfit = (outfit: OutfitRaw): Outfit => ({
 
 const toGenerationJob = (job: GenerationJobRaw): GenerationJob => ({
   jobId: String(job.job_id ?? job.jobId ?? ''),
-  status: job.status,
+  status: job.status.toUpperCase() as GenerationJob['status'],
   result: job.result ? toOutfit(job.result) : undefined,
 });
+
+const withHashTags = (tags: string[]) =>
+  tags.map((tag) => {
+    const normalized = tag.trim();
+    return normalized.startsWith('#') ? normalized : `#${normalized}`;
+  });
 
 /** 코디 생성 작업 요청 */
 export const createGenerationJob = async (request: StylingRequest): Promise<GenerationJob> => {
@@ -107,6 +113,42 @@ export const saveGeneratedOutfit = async (outfit: Outfit): Promise<Outfit> => {
   const { data } = await api.post<ApiResponse<OutfitRaw>>('/api/v1/outfits/save', {
     outfit_id: Number(outfit.id),
   });
+  const saved = toOutfit(data.result);
 
-  return { ...toOutfit(data.result), isSaved: true };
+  return {
+    ...saved,
+    id: saved.id || outfit.id,
+    imageUrl: outfit.imageUrl || saved.imageUrl,
+    items: outfit.items.length > 0 ? outfit.items : saved.items,
+    styleTags: withHashTags(saved.styleTags.length > 0 ? saved.styleTags : outfit.styleTags),
+    context: outfit.context ?? saved.context,
+    memo: outfit.memo ?? saved.memo,
+    createdAt: outfit.createdAt || saved.createdAt,
+    isSaved: true,
+  };
+};
+
+/** OUTFIT-04 리터치 결과 저장 및 재생성 */
+export const saveRetouchedOutfit = async (outfit: Outfit): Promise<Outfit> => {
+  const { data } = await api.post<ApiResponse<OutfitRaw>>(
+    `/api/v1/outfits/${outfit.id}/revisions`,
+    {
+      item_ids: outfit.items
+        .map((item) => Number(item.id))
+        .filter(Number.isFinite),
+    },
+  );
+  const regenerated = toOutfit(data.result);
+
+  return {
+    ...outfit,
+    ...regenerated,
+    id: regenerated.id || outfit.id,
+    imageUrl: regenerated.imageUrl || outfit.imageUrl,
+    items: outfit.items,
+    styleTags: regenerated.styleTags.length > 0 ? regenerated.styleTags : outfit.styleTags,
+    context: regenerated.context ?? outfit.context,
+    memo: regenerated.memo ?? outfit.memo,
+    createdAt: regenerated.createdAt || outfit.createdAt,
+  };
 };
