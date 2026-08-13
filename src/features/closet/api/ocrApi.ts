@@ -256,6 +256,10 @@ export const registerReceiptItems = async (items: ReceiptItemPayload[]): Promise
 
 /** 에러 코드별 안내. 모르는 코드면 서버 문구를 그대로 쓴다 */
 const OCR_ERROR_MESSAGE: Record<string, string> = {
+  // 인증 — 미로그인 상태로 들어온 경우. 서버 문구("토큰 누락")로는 뭘 해야 할지 알 수 없다
+  // (문서 표기 AUTH4011, 실제 응답 AUTH401_01 — 둘 다 받는다)
+  AUTH401_01: '로그인이 필요해요. 다시 로그인해주세요.',
+  AUTH4011: '로그인이 필요해요. 다시 로그인해주세요.',
   // 인식 (PROFILE-05)
   OCR400_01: '영수증 이미지를 찾지 못했어요. 다시 올려주세요.',
   OCR400_02: '지원하지 않는 이미지 형식이에요. 다른 사진으로 시도해주세요.',

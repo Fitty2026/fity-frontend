@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
 import useClosetStore from '@/store/closetStore';
@@ -69,9 +69,13 @@ const ClosetReceiptCheckPage = () => {
   const images = useClosetStore((state) => state.receiptImages);
   const files = useClosetStore((state) => state.receiptFiles);
   const setReceipts = useClosetStore((state) => state.setReceipts);
+  const registerEntry = useClosetStore((state) => state.registerEntry);
   const fileRef = useRef<HTMLInputElement>(null);
   // 인식에 쓸 사진 — 처음엔 전부 선택
   const [excluded, setExcluded] = useState<Set<number>>(new Set());
+
+  // 새로고침 가드 — 갈래 값이 사라진 채 진행하면 구매내역이 영수증으로 전송된다 (업로드 안내와 같은 이유)
+  if (!registerEntry) return <Navigate to="/closet/register" replace />;
 
   const toggle = (index: number) =>
     setExcluded((prev) => {
