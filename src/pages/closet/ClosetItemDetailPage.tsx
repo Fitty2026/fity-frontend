@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/components/layout/PageLayout';
 import { ClosetSearchField, ClosetTopBar, CtaButton } from '@/features/closet/components';
 import useClosetItem from '@/features/closet/hooks/useClosetItem';
 import useUpdateClosetItem from '@/features/closet/hooks/useUpdateClosetItem';
@@ -206,19 +206,21 @@ const ClosetItemDetailPage = () => {
   const [memo, setMemo] = useState('');
 
   // 아이템 로드/변경 시 편집 상태 동기화 (서버 데이터 도착 포함)
-  useEffect(() => {
-    setTags(item?.tags ?? []);
-    setMemo(item?.memo ?? '');
-    setName(item?.name ?? '');
+  // — 렌더 중 상태 조정 패턴: 이펙트 없이 이전 serverItem과 비교해 바로 초기화한다
+  const [prevServerItem, setPrevServerItem] = useState(serverItem);
+  if (serverItem !== prevServerItem) {
+    setPrevServerItem(serverItem);
+    setTags(serverItem?.tags ?? []);
+    setMemo(serverItem?.memo ?? '');
+    setName(serverItem?.name ?? '');
     setNameEditing(false);
-    setCategory(item?.category ?? '');
-    setSubCategory(item?.subCategory ?? '');
-    setBrand(item?.brand ?? '');
+    setCategory(serverItem?.category ?? '');
+    setSubCategory(serverItem?.subCategory ?? '');
+    setBrand(serverItem?.brand ?? '');
     setViewIndex(0);
     setSelectedTag(null);
     setOpenRow(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serverItem]);
+  }
 
   // 드롭다운 바깥을 누르면 닫는다
   useEffect(() => {

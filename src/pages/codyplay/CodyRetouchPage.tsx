@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/components/layout/PageLayout';
 import AddItemBottomSheet from '@/features/codyplay/components/AddItemBottomSheet';
 import RetouchItem from '@/features/codyplay/components/RetouchItem';
 import useSaveRetouchedOutfit from '@/features/codyplay/hooks/useSaveRetouchedOutfit';
@@ -260,9 +260,9 @@ const CodyRetouchPage = () => {
               <path
                 d="M0.75 0.75L8.25 8.25L15.75 0.75M0.75 6.75L8.25 14.25L15.75 6.75"
                 stroke="#CED1D5"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               />
             </svg>
           </div>

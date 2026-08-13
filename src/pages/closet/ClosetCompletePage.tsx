@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/components/layout/PageLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
 import completeBgBlob from '@/assets/images/closet/complete-bg-blob.png';
 import useOnboardingStore from '@/store/onboardingStore';

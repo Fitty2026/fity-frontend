@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/components/layout/PageLayout';
 import { ClosetTopBar, CtaButton } from '@/features/closet/components';
 import useClosets from '@/features/closet/hooks/useClosets';
 import useDeleteClosetItem from '@/features/closet/hooks/useDeleteClosetItem';

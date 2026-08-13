@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/components/layout/PageLayout';
 import {
   ClosetSearchField,
   ClosetTopBar,

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { ApiError } from '@/lib/apiError';
+import useAuthStore from '@/store/authStore';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -40,7 +41,8 @@ api.interceptors.response.use(
     // 이미 로그인된 사용자의 토큰이 만료/무효인 경우에만 세션 정리 + 리다이렉트
     // (로그인 요청 자체의 실패는 토큰이 없으므로 여기 걸리지 않고 화면에서 처리된다)
     if (status === 401 && token) {
-      localStorage.removeItem('accessToken');
+      // 토큰뿐 아니라 persist된 user/isLoggedIn도 함께 정리해 상태 불일치를 막는다
+      useAuthStore.getState().logout();
       window.location.href = '/login';
       return Promise.reject(error);
     }

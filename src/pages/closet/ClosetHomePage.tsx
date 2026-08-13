@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/components/layout/PageLayout';
 import { ClosetBottomNav, ClosetSearchField, ClosetTopBar } from '@/features/closet/components';
 import { matchesQuery } from '@/features/closet/searchItems';
 import { registerStartPath } from '@/features/closet/registerFlow';
@@ -156,7 +156,8 @@ const ClosetHomePage = () => {
   const navigate = useNavigate();
   // 목록은 서버(CLOSET-03)가 소스다. 못 받으면 빈 옷장으로 보여준다
   const { data } = useClosets();
-  const items = data?.items ?? [];
+  // 빈 목록 fallback을 매 렌더 새 배열로 만들지 않도록 메모이즈 (아래 useMemo 의존성 안정화)
+  const items = useMemo(() => data?.items ?? [], [data]);
   const filled = items.length > 0;
   const [search, setSearch] = useState('');
   const [showAddSheet, setShowAddSheet] = useState(false);

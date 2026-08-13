@@ -16,28 +16,31 @@ const BottomSheet = ({ isOpen, onClose, title, children }: BottomSheetProps) => 
   const dragCurrentY = useRef(0);
   const isDragging = useRef(false);
 
+  // 열릴 때는 렌더 중에 바로 마운트하고, 닫힐 때는 슬라이드 다운부터 시작한다
+  if (isOpen && !visible) setVisible(true);
+  if (!isOpen && animated) setAnimated(false);
+
+  // 열림: 다음 프레임에 슬라이드 업 애니메이션 시작 + 배경 스크롤 잠금
   useEffect(() => {
-    if (isOpen) {
-      setVisible(true);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => setAnimated(true));
-      });
-      document.body.style.overflow = 'hidden';
-    } else {
-      close();
-    }
-    return () => { document.body.style.overflow = ''; };
+    if (!isOpen) return;
+    const raf = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setAnimated(true));
+    });
+    document.body.style.overflow = 'hidden';
+    return () => {
+      cancelAnimationFrame(raf);
+      document.body.style.overflow = '';
+    };
   }, [isOpen]);
 
-  const close = () => {
-    setAnimated(false);
-    setTimeout(() => {
-      setVisible(false);
-      document.body.style.overflow = '';
-    }, 300);
-  };
+  // 닫힘: 애니메이션(300ms)이 끝난 뒤 포털을 내린다
+  useEffect(() => {
+    if (isOpen || !visible) return;
+    const timer = setTimeout(() => setVisible(false), 300);
+    return () => clearTimeout(timer);
+  }, [isOpen, visible]);
 
-  const handleClose = () => { close(); onClose(); };
+  const handleClose = () => onClose();
 
   const onDragStart = (clientY: number) => {
     isDragging.current = true;
