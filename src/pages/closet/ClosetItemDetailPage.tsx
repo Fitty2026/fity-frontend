@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageeLayout';
 import { ClosetSearchField, ClosetTopBar, CtaButton } from '@/features/closet/components';
+import { colorSwatchStyle } from '@/features/closet/colors';
 import useClosetItem from '@/features/closet/hooks/useClosetItem';
 import useUpdateClosetItem from '@/features/closet/hooks/useUpdateClosetItem';
 
@@ -377,7 +378,7 @@ const ClosetItemDetailPage = () => {
                   <span
                     key={color}
                     className="h-6 w-6 rounded-full border border-[#E6E8EA]"
-                    style={{ backgroundColor: color }}
+                    style={colorSwatchStyle(color)}
                   />
                 ))}
                 {!item.colors?.length && (
