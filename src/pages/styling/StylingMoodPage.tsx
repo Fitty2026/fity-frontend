@@ -83,6 +83,7 @@ const StylingMoodPage = () => {
             </div>
           ) : (
             /* 1단계 — 캐러셀: 중앙 155×200 (헤더↔카드 217 → 서브 아래 107) + 좌우 기울어진 카드 */
+            <>
             <div
               className="relative mt-[107px] h-[220px] select-none touch-pan-y"
               onPointerDown={onPointerDown}
@@ -117,6 +118,12 @@ const StylingMoodPage = () => {
                 );
               })}
             </div>
+            {/* 중앙 카드 라벨 — 그림만으로 상황을 유추하기 어려워 고르기 전에도 이름을 보여준다.
+                확정 뷰와 같은 타이포, 카드 아래 31(220-200=20 + 11)로 위치도 맞춘다 */}
+            <p className="mt-[11px] text-[24px] font-semibold leading-[1.5] tracking-[-0.02em] text-center text-[#1F2124]">
+              {selected.label}
+            </p>
+            </>
           )}
         </div>
 
