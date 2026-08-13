@@ -127,7 +127,7 @@ const ClosetUploadGuidePage = () => {
         <input
           ref={fileRef}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp"
           multiple={!single}
           className="hidden"
           onChange={handlePick}

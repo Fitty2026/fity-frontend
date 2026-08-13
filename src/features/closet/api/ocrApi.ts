@@ -180,7 +180,9 @@ export const CLOTHES_IMAGE_SEARCH_PATH = '/api/v1/body-profiles/clothes/search-i
 export interface ClothesImageSearchParams {
   brand: string;
   productName: string;
+  /** 색 이름과 hex를 둘 다 보낸다 — 저장과 같은 과도기 호환 (ReceiptItemPayload 참고) */
   colorText: string;
+  colorHex: string;
 }
 
 /** 상대경로 이미지 URL 목록 (예: /api/v1/images/12/content) */
@@ -234,7 +236,14 @@ export interface ReceiptItemPayload {
   /** 필수 — 없으면 OCR400_07 */
   productName: string;
   brand: string;
+  /**
+   * 색 이름("네이비")과 hex("#052D78", 멀티는 "#MULTI")를 **둘 다** 보낸다.
+   * 서버가 colorText → colorHex로 넘어가는 중인데(코드 완료, 배포 대기) 배포 시점을
+   * 우리가 제어할 수 없어서, 어느 쪽이 떠 있어도 필수 검증을 통과하게 양쪽을 싣는다.
+   * 모르는 키는 서버가 무시한다. 전환 확인 후 colorText를 걷어낸다.
+   */
   colorText: string;
+  colorHex: string;
   /** 필수 — 없으면 OCR400_08 */
   imageId: number;
   /** RECEIPT_CATEGORY의 값. 목록 밖이면 OCR400_09 */

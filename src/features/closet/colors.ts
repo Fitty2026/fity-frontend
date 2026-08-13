@@ -90,6 +90,14 @@ export const matchColorOption = (text?: string, hex?: string | null) => {
   return { label: '', hex: '' };
 };
 
+/**
+ * 서버 전송용 colorHex — 고른 색의 hex를 그대로 보내되,
+ * 멀티는 대표색이 없어 BE와 합의한 식별 값 "#MULTI"를 보낸다 (2026-08-13 확정).
+ * 화면 칩은 hex 빈 값을 무지개로 그리므로 COLOR_OPTIONS의 hex는 건드리지 않는다.
+ */
+export const toColorHex = ({ label, hex }: { label: string; hex: string }): string =>
+  label === '멀티' ? '#MULTI' : hex;
+
 /** 드롭다운 열 수 — 가운데 열에만 좌우 테두리가 들어간다 (Figma) */
 export const COLOR_COLUMNS = 3;
 
@@ -108,3 +116,7 @@ export const colorChipStyle = ({ label, hex }: { label: string; hex: string }): 
   if (!label) return { backgroundColor: UNKNOWN_COLOR };
   return hex ? { backgroundColor: hex } : { backgroundImage: MULTI_CHIP };
 };
+
+/** hex만 있는 자리(옷장 상세 스와치 등) — 빈 값은 멀티로 본다. 고른 색만 넘어온다는 전제 */
+export const colorSwatchStyle = (hex: string): CSSProperties =>
+  hex ? { backgroundColor: hex } : { backgroundImage: MULTI_CHIP };

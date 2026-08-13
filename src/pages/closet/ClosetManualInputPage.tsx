@@ -318,7 +318,7 @@ const ClosetManualInputPage = () => {
           <input
             ref={fileRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             className="hidden"
             onChange={(event) => {
               const file = event.target.files?.[0];

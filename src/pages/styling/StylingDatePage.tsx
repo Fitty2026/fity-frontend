@@ -15,9 +15,10 @@ const toApiDate = (year: number, month: number, day: number) =>
  */
 const StylingDatePage = () => {
   const navigate = useNavigate();
-  const [year, setYear] = useState(2026);
-  const [month, setMonth] = useState(6);
-  const [selectedDay, setSelectedDay] = useState(28);
+  // 화면에 들어온 시점의 오늘로 시작한다 (시안의 고정 날짜는 예시값이었다)
+  const [year, setYear] = useState(() => new Date().getFullYear());
+  const [month, setMonth] = useState(() => new Date().getMonth() + 1);
+  const [selectedDay, setSelectedDay] = useState(() => new Date().getDate());
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const prevMonth = () => {
