@@ -26,8 +26,7 @@ export interface WeatherResult {
 
 /**
  * OpenWeatherMap `weather[0].main` → 화면 종류 + API condition.
- * Squall·Tornado는 대응 condition이 없어 바람 화면 + UNKNOWN으로 보낸다
- * (백엔드에 WINDY 추가를 요청했으나 미반영. 추가되면 여기만 바꾸면 된다).
+ * WINDY는 2026-08-13 확정 — 바람 계열(Squall·Tornado)이 제 값으로 간다.
  */
 const MAIN_MAP: Record<string, { type: WeatherType; condition: WeatherCondition }> = {
   Clear: { type: 'sun', condition: 'SUNNY' },
@@ -36,8 +35,8 @@ const MAIN_MAP: Record<string, { type: WeatherType; condition: WeatherCondition 
   Drizzle: { type: 'rain', condition: 'RAINY' },
   Thunderstorm: { type: 'rain', condition: 'RAINY' },
   Snow: { type: 'snow', condition: 'SNOWY' },
-  Squall: { type: 'wind', condition: 'UNKNOWN' },
-  Tornado: { type: 'wind', condition: 'UNKNOWN' },
+  Squall: { type: 'wind', condition: 'WINDY' },
+  Tornado: { type: 'wind', condition: 'WINDY' },
 };
 
 /** 안개·미세먼지 등(Mist/Fog/Haze/Dust/Sand/Smoke/Ash)은 흐림 화면 + UNKNOWN */

@@ -5,6 +5,7 @@ import useGenerateOutfit from '@/features/styling/hooks/useGenerateOutfit';
 import useOutfitJob from '@/features/styling/hooks/useOutfitJob';
 import useActiveOutfitJob from '@/features/styling/hooks/useActiveOutfitJob';
 import useMyProfile from '@/features/auth/hooks/useMyProfile';
+import { ApiError } from '@/lib/apiError';
 import type { OutfitJobInput } from '@/features/styling/types';
 
 /** 이전 화면에서 넘어오는 코디 생성 입력값 (체형 프로필은 서버가 JWT로 조회) */
@@ -59,6 +60,17 @@ const StylingLoadingPage = () => {
   const noJobToResume = !hasInput && !activePending && !activeJob;
   const failed = isFailed || !!generateError || !!jobError || !!activeError || noJobToResume;
 
+  // 실패 사유별 안내 — 문구는 시안 미수급이라 임시.
+  // 체형 프로필이 없으면 서버가 생성 자체를 받지 않는다(404 NOT_FOUND404).
+  // 만료(JOB_TIMEOUT)는 정상 200 응답의 status: expired + failure.code로 온다.
+  const noBodyProfile =
+    generateError instanceof ApiError && generateError.code === 'NOT_FOUND404';
+  const failedMessage = noBodyProfile
+    ? '체형 정보를 먼저 등록해야 코디를 만들 수 있어요'
+    : job?.status === 'expired'
+      ? '생성 시간이 초과됐어요. 다시 시도해주세요'
+      : '코디 생성에 실패했어요';
+
   // 서버 progress(0~100) → 옷걸이 채움 비율(0~1).
   // 접수 응답 / 이어받은 job의 값을 먼저 쓰고 폴링값으로 갱신
   const serverProgress = jobProgress || accepted?.progress || activeJob?.progress || 0;
@@ -89,7 +101,7 @@ const StylingLoadingPage = () => {
           {/* 문구 — Title/T3: Pretendard 600 / 20px / lh150% / -2% / #1F2124, 헤더↔문구 156 */}
           {/* 실패 문구는 시안 미수급 — 확정되면 교체 */}
           <p className="text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-center text-[#1F2124]">
-            {failed ? '코디 생성에 실패했어요' : done ? '코디가 완성되었어요' : '코디를 만들고 있어요'}
+            {failed ? failedMessage : done ? '코디가 완성되었어요' : '코디를 만들고 있어요'}
           </p>
 
           {/* 옷걸이 189×160 중앙, 문구↔옷걸이 76. 실패 시엔 진행 표시가 의미 없어 숨긴다 */}
