@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/components/layout/PageLayout';
 import ClosetBottomNav from '@/features/closet/components/ClosetBottomNav';
 import MyPageHeader from '@/features/mypage/components/MyPageHeader';
 import profilePlaceholder from '@/assets/images/mypage/profile-placeholder.svg';

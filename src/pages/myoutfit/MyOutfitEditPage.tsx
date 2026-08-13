@@ -158,14 +158,14 @@ const MyOutfitEditForm = ({ initialOutfit }: { initialOutfit: Outfit }) => {
           viewBox="0 0 16 16"
           fill="none"
         >
-          <g clip-path="url(#clip0_1461_116902)">
-            <circle cx="8" cy="8" r="7.6" stroke="#34363C" stroke-width="0.8" />
+          <g clipPath="url(#clip0_1461_116902)">
+            <circle cx="8" cy="8" r="7.6" stroke="#34363C" strokeWidth="0.8" />
             <path
               d="M7.99935 4.66699V11.3337M11.3327 8.00033H4.66602"
               stroke="#34363C"
-              stroke-width="0.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeWidth="0.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
           </g>
           <defs>

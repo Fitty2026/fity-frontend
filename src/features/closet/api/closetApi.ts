@@ -135,7 +135,8 @@ const toClothingItem = (it: ClosetItemRaw): ClothingItem => {
     brand: it.brand || undefined,
     subCategory: it.subCategory || undefined,
     memo: it.memo || undefined,
-    colors: color.hex ? [color.hex] : undefined,
+    // 멀티는 hex가 빈 값이라 label로 판별한다 — hex로 거르면 멀티가 통째로 사라진다
+    colors: color.label ? [color.hex] : undefined,
     createdAt: it.created_at,
   };
 };

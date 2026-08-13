@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/components/layout/PageLayout';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import PasswordInput from '@/features/auth/components/PasswordInput';

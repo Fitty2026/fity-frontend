@@ -1,4 +1,4 @@
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/components/layout/PageLayout';
 import ErrorScreen from '@/components/ui/ErrorScreen';
 
 const NotFoundPage = () => (

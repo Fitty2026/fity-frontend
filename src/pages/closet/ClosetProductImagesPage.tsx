@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/components/layout/PageLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
 import { colorChipStyle } from '@/features/closet/colors';
 import useClosetStore, { receiptProducts } from '@/store/closetStore';

@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/components/layout/PageLayout';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 import useGeneratedOutfit from '@/features/codyplay/hooks/useGeneratedOutfit';
 import useSaveGeneratedOutfit from '@/features/codyplay/hooks/useSaveGeneratedOutfit';

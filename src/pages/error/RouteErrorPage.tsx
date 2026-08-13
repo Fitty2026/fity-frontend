@@ -1,5 +1,5 @@
 import { useRouteError } from 'react-router-dom';
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/components/layout/PageLayout';
 import ErrorScreen from '@/components/ui/ErrorScreen';
 
 /** 라우트 렌더링 중 발생한 오류를 잡는 전역 에러 화면 (errorElement) */

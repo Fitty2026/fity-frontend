@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/components/layout/PageLayout';
 import useClosetStore from '@/store/closetStore';
 
 const ClosetItemCount = () => {

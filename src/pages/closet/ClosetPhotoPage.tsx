@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/components/layout/PageLayout';
 
 /** 닫기 X — 32×32, stroke #F6F7F8 */
 const CloseIcon = () => (
@@ -182,7 +182,7 @@ const ClosetPhotoPage = () => {
         </button>
 
         {/* 갤러리 — 좌 24, 하단 40. 파일 선택 후 분석으로 */}
-        <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={handlePickFile} />
+        <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePickFile} />
         <button
           type="button"
           onClick={() => fileInput.current?.click()}

@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/components/layout/PageLayout';
 import {
   ClosetSearchField,
   ClosetTopBar,
@@ -318,7 +318,7 @@ const ClosetManualInputPage = () => {
           <input
             ref={fileRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             className="hidden"
             onChange={(event) => {
               const file = event.target.files?.[0];

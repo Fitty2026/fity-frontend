@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import PageLayout from '@/components/layout/PageeLayout';
+import PageLayout from '@/components/layout/PageLayout';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 import ErrorScreen from '@/components/ui/ErrorScreen';
 import { useCommerceProduct } from '@/features/commerce/hooks/useCommerceProducts';
