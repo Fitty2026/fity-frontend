@@ -2,13 +2,17 @@ import { useEffect, useRef, useState } from 'react';
 
 interface BlobIntroProps {
   message: string;
-  size: 'sm' | 'md' | 'lg';
+  size: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-/** 단계별 목표 크기(px) - 피그마 시안의 화면 대비 비율 기준에서 sm/md는 요청으로 살짝 키움 */
-const TARGET_PX = { sm: 108, md: 200, lg: 250 } as const;
+/**
+ * 단계별 목표 크기(px) - 피그마 시안의 화면 대비 비율 기준에서 sm/md는 요청으로 살짝 키움.
+ * xl은 옷장 진입(마지막 단계)용 — 체형(lg)의 가장 큰 프레임(실측 226px)보다 확실히 커야 해
+ * lg와 같은 간격(+50)으로 300을 쓴다. 300 × 0.90 = 최대 271px.
+ */
+const TARGET_PX = { sm: 108, md: 200, lg: 250, xl: 300 } as const;
 /** 등장 시 시작 크기(이전 단계 크기)에서 커지며 나타난다 */
-const START_PX = { sm: 108, md: 108, lg: 200 } as const;
+const START_PX = { sm: 108, md: 108, lg: 200, xl: 250 } as const;
 
 /**
  * 디자이너 레퍼런스 영상(onboarding.mov)의 유리질 블롭 모핑을 SVG 패스 모핑으로 재현.
@@ -37,14 +41,21 @@ const BLOB_PATHS = {
   ],
 } as const;
 
+/**
+ * 옷장 진입(xl)은 체형(lg)과 같은 형태 세트를 쓰고 크기·주기·위상만 다르다.
+ * viewBox가 고정(0 0 200 200)이라 컨테이너 px만 키우면 형태가 그대로 확대된다.
+ */
+const PATHS = { ...BLOB_PATHS, xl: BLOB_PATHS.lg } as const;
+
 /** 화면마다 모핑·흔들림 주기를 다르게 해 같은 리듬으로 보이지 않게 한다 */
-const MORPH_DUR_S = { sm: 3.8, md: 4.6, lg: 5.4 } as const;
+const MORPH_DUR_S = { sm: 3.8, md: 4.6, lg: 5.4, xl: 6.2 } as const;
 /** 사이클 중간에서 시작하는 위상(초) - 첫 프레임부터 한창 움직이는 중으로 보인다 */
-const MORPH_PHASE_S = { sm: 1.3, md: 2.1, lg: 3.0 } as const;
+const MORPH_PHASE_S = { sm: 1.3, md: 2.1, lg: 3.0, xl: 3.8 } as const;
 const SWAY = {
   sm: { animationDuration: '5.6s', animationDelay: '-1.2s' },
   md: { animationDuration: '6.8s', animationDelay: '-3.5s' },
   lg: { animationDuration: '7.8s', animationDelay: '-6s' },
+  xl: { animationDuration: '8.8s', animationDelay: '-7.5s' },
 } as const;
 
 /** 패스 문자열에서 숫자만 추출 (모든 패스가 M+8C+Z 동일 구조라 개수가 같다) */
@@ -83,7 +94,7 @@ const BlobIntro = ({ message, size }: BlobIntroProps) => {
 
   // rAF로 매 프레임 키프레임 사이를 순환 보간해 d를 갱신한다
   useEffect(() => {
-    const keys = BLOB_PATHS[size].map(toNumbers);
+    const keys = PATHS[size].map(toNumbers);
     const K = keys.length;
     const dur = MORPH_DUR_S[size] * 1000;
     const phase = MORPH_PHASE_S[size] * 1000;
@@ -160,7 +171,7 @@ const BlobIntro = ({ message, size }: BlobIntroProps) => {
 
           <g className="blob-sway" style={{ transformOrigin: '100px 100px', ...SWAY[size] }}>
             {/* 몸통 + 가장자리 셰이딩 (테두리 선 없음) */}
-            <path ref={pathRef} d={BLOB_PATHS[size][0]} fill="url(#blob-glass)" filter="url(#blob-shade)" />
+            <path ref={pathRef} d={PATHS[size][0]} fill="url(#blob-glass)" filter="url(#blob-shade)" />
             {/* 홍채빛 글린트 - 가장자리 근처에 핑크/하늘색이 살짝 맺힘 */}
             <ellipse cx="134" cy="126" rx="16" ry="10" fill="#fbcfe8" opacity="0.35" style={{ filter: 'blur(7px)' }} />
             <ellipse cx="64" cy="126" rx="12" ry="8" fill="#bfdbfe" opacity="0.3" style={{ filter: 'blur(7px)' }} />
