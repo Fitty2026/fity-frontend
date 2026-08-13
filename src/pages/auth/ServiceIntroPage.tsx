@@ -58,12 +58,12 @@ const ServiceIntroPage = () => {
       >
         {SLIDES.map((slide) => (
           <SwiperSlide key={slide.number}>
-            <div className="flex h-full flex-col px-6 pt-16">
-              <span className="text-7xl font-extrabold">{slide.number}</span>
-              <h2 className="mt-10 whitespace-pre-line text-4xl font-extrabold leading-snug">
+            <div className="flex h-full flex-col justify-end px-6 pb-7">
+              <span className="text-[7rem] font-extrabold leading-none">{slide.number}</span>
+              <h2 className="mt-8 whitespace-pre-line text-5xl font-extrabold leading-snug">
                 {slide.title}
               </h2>
-              <p className="mt-6 whitespace-pre-line text-sm leading-relaxed text-neutral-400">
+              <p className="mt-5 whitespace-pre-line text-base leading-relaxed text-neutral-400">
                 {slide.description}
               </p>
             </div>

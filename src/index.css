@@ -60,17 +60,14 @@
 
 /* 스플래시 - 글자 낙하 (위에서 떨어져 바운스로 착지)
    회전은 CSS rotate 속성(개별 transform)이 담당하므로 여기서는 translateY만 다룬다 */
+/* 스플래시 글자 낙하 - 일직선 수직으로, 바운스 없이 감속하며 차분하게 내려앉는다 */
 @keyframes splash-letter-drop {
   0% {
     transform: translateY(-120vh);
     opacity: 0;
   }
-  60% {
-    transform: translateY(0);
+  12% {
     opacity: 1;
-  }
-  75% {
-    transform: translateY(-6px);
   }
   100% {
     transform: translateY(0);
