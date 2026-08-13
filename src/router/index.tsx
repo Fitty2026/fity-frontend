@@ -67,6 +67,11 @@ import MyOutfitDetailPage from '../pages/myoutfit/MyOutfitDetailPage';
 
 // 8. 마이페이지
 import MyPage from '../pages/mypage/MyPage';
+import ProfileEditPage from '../pages/mypage/ProfileEditPage';
+import NameEditPage from '../pages/mypage/NameEditPage';
+import StyleEditPage from '../pages/mypage/StyleEditPage';
+import BodyEditPage from '../pages/mypage/BodyEditPage';
+import WithdrawPage from '../pages/mypage/WithdrawPage';
 
 // 9. 에러
 import RouteErrorPage from '../pages/error/RouteErrorPage';
@@ -312,10 +317,30 @@ const router = createBrowserRouter([
   },
 
   // 마이페이지
-    {
-      path: '/mypage',
-      element: <ProtectedRoute><MyPage /></ProtectedRoute>,
-    },
+  {
+    path: '/mypage',
+    element: <ProtectedRoute><MyPage /></ProtectedRoute>,
+  },
+  {
+    path: '/mypage/profile',
+    element: <ProtectedRoute><ProfileEditPage /></ProtectedRoute>,
+  },
+  {
+    path: '/mypage/profile/name',
+    element: <ProtectedRoute><NameEditPage /></ProtectedRoute>,
+  },
+  {
+    path: '/mypage/profile/style',
+    element: <ProtectedRoute><StyleEditPage /></ProtectedRoute>,
+  },
+  {
+    path: '/mypage/profile/body',
+    element: <ProtectedRoute><BodyEditPage /></ProtectedRoute>,
+  },
+  {
+    path: '/mypage/withdraw',
+    element: <ProtectedRoute><WithdrawPage /></ProtectedRoute>,
+  },
 
     // 없는 경로 → 404
     { path: '*', element: <NotFoundPage /> },
