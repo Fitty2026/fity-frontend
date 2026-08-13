@@ -6,6 +6,7 @@
 
 ## 📌 목차
 
+- [주요 기능](#주요-기능)
 - [기술 스택](#기술-스택)
 - [팀원 및 역할](#팀원-및-역할)
 - [폴더 구조](#폴더-구조)
@@ -17,19 +18,37 @@
 
 ---
 
+## ✨ 주요 기능
+
+| 도메인 | 기능 |
+|--------|------|
+| 진입/계정 | 스플래시, 서비스 소개, 이메일·소셜 로그인, 회원가입 |
+| 개인화 온보딩 | 이용 약관 동의, 스타일 취향 스와이프 선택, 체형 입력·사진 분석, 체형 결과 확인 |
+| 디지털 옷장 | 쇼핑몰 캡처/스마트 영수증/직접 입력으로 아이템 등록, 아이템 목록·검색·필터·정렬, 상세 조회 및 태그·카테고리·브랜드·메모 수정, 삭제 |
+| 코디 생성 | 날짜 선택 → 날씨 연동(OpenWeatherMap) → 무드 선택 → 아이템 선택 → AI 코디 생성 |
+| 코디 플레이 | 생성된 코디 확인, 아이템 교체 리터치, 코디 저장 |
+| 코디 공유 | 코디 이미지 다운로드, Web Share API 공유 |
+| 내 코디 | 저장한 코디 목록·상세, 편집(아이템 추가/교체), 삭제 및 최근 삭제 복구 |
+| 커머스 | 추천 상품 목록, 상품 상세 |
+| 마이페이지 | 프로필(이름·스타일·체형) 수정, 회원 탈퇴 |
+| 공통 | 로그인 가드(ProtectedRoute), 401 세션 만료 처리, 로딩/빈 데이터/오류 화면, 404·라우트 에러 페이지 |
+
+---
+
 ## 🛠 기술 스택
 
 | 분류 | 기술 |
 |------|------|
-| Framework | React 18 |
+| Framework | React 19 |
 | Language | TypeScript |
 | Build Tool | Vite |
-| Styling | TailwindCSS |
+| Styling | TailwindCSS v4 |
 | 상태 관리 | Zustand |
 | 서버 상태 | TanStack Query (React Query v5) |
 | HTTP Client | Axios |
 | Form | React Hook Form + Zod |
-| Routing | React Router DOM v6 |
+| Routing | React Router DOM v7 |
+| UI 라이브러리 | Swiper (스타일 취향 스와이프) |
 | 코드 품질 | ESLint, Prettier |
 
 ---
@@ -48,139 +67,62 @@
 
 ```
 fity-frontend/
-├── public/
-│   └── favicon.ico
+├── public/                       # 정적 파일 (favicon 등)
+├── docs/                         # 화면·기능 설계 문서
 ├── src/
 │   ├── assets/                   # 정적 리소스
 │   │   ├── icons/
-│   │   └── images/
+│   │   └── images/               # 도메인별 이미지 (body, closet, moods, ...)
 │   │
-│   ├── components/               # 전역 공통 컴포넌트 (Atomic)
-│   │   ├── ui/                   # Button, Input, Badge, Modal, Chip, BottomSheet 등
-│   │   └── layout/               # Header, BottomNav, PageLayout 등
+│   ├── components/               # 전역 공통 컴포넌트
+│   │   ├── ui/                   # Button, Input, Badge, BottomSheet, LoadingScreen, ErrorScreen
+│   │   └── layout/               # Header, BottomNav, PageLayout
 │   │
-│   ├── features/                 # 도메인/기능 단위 모듈
-│   │   ├── auth/                 # 0. 진입/계정 (Splash, 서비스소개, 로그인/회원가입)
-│   │   │   ├── components/
-│   │   │   ├── hooks/
-│   │   │   ├── api/
-│   │   │   └── types.ts
-│   │   │
-│   │   ├── onboarding/           # 1. 개인화 온보딩 (스타일취향, 체형분석, 아바타)
-│   │   │   ├── components/
-│   │   │   ├── hooks/
-│   │   │   ├── api/
-│   │   │   └── types.ts
-│   │   │
-│   │   ├── closet/               # 2. 디지털 옷장 (등록, 연동, 아이템 관리)
-│   │   │   ├── components/
-│   │   │   ├── hooks/
-│   │   │   ├── api/
-│   │   │   └── types.ts
-│   │   │
-│   │   ├── home/                 # 3. 홈 대시보드
-│   │   │   ├── components/
-│   │   │   ├── hooks/
-│   │   │   └── api/
-│   │   │
-│   │   ├── styling/              # 4. 코디 생성 (날짜/상황/무드/아이템 선택, AI 생성)
-│   │   │   ├── components/
-│   │   │   ├── hooks/
-│   │   │   ├── api/
-│   │   │   └── types.ts
-│   │   │
-│   │   ├── outfit/               # 5. 코디 결과 & 저장 목록 (완성, 저장, 공유)
-│   │   │   ├── components/
-│   │   │   ├── hooks/
-│   │   │   ├── api/
-│   │   │   └── types.ts
-│   │   │
-│   │   ├── commerce/             # 6. 커머스 연결 (추천 상품, 상품 상세)
-│   │   │   ├── components/
-│   │   │   ├── hooks/
-│   │   │   ├── api/
-│   │   │   └── types.ts
-│   │   │
-│   │   ├── myoutfit/             # 7. 내 코디 (저장 목록, 상세)
-│   │   │   ├── components/
-│   │   │   ├── hooks/
-│   │   │   └── api/
-│   │   │
-│   │   └── mypage/               # 8. 마이페이지 (프로필, 스타 관리, 설정)
-│   │       ├── components/
-│   │       ├── hooks/
-│   │       └── api/
-│   │
-│   ├── hooks/                    # 전역 공통 커스텀 훅
-│   │   ├── useDebounce.ts
-│   │   └── useIntersectionObserver.ts
+│   ├── features/                 # 도메인/기능 단위 모듈 (components / hooks / api)
+│   │   ├── auth/                 # 0. 진입/계정 (로그인, 회원가입, 소셜 로그인)
+│   │   ├── onboarding/           # 1. 개인화 온보딩 (약관, 스타일 취향, 체형 분석)
+│   │   ├── closet/               # 2. 디지털 옷장 (등록 플로우, 아이템 관리, 검색)
+│   │   ├── styling/              # 3. 코디 생성 (날짜/날씨/무드/아이템 선택, AI 생성)
+│   │   ├── codyplay/             # 4. 코디 플레이 (결과 확인, 리터치, 공유)
+│   │   ├── myoutfit/             # 5. 내 코디 (목록, 상세, 편집, 삭제/복구)
+│   │   ├── commerce/             # 6. 커머스 (추천 상품)
+│   │   └── mypage/               # 7. 마이페이지 (프로필 수정, 탈퇴)
 │   │
 │   ├── lib/                      # 외부 라이브러리 설정
-│   │   ├── axios.ts              # axios 인스턴스 + 인터셉터
+│   │   ├── axios.ts              # axios 인스턴스 + 토큰/에러 인터셉터
+│   │   ├── apiError.ts           # 서버 공통 에러 래퍼 → ApiError 변환
 │   │   └── queryClient.ts        # TanStack Query 클라이언트
 │   │
-│   ├── pages/                    # 라우터 연결 페이지 (껍데기만)
-│   │   ├── auth/
-│   │   │   ├── SplashPage.tsx
-│   │   │   ├── ServiceIntroPage.tsx
-│   │   │   └── LoginPage.tsx
-│   │   ├── onboarding/
-│   │   │   ├── StylePreferencePage.tsx
-│   │   │   ├── PhotoUploadPage.tsx
-│   │   │   ├── BodyAnalysisPage.tsx
-│   │   │   └── AvatarGeneratePage.tsx
-│   │   ├── closet/
-│   │   │   ├── ClosetHomePage.tsx
-│   │   │   ├── ClosetRegisterPage.tsx
-│   │   │   └── ClosetItemDetailPage.tsx
-│   │   ├── home/
-│   │   │   └── HomePage.tsx
-│   │   ├── styling/
-│   │   │   ├── StylingStartPage.tsx
-│   │   │   ├── StylingDatePage.tsx
-│   │   │   ├── StylingMoodPage.tsx
-│   │   │   ├── StylingItemSelectPage.tsx
-│   │   │   └── StylingLoadingPage.tsx
-│   │   ├── outfit/
-│   │   │   ├── OutfitResultPage.tsx
-│   │   │   ├── OutfitSavePage.tsx
-│   │   │   └── OutfitSharePage.tsx
-│   │   ├── commerce/
-│   │   │   ├── ProductListPage.tsx
-│   │   │   └── ProductDetailPage.tsx
-│   │   ├── myoutfit/
-│   │   │   ├── MyOutfitListPage.tsx
-│   │   │   └── MyOutfitDetailPage.tsx
-│   │   └── mypage/
-│   │       └── MyPage.tsx
+│   ├── pages/                    # 라우터 연결 페이지 (레이아웃 조합 + features 사용)
+│   │   ├── auth/                 # Splash, ServiceIntro, Login, Signup
+│   │   ├── onboarding/           # Consent, StyleSwipe/Confirm, BodyType/Photo/Analysis/Result
+│   │   ├── closet/               # ClosetHome, 등록 플로우(캡처/영수증/직접입력), 아이템 목록/상세
+│   │   ├── styling/              # StylingStart, Method, Date, Weather, Mood, ItemSelect, Loading
+│   │   ├── codyplay/             # CodyPlay, CodyRetouch, OutfitShare
+│   │   ├── myoutfit/             # MyOutfit 목록/상세/편집/삭제/최근삭제
+│   │   ├── commerce/             # ProductList, ProductDetail
+│   │   ├── mypage/               # MyPage, 프로필/이름/스타일/체형 수정, 탈퇴
+│   │   └── error/                # NotFound, RouteError
 │   │
 │   ├── router/                   # React Router 라우팅 설정
 │   │   ├── index.tsx
-│   │   └── ProtectedRoute.tsx
+│   │   └── ProtectedRoute.tsx    # 로그인 가드
 │   │
 │   ├── store/                    # Zustand 전역 상태
 │   │   ├── authStore.ts          # 인증 상태
 │   │   ├── onboardingStore.ts    # 온보딩 진행 상태
+│   │   ├── closetStore.ts        # 옷장 등록 플로우 상태
 │   │   └── stylingStore.ts       # 코디 생성 플로우 상태
-│   │
-│   ├── styles/
-│   │   └── global.css
 │   │
 │   ├── types/                    # 전역 공통 TypeScript 타입
 │   │   └── index.ts
 │   │
-│   ├── utils/                    # 순수 유틸 함수
-│   │   └── format.ts
-│   │
-│   ├── mocks/                    # Mock 데이터 (개발용)
-│   │   └── data/
-│   │
 │   ├── App.tsx
-│   └── main.tsx
+│   ├── main.tsx
+│   └── index.css                 # Tailwind 진입점 + 전역 스타일
 │
-├── .eslintrc.cjs
-├── .prettierrc
-├── .gitignore
+├── .env.example                  # 환경변수 템플릿
+├── eslint.config.js
 ├── index.html
 ├── tsconfig.json
 ├── vite.config.ts
@@ -306,27 +248,8 @@ chore: ESLint 설정 추가
 
 ### ESLint / Prettier
 
-`.eslintrc.cjs`
-```js
-module.exports = {
-  root: true,
-  env: { browser: true, es2020: true },
-  extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    'plugin:react-hooks/recommended',
-    'prettier',
-  ],
-  ignorePatterns: ['dist', '.eslintrc.cjs'],
-  parser: '@typescript-eslint/parser',
-  plugins: ['react-refresh'],
-  rules: {
-    'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-    '@typescript-eslint/no-unused-vars': 'warn',
-    'no-console': 'warn',
-  },
-};
-```
+- ESLint 설정은 루트의 `eslint.config.js`(flat config)에 있습니다 — TypeScript 권장 규칙 + `react-hooks` + `react-refresh` + Prettier 충돌 제거(`eslint-config-prettier`).
+- `npm run lint`로 검사합니다.
 
 `.prettierrc`
 ```json
@@ -403,7 +326,7 @@ import './styles.css';
 ### 사전 준비
 
 - Node.js 20.x 이상
-- pnpm (또는 npm)
+- npm
 
 ### 설치 및 실행
 
@@ -415,21 +338,35 @@ cd fity-frontend
 # 패키지 설치
 npm install
 
+# 환경변수 설정 (아래 참고)
+cp .env.example .env
+
 # 개발 서버 실행
 npm run dev
 ```
 
+### 스크립트
+
+| 명령어 | 설명 |
+|--------|------|
+| `npm run dev` | 개발 서버 실행 |
+| `npm run build` | 타입체크(`tsc -b`) + 프로덕션 빌드 |
+| `npm run preview` | 빌드 결과 로컬 미리보기 |
+| `npm run lint` | ESLint 검사 |
+
 ### 환경변수
 
-`.env` 파일을 루트에 생성 후 아래 값을 채워주세요.
+`.env.example`을 복사해 `.env`를 만들고 값을 채워주세요.
 
 ```env
-VITE_API_BASE_URL=https://api.fitty.com
-VITE_KAKAO_CLIENT_ID=
-VITE_GOOGLE_CLIENT_ID=
+# 백엔드 API 서버 주소
+VITE_API_BASE_URL=
+
+# OpenWeatherMap API 키 (없으면 코디 생성 시 날씨 화면을 건너뜁니다)
+VITE_OPENWEATHER_API_KEY=
 ```
 
-> `.env`은 `.gitignore`에 포함되어 있어 절대 커밋하지 마세요.
+> `.env`는 `.gitignore`에 포함되어 있어 커밋되지 않습니다. 토큰·API 키를 절대 커밋하지 마세요.
 
 ---
 
