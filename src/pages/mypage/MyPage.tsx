@@ -5,6 +5,7 @@ import ClosetBottomNav from '@/features/closet/components/ClosetBottomNav';
 import MyPageHeader from '@/features/mypage/components/MyPageHeader';
 import profilePlaceholder from '@/assets/images/mypage/profile-placeholder.svg';
 import hangerIcon from '@/assets/images/mypage/hanger.svg';
+import usePuzzleStore from '@/store/puzzleStore';
 import likeIcon from '@/assets/images/mypage/menu-like.svg';
 import trashIcon from '@/assets/images/mypage/menu-trash.svg';
 import starIcon from '@/assets/images/mypage/menu-star.svg';
@@ -22,6 +23,7 @@ const menuItems = [
 
 const MyPage = () => {
   const navigate = useNavigate();
+  const puzzleBalance = usePuzzleStore((state) => state.balance);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="pb-[110px]">
@@ -30,7 +32,7 @@ const MyPage = () => {
         right={
           <span className="flex items-center gap-1 text-[12px] font-medium text-[#1F2124]">
             <img src={hangerIcon} alt="스타" className="h-4 w-4" />
-            88개
+            {puzzleBalance}개
           </span>
         }
       />

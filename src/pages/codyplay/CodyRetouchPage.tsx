@@ -138,13 +138,17 @@ const CodyRetouchPage = () => {
   const finishRetouch = () => {
     if (!result || saveRetouchMutation.isPending) return;
 
-    saveRetouchMutation.mutate(result, {
-      onSuccess: (savedResult) => {
-        setResult(savedResult);
-        setGeneratedOutfit(savedResult);
-        navigate('/codyplay', { replace: true });
+    if (!generatedOutfit) return;
+    saveRetouchMutation.mutate(
+      { original: generatedOutfit, updated: result },
+      {
+        onSuccess: (savedResult) => {
+          setResult(savedResult);
+          setGeneratedOutfit(savedResult);
+          navigate('/codyplay', { replace: true });
+        },
       },
-    });
+    );
   };
 
   return (
@@ -188,10 +192,10 @@ const CodyRetouchPage = () => {
               </div>
               <div className="pl-[8px]">
                 <p className="text-[#6F7881] text-[14px] font-[500] leading-[160%] tracking-[-2%]">
-                 {selectCategory}
+                  {selectCategory}
                 </p>
                 <h5 className="text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
-                  {activeItem?.id || '-'}
+                  {activeItem?.name || activeItem?.id || '-'}
                 </h5>
               </div>
             </div>
@@ -311,11 +315,7 @@ const CodyRetouchPage = () => {
           </div>
         ) : (
           <button
-            onClick={
-              selectItem
-                ? () => setSelectCategory(selectItem.category)
-                : finishRetouch
-            }
+            onClick={selectItem ? () => setSelectCategory(selectItem.category) : finishRetouch}
             disabled={!result || saveRetouchMutation.isPending}
             className="w-full bg-[#1F2124] disabled:bg-[#E6E8EA] rounded-[32px] py-[16px] text-[#F6F7F8] disabled:text-[#959BA7] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
           >
