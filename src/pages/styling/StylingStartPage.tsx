@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { StudioHeader, StudioBottomNav, SectionHeader } from '@/features/styling/components';
+import usePuzzleStore from '@/store/puzzleStore';
 import MyOutfitCard from '@/features/myoutfit/components/MyOutfitCard';
 import useMyOutfits from '@/features/myoutfit/hooks/useMyOutfits';
 import heroBlob from '@/assets/images/styling/hero-blob.png';
@@ -10,6 +11,7 @@ import heroBlob from '@/assets/images/styling/hero-blob.png';
  */
 const StylingStartPage = () => {
   const navigate = useNavigate();
+  const puzzleBalance = usePuzzleStore((s) => s.balance);
   const { data, error, isPending, refetch } = useMyOutfits();
   const recentOutfits = [...(data?.outfits ?? [])]
     .sort((first, second) => second.createdAt.localeCompare(first.createdAt))
@@ -18,7 +20,7 @@ const StylingStartPage = () => {
   return (
     <div className="min-h-screen bg-neutral-100 flex justify-center">
       <div className="relative w-full max-w-[430px] min-h-screen bg-white flex flex-col">
-        <StudioHeader logo count={88} />
+        <StudioHeader logo count={puzzleBalance} />
 
         {/* 스크롤 콘텐츠 — 좌우 24, 하단 네비(66)만큼 여유 */}
         <div className="flex-1 overflow-y-auto px-6 pt-5 pb-28">

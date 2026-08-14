@@ -5,6 +5,7 @@ import useGenerateOutfit from '@/features/styling/hooks/useGenerateOutfit';
 import useOutfitJob from '@/features/styling/hooks/useOutfitJob';
 import useActiveOutfitJob from '@/features/styling/hooks/useActiveOutfitJob';
 import useMyProfile from '@/features/auth/hooks/useMyProfile';
+import usePuzzleStore, { GENERATION_COST } from '@/store/puzzleStore';
 import { ApiError } from '@/lib/apiError';
 import type { OutfitJobInput } from '@/features/styling/types';
 
@@ -47,6 +48,15 @@ const StylingLoadingPage = () => {
 
   const jobId = newJobId ?? activeJob?.jobId ?? null;
   const { job, progress: jobProgress, isCompleted, isFailed, error: jobError } = useOutfitJob(jobId);
+
+  const puzzleBalance = usePuzzleStore((s) => s.balance);
+  const spendPuzzle = usePuzzleStore((s) => s.spend);
+
+  // 퍼즐 차감 — 새 job이 실제로 접수됐을 때 1회 (이어받은 기존 job은 이미 차감된 것).
+  // TODO: 서버 차감 API가 생기면 이 로컬 차감을 걷어내고 응답 잔액을 반영한다.
+  useEffect(() => {
+    if (accepted && !accepted.isExistingJob) spendPuzzle(GENERATION_COST);
+  }, [accepted, spendPuzzle]);
 
   // 생성 요청 — 입력값이 갖춰진 경우에만 1회
   useEffect(() => {
@@ -95,7 +105,7 @@ const StylingLoadingPage = () => {
   return (
     <div className="min-h-screen bg-neutral-100 flex justify-center">
       <div className="relative w-full max-w-[430px] min-h-screen bg-white flex flex-col">
-        <StudioHeader onBack={() => navigate(-1)} count={88} />
+        <StudioHeader onBack={() => navigate(-1)} count={puzzleBalance} />
 
         <div className="flex-1 flex flex-col items-center pt-[156px]">
           {/* 문구 — Title/T3: Pretendard 600 / 20px / lh150% / -2% / #1F2124, 헤더↔문구 156 */}

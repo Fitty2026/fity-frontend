@@ -13,3 +13,4 @@ export { default as SearchField } from './SearchField';
 export { default as FilterChips } from './FilterChips';
 export { default as SortChip } from './SortChip';
 export { default as HangerLoader } from './HangerLoader';
+export { default as PuzzleShortageOverlay } from './PuzzleShortageOverlay';
