@@ -20,7 +20,7 @@ const MyOutfitCard = ({
   const [isTagScrolled, setIsTagScrolled] = useState(false);
 
   const openDetail = () =>
-    navigate(`/myoutfit/${outfit.id}`, {
+    navigate(`/myoutfit/${outfit.id}${isRecentlyDeleted ? '?source=deleted' : ''}`, {
       state: isRecentlyDeleted ? { recentlyDeletedOutfit: outfit } : undefined,
     });
 
@@ -99,7 +99,7 @@ const MyOutfitCard = ({
                   key={tag}
                   className="shrink-0 whitespace-nowrap rounded-lg bg-[#5A6169] px-1.5 py-px text-[8px] font-semibold leading-[1.65] tracking-[-0.02em] text-[#F6F7F8]"
                 >
-                  #{tag}
+                  {tag.startsWith('#') ? tag : `#${tag}`}
                 </span>
               ))}
             </span>
