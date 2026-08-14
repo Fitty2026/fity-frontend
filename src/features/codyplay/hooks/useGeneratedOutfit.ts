@@ -19,7 +19,10 @@ const useGeneratedOutfit = (initialJobId?: string, initialOutfit?: Outfit) => {
   const jobQuery = useQuery({
     queryKey: ['outfit-generation-job', jobId],
     queryFn: () => getGenerationJob(jobId as string),
-    enabled: Boolean(jobId) && (!generatedOutfit || Boolean(initialJobId)) && !createdOutfit,
+    enabled:
+      Boolean(jobId) &&
+      (!generatedOutfit || Boolean(initialJobId)) &&
+      (!createdOutfit || Boolean(initialJobId)),
     refetchInterval: (query) =>
       query.state.data?.status === 'COMPLETED' ||
       query.state.data?.status === 'FAILED' ||
@@ -48,8 +51,12 @@ const useGeneratedOutfit = (initialJobId?: string, initialOutfit?: Outfit) => {
     selectedMood,
   ]);
 
-  const completedOutfit = createdOutfit ?? jobQuery.data?.result;
-  const completedStatus = createJobMutation.data?.status ?? jobQuery.data?.status;
+  const completedOutfit = initialJobId
+    ? (jobQuery.data?.result ?? createdOutfit)
+    : (createdOutfit ?? jobQuery.data?.result);
+  const completedStatus = initialJobId
+    ? (jobQuery.data?.status ?? createJobMutation.data?.status)
+    : (createJobMutation.data?.status ?? jobQuery.data?.status);
   useEffect(() => {
     if (completedStatus === 'COMPLETED' && completedOutfit) {
       setGeneratedOutfit(completedOutfit);
