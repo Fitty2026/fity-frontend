@@ -191,7 +191,7 @@ const CodyRetouchPage = () => {
                  {selectCategory}
                 </p>
                 <h5 className="text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
-                  {activeItem?.id || '-'}
+                  {activeItem?.name || activeItem?.id || '-'}
                 </h5>
               </div>
             </div>

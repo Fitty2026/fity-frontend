@@ -21,7 +21,7 @@ const useGeneratedOutfit = (initialJobId?: string) => {
   const jobQuery = useQuery({
     queryKey: ['outfit-generation-job', jobId],
     queryFn: () => getGenerationJob(jobId as string),
-    enabled: Boolean(jobId) && !generatedOutfit && !createdOutfit,
+    enabled: Boolean(jobId) && (!generatedOutfit || Boolean(initialJobId)) && !createdOutfit,
     refetchInterval: (query) =>
       query.state.data?.status === 'COMPLETED' || query.state.data?.status === 'FAILED'
         ? false
@@ -56,11 +56,10 @@ const useGeneratedOutfit = (initialJobId?: string) => {
   }, [completedOutfit, completedStatus, setGeneratedOutfit]);
 
   return {
-    outfit: generatedOutfit ?? completedOutfit,
+    outfit: initialJobId ? completedOutfit ?? generatedOutfit : generatedOutfit ?? completedOutfit,
     isPending:
-      !generatedOutfit &&
-      (createJobMutation.isPending ||
-        (!createdOutfit && Boolean(jobId) && jobQuery.isPending)),
+      createJobMutation.isPending ||
+      (!createdOutfit && Boolean(jobId) && jobQuery.isPending),
     error:
       createJobMutation.error ??
       jobQuery.error ??

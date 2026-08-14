@@ -8,10 +8,10 @@ import useStylingStore from '@/store/stylingStore';
 
 const CodyPlayPage = () => {
   const { state } = useLocation() as {
-    state: { outfitResultId?: number } | null;
+    state: { jobId?: number; outfitResultId?: number; generatedImageUrl?: string } | null;
   };
   const { outfit: result, error, isPending, retry } = useGeneratedOutfit(
-    state?.outfitResultId ? String(state.outfitResultId) : undefined,
+    state?.jobId ? String(state.jobId) : undefined,
   );
   const setGeneratedOutfit = useStylingStore((state) => state.setGeneratedOutfit);
   const saveMutation = useSaveGeneratedOutfit();
