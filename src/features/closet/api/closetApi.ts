@@ -48,8 +48,13 @@ export const imageSrc = (imageUrl: string): string =>
 /** API 카테고리 enum — 저장 검증 목록(OCR400_09)과 같은 6종. 시안 드롭다운에도 가방이 없다 */
 export type ApiClosetCategory = 'TOP' | 'BOTTOM' | 'OUTER' | 'SHOES' | 'ACCESSORY' | 'ETC';
 
-/** 등록 경로 — 서버가 그대로 저장 (카메라/앨범/쇼핑몰/영수증) */
-export type ImportType = '카메라' | '앨범' | '쇼핑몰' | '영수증';
+/**
+ * 등록 경로 — 영어 대문자 enum (2026-08-13 카일 확정).
+ * CAMERA=카메라 촬영 / IMAGE=앨범에서 고름 / SHOPPINGMALL=쇼핑몰 연동 / RECEIPT=영수증 OCR.
+ * ※ OCR 저장(PROFILE-07)의 RECEIPT/PURCHASE_LOG와는 별개 축 — 구매내역으로 등록된
+ *   아이템이 옷장 조회에서 어떤 값으로 오는지는 미확인.
+ */
+export type ImportType = 'CAMERA' | 'IMAGE' | 'SHOPPINGMALL' | 'RECEIPT';
 
 export interface RegisterClosetItemRequest {
   image_url: string;
