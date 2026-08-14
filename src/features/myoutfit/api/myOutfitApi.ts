@@ -37,6 +37,11 @@ interface SavedOutfitRaw {
 }
 
 interface SavedOutfitListRaw {
+  items?: SavedOutfitRaw[];
+  pagination?: {
+    totalCount?: number;
+    total_count?: number;
+  };
   saved_outfits?: SavedOutfitRaw[];
   outfits?: SavedOutfitRaw[];
   total_count?: number;
@@ -104,11 +109,16 @@ const toOutfit = (outfit: SavedOutfitRaw): Outfit => {
 /** SAVED-02 저장한 코디 목록 조회 */
 export const getMyOutfits = async (): Promise<MyOutfitList> => {
   const { data } = await api.get<ApiResponse<SavedOutfitListRaw>>('/api/v1/outfits/saved');
-  const rawOutfits = data.result.saved_outfits ?? data.result.outfits ?? [];
+  const rawOutfits = data.result.items ?? data.result.saved_outfits ?? data.result.outfits ?? [];
 
   return {
     outfits: rawOutfits.map(toOutfit),
-    total: data.result.total_count ?? data.result.total ?? rawOutfits.length,
+    total:
+      data.result.pagination?.totalCount ??
+      data.result.pagination?.total_count ??
+      data.result.total_count ??
+      data.result.total ??
+      rawOutfits.length,
   };
 };
 
@@ -167,7 +177,7 @@ export const updateMyOutfit = async (
 
 /** SAVED-05 저장한 코디 삭제 */
 export const deleteMyOutfit = async (savedOutfitId: string): Promise<void> => {
-  await api.delete(`/api/v1/outfits/${savedOutfitId}`);
+  await api.delete(`/api/v1/outfits/saved/${savedOutfitId}`);
 };
 
 /** SAVED-07 최근 삭제 코디 복구 */

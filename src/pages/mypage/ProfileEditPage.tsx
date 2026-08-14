@@ -9,10 +9,12 @@ import styleCasual from '@/assets/images/mypage/style-casual.png';
 import styleStreet from '@/assets/images/mypage/style-street.png';
 import bodyStraight from '@/assets/images/body/straight.png';
 import hangerIcon from '@/assets/images/mypage/hanger.svg';
+import usePuzzleStore from '@/store/puzzleStore';
 import chevronRight from '@/assets/images/mypage/chevron-right.svg';
 
 const ProfileEditPage = () => {
   const navigate = useNavigate();
+  const puzzleBalance = usePuzzleStore((state) => state.balance);
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="pb-[110px]">
@@ -22,7 +24,7 @@ const ProfileEditPage = () => {
         right={
           <span className="flex items-center gap-1 text-[12px]">
             <img src={hangerIcon} alt="스타" className="h-4 w-4" />
-            88개
+            {puzzleBalance}개
           </span>
         }
       />
