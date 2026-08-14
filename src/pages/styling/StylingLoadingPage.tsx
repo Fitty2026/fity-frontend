@@ -94,13 +94,13 @@ const StylingLoadingPage = () => {
       () =>
         navigate('/codyplay', {
           state: job
-            ? { outfitResultId: job.outfitResultId, generatedImageUrl: job.generatedImageUrl }
+            ? { jobId, outfitResultId: job.outfitResultId, generatedImageUrl: job.generatedImageUrl }
             : undefined,
         }),
       1000,
     );
     return () => clearTimeout(timer);
-  }, [done, job, navigate]);
+  }, [done, job, jobId, navigate]);
 
   return (
     <div className="min-h-screen bg-neutral-100 flex justify-center">

@@ -8,7 +8,8 @@ const useSaveGeneratedOutfit = () => {
 
   return useMutation({
     mutationFn: saveGeneratedOutfit,
-    onSuccess: () => {
+    onSuccess: (savedOutfit) => {
+      queryClient.setQueryData(myOutfitKeys.detail(savedOutfit.id), savedOutfit);
       void queryClient.invalidateQueries({ queryKey: myOutfitKeys.lists() });
     },
   });
