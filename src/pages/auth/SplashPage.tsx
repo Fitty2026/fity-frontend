@@ -4,13 +4,13 @@ import PageLayout from '@/components/layout/PageLayout';
 import { INTRO_SEEN_KEY } from '@/features/auth/constants';
 import useAuthStore from '@/store/authStore';
 
-/** 흩어진 낙하 위치(크기 제각각으로 리듬감) → 로고 정렬 위치를 글자별로 정의 */
+/** 흩어진 낙하 위치(시안처럼 큼직하게, 크기 제각각으로 리듬감) → 로고 정렬 위치를 글자별로 정의 */
 const LETTERS = [
-  { char: 'F', drop: { left: '14%', top: '52%', rot: '-14deg', size: '3.4rem' }, logo: { left: '8%', top: '74%', rot: '0deg' } },
-  { char: 'i', drop: { left: '32%', top: '42%', rot: '16deg', size: '2.4rem' }, logo: { left: '17%', top: '74%', rot: '0deg' } },
-  { char: 't', drop: { left: '48%', top: '32%', rot: '-26deg', size: '3.9rem' }, logo: { left: '23%', top: '74%', rot: '0deg' } },
-  { char: 't', drop: { left: '62%', top: '22%', rot: '30deg', size: '4.6rem' }, logo: { left: '30%', top: '74%', rot: '0deg' } },
-  { char: 'y', drop: { left: '76%', top: '12%', rot: '-18deg', size: '4.1rem' }, logo: { left: '37%', top: '74%', rot: '0deg' } },
+  { char: 'F', drop: { left: '14%', top: '52%', rot: '-14deg', size: '3.8rem' }, logo: { left: '8%', top: '74%' } },
+  { char: 'i', drop: { left: '32%', top: '42%', rot: '16deg', size: '2.8rem' }, logo: { left: '17%', top: '74%' } },
+  { char: 't', drop: { left: '48%', top: '32%', rot: '-26deg', size: '4.6rem' }, logo: { left: '23%', top: '74%' } },
+  { char: 't', drop: { left: '62%', top: '22%', rot: '30deg', size: '5.4rem' }, logo: { left: '30%', top: '74%' } },
+  { char: 'y', drop: { left: '76%', top: '12%', rot: '-18deg', size: '4.8rem' }, logo: { left: '37%', top: '74%' } },
 ];
 
 /** 로고 정렬 시 글자 공통 크기 (text-6xl) */
@@ -21,12 +21,13 @@ const DROP_DELAY_STEP_MS = 380;
 /** 낙하 시간 - 바운스 없이 감속하며 천천히 내려앉는다 */
 const DROP_DURATION_MS = 1500;
 
-/** 각 단계 시작 시각(ms): 낙하 → 로고 정렬 → 마지막 화면 슬라이드 인 → 이동 */
-const PHASE_LOGO_MS = 3500;
-const PHASE_FINAL_MS = 4700;
-const NAVIGATE_MS = 6000;
+/** 각 단계 시작 시각(ms): 낙하 → 기울어진 채 로고 자리로 모임 → 각도만 회전 정렬 → 마지막 화면 → 이동 */
+const PHASE_GATHER_MS = 3500;
+const PHASE_LOGO_MS = 4300;
+const PHASE_FINAL_MS = 5400;
+const NAVIGATE_MS = 6700;
 
-type Phase = 'drop' | 'logo' | 'final';
+type Phase = 'drop' | 'gather' | 'logo' | 'final';
 
 /** 모션 최소화 설정 시 애니메이션 없이 마지막 화면만 잠깐 보여준다 */
 const prefersReducedMotion = () =>
@@ -43,6 +44,7 @@ const SplashPage = () => {
     const timers = reduceMotion
       ? []
       : [
+          setTimeout(() => setPhase('gather'), PHASE_GATHER_MS),
           setTimeout(() => setPhase('logo'), PHASE_LOGO_MS),
           setTimeout(() => setPhase('final'), PHASE_FINAL_MS),
         ];
@@ -65,7 +67,7 @@ const SplashPage = () => {
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="relative overflow-hidden">
-      {/* 1~2단계: 글자 낙하 → 로고 정렬 */}
+      {/* 1~3단계: 글자 낙하 → 기울어진 채 로고 자리로 모임 → 각도만 슥 회전하며 정렬 */}
       {LETTERS.map(({ char, drop, logo }, i) => {
         const pos = phase === 'drop' ? drop : logo;
         return (
@@ -77,8 +79,9 @@ const SplashPage = () => {
               top: pos.top,
               // 낙하 중엔 글자별 크기로 리듬감을 주고, 로고 정렬 시 공통 크기로 모인다
               fontSize: phase === 'drop' ? drop.size : LOGO_SIZE,
-              // 회전은 rotate 속성이 담당 → logo 단계에서 transition으로 0deg까지 풀림
-              rotate: pos.rot,
+              // 시안대로 맨 앞 F만 기울기를 유지한 채 자리를 잡고 logo 단계에서 각도만 풀린다.
+              // 나머지 글자는 자리로 모이면서 바로 반듯해진다.
+              rotate: phase === 'drop' || (phase === 'gather' && i === 0) ? drop.rot : '0deg',
               animation:
                 phase === 'drop'
                   ? `splash-letter-drop ${DROP_DURATION_MS}ms cubic-bezier(0.18, 0.6, 0.24, 1) ${i * DROP_DELAY_STEP_MS}ms both`
@@ -90,10 +93,10 @@ const SplashPage = () => {
         );
       })}
 
-      {/* 로고 정렬 시 마침표 등장 - 글자 기준선에 붙도록 살짝 아래(온점 위치) */}
+      {/* 자리 잡을 때 마침표 등장 - 글자 기준선에 붙도록 살짝 아래(온점 위치) */}
       <span
         className={`absolute left-[44%] top-[75.2%] text-6xl font-extrabold transition-opacity duration-500 ${
-          phase === 'logo' ? 'opacity-100' : 'opacity-0'
+          phase === 'gather' || phase === 'logo' ? 'opacity-100' : 'opacity-0'
         }`}
       >
         .
