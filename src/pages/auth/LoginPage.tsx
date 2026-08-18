@@ -67,8 +67,13 @@ const LoginPage = () => {
               />
               로그인 상태 유지
             </label>
-            {/* 비밀번호 찾기 - 페이지 미구현, 추후 제거 가능성 있어 표시만 */}
-            <span className="text-neutral-600">비밀번호 찾기</span>
+            <button
+              type="button"
+              onClick={() => navigate('/find-password')}
+              className="text-neutral-600"
+            >
+              비밀번호 찾기
+            </button>
           </div>
 
           {/* 로그인 실패 메시지 */}

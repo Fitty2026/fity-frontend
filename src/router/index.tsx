@@ -6,6 +6,7 @@ import SplashPage from '../pages/auth/SplashPage';
 import ServiceIntroPage from '../pages/auth/ServiceIntroPage';
 import LoginPage from '../pages/auth/LoginPage';
 import SignupPage from '../pages/auth/SignupPage';
+import FindPasswordPage from '../pages/auth/FindPasswordPage';
 
 // 1. 온보딩
 import ConsentPage from '../pages/onboarding/ConsentPage';
@@ -94,6 +95,7 @@ const router = createBrowserRouter([
     { path: '/intro', element: <ServiceIntroPage /> },
     { path: '/login', element: <LoginPage /> },
     { path: '/signup', element: <SignupPage /> },
+    { path: '/find-password', element: <FindPasswordPage /> },
 
     // ── 온보딩 (로그인 후 최초 1회) ───────────────
     {
