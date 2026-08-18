@@ -42,11 +42,10 @@ export interface BodyAnalyzeResult {
   bodyTypeResult: BodyTypeResult;
 }
 
-/** PROFILE-04 조회 응답 */
+/** PROFILE-04 조회 응답 (bodyImage는 명세에서 제거됨 — 체형별 이미지는 프론트 에셋 사용) */
 export interface BodyProfile {
   bodyProfileId: number;
   userSelectedBodyType: ServerBodyType;
-  bodyImage: string;
   measurements: BodyMeasurements;
   bodyTypeResult: BodyTypeResult;
   updatedAt: string;
@@ -58,15 +57,16 @@ export const saveBodyType = async (bodyType: ServerBodyType): Promise<void> => {
 };
 
 // ── PROFILE-02 체형 사진 AI 분석 (POST /api/v1/body-profiles/analyze, multipart) ──
+// 명세(2026-08-19): images 배열 3장, 정면/측면/후면 순서 무관
 export const analyzeBody = async (
   frontImage: Blob,
   sideImage: Blob,
   backImage: Blob,
 ): Promise<BodyAnalyzeResult> => {
   const form = new FormData();
-  form.append('frontImage', frontImage, 'front.jpg');
-  form.append('sideImage', sideImage, 'side.jpg');
-  form.append('backImage', backImage, 'back.jpg');
+  form.append('images', frontImage, 'front.jpg');
+  form.append('images', sideImage, 'side.jpg');
+  form.append('images', backImage, 'back.jpg');
   // FormData면 axios가 boundary 포함 multipart 헤더를 자동 설정하도록 기본 json 헤더 제거
   const { data } = await api.post<ApiResponse<BodyAnalyzeResult>>(
     '/api/v1/body-profiles/analyze',
@@ -77,17 +77,18 @@ export const analyzeBody = async (
 };
 
 // ── PROFILE-03 체형 분석 결과 저장 (POST /api/v1/body-profiles) ──
+// 명세(2026-08-19): bodyType 문자열 대신 bodyTypeResult 전체 객체를 보낸다.
+// 중복 저장은 409가 아니라 200 허용(재분석 후 재등록 가능) — 별도 분기 불필요.
 export interface SaveBodyProfileRequest {
   analysisId: number;
   measurements: BodyMeasurements;
-  /** bodyTypeResult.bodyType (예: SLIM_STRAIGHT) */
-  bodyType: string;
+  bodyTypeResult: BodyTypeResult;
 }
 
 export const saveBodyProfile = async (
   req: SaveBodyProfileRequest,
-): Promise<{ bodyProfileId: number }> => {
-  const { data } = await api.post<ApiResponse<{ bodyProfileId: number }>>(
+): Promise<{ bodyProfileId: number; updatedAt: string }> => {
+  const { data } = await api.post<ApiResponse<{ bodyProfileId: number; updatedAt: string }>>(
     '/api/v1/body-profiles',
     req,
   );

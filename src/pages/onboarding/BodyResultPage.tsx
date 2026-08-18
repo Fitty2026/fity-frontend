@@ -46,7 +46,7 @@ const BodyResultPage = () => {
       {
         analysisId: result.analysisId,
         measurements: result.measurements,
-        bodyType: result.bodyTypeResult.bodyType,
+        bodyTypeResult: result.bodyTypeResult,
       },
       {
         onSuccess: finishOnboarding,
