@@ -178,11 +178,12 @@ const FindPasswordPage = () => {
             <div className="mt-10">
               <Input
                 label="인증번호"
-                type="number"
+                // number 타입은 브라우저 증감 스피너가 생겨서 tel + 숫자 필터로 처리
+                type="tel"
                 placeholder="인증번호를 입력해주세요"
                 value={code}
                 onChange={(e) => {
-                  setCode(e.target.value.slice(0, 6));
+                  setCode(e.target.value.replace(/\D/g, '').slice(0, 6));
                   if (codeError) setCodeError(null);
                 }}
                 errorMessage={
