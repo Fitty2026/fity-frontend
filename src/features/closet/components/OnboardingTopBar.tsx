@@ -1,4 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+/**
+ * 건너뛰기 도착지 — 등록을 중단한 사용자는 옷장이 아니라 홈으로 나간다.
+ * 화면마다 흩어져 있으면 또 어긋나므로 여기 한 곳에서만 정한다.
+ */
+const SKIP_TO = '/home';
 
 /**
  * 직전 화면의 진행률. 화면이 바뀌어도 바가 끊기지 않고 이어서 차오르게 하려고
@@ -9,8 +16,9 @@ let lastProgress = 0;
 interface OnboardingTopBarProps {
   /** 진행률 0~1. 지정 시 하단 프로그레스 바 표시 */
   progress?: number;
-  /** 우측 "건너뛰기" 노출 여부 */
+  /** 우측 "건너뛰기" 노출 여부. 누르면 기본으로 홈(SKIP_TO)으로 나간다 */
   showSkip?: boolean;
+  /** 기본 도착지(홈) 말고 다르게 보내야 할 때만 지정 */
   onSkip?: () => void;
   /** 좌측 뒤로가기 노출 여부 */
   showBack?: boolean;
@@ -29,6 +37,7 @@ const OnboardingTopBar = ({
   showBack = false,
   onBack,
 }: OnboardingTopBarProps) => {
+  const navigate = useNavigate();
   // 이전 값으로 먼저 그린 뒤 다음 프레임에 목표값으로 — CSS transition이 그 사이를 채운다
   const [width, setWidth] = useState(lastProgress);
 
@@ -61,7 +70,7 @@ const OnboardingTopBar = ({
         {showSkip && (
           <button
             type="button"
-            onClick={onSkip}
+            onClick={onSkip ?? (() => navigate(SKIP_TO))}
             className="absolute right-5 flex items-center gap-1 text-[14px] text-[#B2B8BD] cursor-pointer"
           >
             건너뛰기

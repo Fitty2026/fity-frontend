@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageLayout';
 import OnboardingTopBar from './OnboardingTopBar';
 import receiptGuide from '@/assets/images/closet/receipt-guide.png';
@@ -68,12 +67,10 @@ const ReceiptGuideScreen = ({
   overlay,
   extra,
 }: ReceiptGuideScreenProps) => {
-  const navigate = useNavigate();
-
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
       <div className="relative flex flex-col flex-1 min-h-0 bg-white">
-        <OnboardingTopBar progress={300 / 375} showSkip onSkip={() => navigate('/closet')} />
+        <OnboardingTopBar progress={300 / 375} showSkip />
 
         {overlay}
 

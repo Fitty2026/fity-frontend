@@ -84,7 +84,7 @@ const ClosetRegisterPage = () => {
           draggable={false}
         />
 
-        <OnboardingTopBar progress={300 / 375} showSkip onSkip={() => navigate('/closet')} />
+        <OnboardingTopBar progress={300 / 375} showSkip />
 
         <div className="relative flex-1 overflow-y-auto px-6 pt-[68px]">
           {/* 문구 블록 327×120 — 진행 바 아래 68 (Figma top 175) */}
