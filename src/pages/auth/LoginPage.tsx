@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import PasswordInput from '@/features/auth/components/PasswordInput';
 import SocialLoginButton from '@/features/auth/components/SocialLoginButton';
+import { buildAuthorizeUrl } from '@/features/auth/api/socialAuth';
 import useLogin from '@/features/auth/hooks/useLogin';
 import { getErrorMessage } from '@/lib/apiError';
 
@@ -22,9 +23,20 @@ const SOCIAL_PROVIDERS = ['google', 'apple', 'kakao'] as const;
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { loginWithEmail, loginWithSocial, isLoading, error } = useLogin();
+  const { loginWithEmail, isLoading, error } = useLogin();
   // TODO: API 연동 시 "로그인 상태 유지" 여부를 토큰 저장 방식에 반영
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+  // 애플 로그인 준비 중 안내 (서버 AUTH400_03 문구와 동일)
+  const [socialNotice, setSocialNotice] = useState<string | null>(null);
+
+  // 카카오/구글은 소셜 인가 페이지로 이동 → /oauth/:provider/callback에서 로그인 마무리
+  const handleSocialClick = (provider: (typeof SOCIAL_PROVIDERS)[number]) => {
+    if (provider === 'apple') {
+      setSocialNotice('현재 애플 로그인은 준비 중입니다.');
+      return;
+    }
+    window.location.assign(buildAuthorizeUrl(provider));
+  };
   const {
     register,
     handleSubmit,
@@ -103,10 +115,13 @@ const LoginPage = () => {
             <SocialLoginButton
               key={provider}
               provider={provider}
-              onClick={() => loginWithSocial(provider)}
+              onClick={() => handleSocialClick(provider)}
               disabled={isLoading}
             />
           ))}
+          {socialNotice && (
+            <p className="text-center text-sm text-neutral-500">{socialNotice}</p>
+          )}
         </div>
 
         {/* 회원가입 이동 */}

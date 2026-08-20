@@ -6,6 +6,7 @@ import SplashPage from '../pages/auth/SplashPage';
 import ServiceIntroPage from '../pages/auth/ServiceIntroPage';
 import LoginPage from '../pages/auth/LoginPage';
 import SignupPage from '../pages/auth/SignupPage';
+import OAuthCallbackPage from '../pages/auth/OAuthCallbackPage';
 import FindPasswordPage from '../pages/auth/FindPasswordPage';
 
 // 1. 온보딩
@@ -95,6 +96,8 @@ const router = createBrowserRouter([
     { path: '/intro', element: <ServiceIntroPage /> },
     { path: '/login', element: <LoginPage /> },
     { path: '/signup', element: <SignupPage /> },
+    // 소셜 로그인 콜백 — 카카오/구글 콘솔에 등록된 리디렉션 URI
+    { path: '/oauth/:provider/callback', element: <OAuthCallbackPage /> },
     { path: '/find-password', element: <FindPasswordPage /> },
 
     // ── 온보딩 (로그인 후 최초 1회) ───────────────
