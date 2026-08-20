@@ -74,6 +74,7 @@ import NameEditPage from '../pages/mypage/NameEditPage';
 import StyleEditPage from '../pages/mypage/StyleEditPage';
 import StyleSelectPage from '../pages/mypage/StyleSelectPage';
 import BodyEditPage from '../pages/mypage/BodyEditPage';
+import BodyPhotoEditPage from '../pages/mypage/BodyPhotoEditPage';
 import WithdrawPage from '../pages/mypage/WithdrawPage';
 
 // 9. 에러
@@ -565,6 +566,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <BodyEditPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/mypage/profile/body/photos',
+        element: (
+          <ProtectedRoute>
+            <BodyPhotoEditPage />
           </ProtectedRoute>
         ),
       },
