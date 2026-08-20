@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import PageLayout from '@/features/myoutfit/components/MyOutfitPageLayout';
 import ErrorScreen from '@/components/ui/ErrorScreen';
@@ -7,8 +7,8 @@ import LoadingScreen from '@/components/ui/LoadingScreen';
 import { ClosetSearchField } from '@/features/closet/components';
 import useClosets from '@/features/closet/hooks/useClosets';
 import { matchesQuery } from '@/features/closet/searchItems';
-import useUpdateMyOutfit from '@/features/myoutfit/hooks/useUpdateMyOutfit';
 import { useMyOutfit } from '@/features/myoutfit/hooks/useMyOutfits';
+import type { Outfit } from '@/types';
 
 import '@/features/myoutfit/styles/addItemDropdown.css';
 
@@ -148,11 +148,12 @@ const FilterDropdown = ({
 
 const MyOutfitAddItemPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { outfitId } = useParams();
   const outfitQuery = useMyOutfit(outfitId);
   const closetQuery = useClosets();
-  const updateMutation = useUpdateMyOutfit();
-  const outfit = outfitQuery.data;
+  const draftOutfit = (location.state as { draftOutfit?: Outfit } | null)?.draftOutfit;
+  const outfit = draftOutfit?.id === outfitId ? draftOutfit : outfitQuery.data;
   const items = useMemo(() => closetQuery.data?.items ?? [], [closetQuery.data?.items]);
 
   const [search, setSearch] = useState('');
@@ -218,12 +219,7 @@ const MyOutfitAddItemPage = () => {
 
   if (outfitQuery.isPending || closetQuery.isPending) {
     return (
-      <PageLayout
-        showBottomNav={false}
-        showHeader={true}
-        showBack={true}
-        title="아이템 추가"
-      >
+      <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="아이템 추가">
         <LoadingScreen message="코디와 옷장 아이템을 불러오는 중이에요." />
       </PageLayout>
     );
@@ -232,12 +228,7 @@ const MyOutfitAddItemPage = () => {
   const queryError = outfitQuery.error ?? closetQuery.error;
   if (queryError || !outfit) {
     return (
-      <PageLayout
-        showBottomNav={false}
-        showHeader={true}
-        showBack={true}
-        title="아이템 추가"
-      >
+      <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="아이템 추가">
         <ErrorScreen
           title="아이템을 불러오지 못했어요."
           description={queryError?.message ?? '코디 정보를 찾을 수 없어요.'}
@@ -251,25 +242,16 @@ const MyOutfitAddItemPage = () => {
   }
 
   const addSelectedItems = () => {
-    const itemIds = [
-      ...new Set([...outfit.items.map((item) => item.id), ...selectedItemIds]),
-    ];
-
-    updateMutation.mutate(
-      {
-        savedOutfitId: outfit.id,
-        body: {
-          title: outfit.context ?? '저장한 코디',
-          memo: outfit.memo ?? '',
-          styleTags: outfit.styleTags,
-          itemIds,
-        },
-      },
-      {
-        onSuccess: (updatedOutfit) =>
-          navigate(`/myoutfit/edit/${updatedOutfit.id}`, { replace: true }),
-      },
+    const selectedItems = items.filter((item) => selectedItemIds.includes(item.id));
+    const mergedItems = [...outfit.items, ...selectedItems].filter(
+      (item, index, allItems) =>
+        allItems.findIndex((candidate) => candidate.id === item.id) === index,
     );
+
+    navigate(`/myoutfit/edit/${outfit.id}`, {
+      replace: true,
+      state: { draftOutfit: { ...outfit, items: mergedItems } },
+    });
   };
 
   return (
@@ -392,19 +374,14 @@ const MyOutfitAddItemPage = () => {
           </div>
         </div>
 
-        <div className="absolute inset-x-[24px] bottom-[40px] z-20">
-          {updateMutation.isError && (
-            <p className="mb-[8px] text-center text-[13px] text-red-500">
-              {updateMutation.error.message || '아이템을 추가하지 못했어요. 다시 시도해 주세요.'}
-            </p>
-          )}
+        <div className="fixed bottom-[40px] left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 px-[24px]">
           <button
             type="button"
-            disabled={selectedItemIds.length === 0 || updateMutation.isPending}
+            disabled={selectedItemIds.length === 0}
             onClick={addSelectedItems}
             className="w-full rounded-[32px] bg-[#1F2124] py-[16px] text-[16px] font-[600] text-white disabled:bg-[#E6E8EA] disabled:text-[#959BA7]"
           >
-            {updateMutation.isPending ? '저장 중...' : '확인'}
+            확인
           </button>
         </div>
       </div>

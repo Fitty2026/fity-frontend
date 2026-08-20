@@ -218,6 +218,7 @@ export const updateMyOutfit = async (
       name: body.title,
       memo: body.memo,
       tags: withHashTags(body.styleTags),
+      itemIds: body.itemIds.map(Number).filter(Number.isFinite),
     },
   );
 
