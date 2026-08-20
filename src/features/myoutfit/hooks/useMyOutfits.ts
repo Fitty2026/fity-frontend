@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 import {
   getMyOutfit,
@@ -18,17 +18,27 @@ export const myOutfitKeys = {
 };
 
 const useMyOutfits = () =>
-  useQuery({
+  useInfiniteQuery({
     queryKey: myOutfitKeys.lists(),
-    queryFn: getMyOutfits,
+    queryFn: ({ pageParam }) => getMyOutfits(pageParam),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, pages) => {
+      const loadedCount = pages.reduce((count, page) => count + page.outfits.length, 0);
+      return loadedCount < lastPage.total ? lastPage.page + 1 : undefined;
+    },
+    select: (data) => ({
+      ...data,
+      outfits: data.pages.flatMap((page) => page.outfits),
+    }),
   });
 
 export default useMyOutfits;
 
-export const useRecentlyDeletedOutfits = () =>
+export const useRecentlyDeletedOutfits = (enabled = true) =>
   useQuery({
     queryKey: myOutfitKeys.recentlyDeleted(),
     queryFn: getRecentlyDeletedOutfits,
+    enabled,
   });
 
 export const useMyOutfit = (savedOutfitId: string | undefined) =>

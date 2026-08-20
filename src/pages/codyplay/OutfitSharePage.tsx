@@ -1,14 +1,48 @@
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import PageLayout from '@/components/layout/PageLayout';
 import '@/features/codyplay/outfitShare.css';
+import useUpdateMyOutfit from '@/features/myoutfit/hooks/useUpdateMyOutfit';
 
 import useStylingStore from '@/store/stylingStore';
 
 const OutfitSharePage = () => {
   const result = useStylingStore((state) => state.generatedOutfit);
+  const setGeneratedOutfit = useStylingStore((state) => state.setGeneratedOutfit);
   const location = useLocation();
   const navigate = useNavigate();
+  const updateMutation = useUpdateMyOutfit();
+  const [outfitName, setOutfitName] = useState(result?.context ?? '새로운 코디');
+  const [memo, setMemo] = useState(result?.memo ?? '');
+  const [nameBeforeEdit, setNameBeforeEdit] = useState(outfitName);
+  const [isEditingName, setIsEditingName] = useState(false);
+
+  const updateSavedOutfit = (name: string, nextMemo: string) => {
+    if (!result) return;
+    updateMutation.mutate(
+      {
+        savedOutfitId: result.id,
+        body: {
+          title: name,
+          memo: nextMemo,
+          styleTags: result.styleTags,
+          itemIds: result.items.map((item) => item.id),
+        },
+      },
+      { onSuccess: setGeneratedOutfit },
+    );
+  };
+
+  const finishNameEdit = () => {
+    if (!result) return;
+    const name = outfitName.trim() || '새로운 코디';
+    setOutfitName(name);
+    setIsEditingName(false);
+    if (name === result.context) return;
+
+    updateSavedOutfit(name, memo);
+  };
 
   // 생성된 코디 이미지를 파일로 저장한다 (원격 이미지 → blob 변환 후 다운로드)
   const downloadImg = async () => {
@@ -70,9 +104,34 @@ const OutfitSharePage = () => {
         <div className="mt-[16px] mx-[24px] flex justify-between">
           <div>
             {' '}
-            <h2 className="text-[#1F2124] text-[24px] font-[600] leading-[150%] tracking-[-2%]">
-              {result?.context}
-            </h2>
+            {isEditingName ? (
+              <input
+                autoFocus
+                value={outfitName}
+                onChange={(event) => setOutfitName(event.target.value)}
+                onBlur={finishNameEdit}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') event.currentTarget.blur();
+                  if (event.key === 'Escape') {
+                    setOutfitName(nameBeforeEdit);
+                    setIsEditingName(false);
+                  }
+                }}
+                aria-label="코디 이름"
+                className="bg-transparent text-[#1F2124] text-[24px] font-[600] leading-[150%] tracking-[-2%] outline-none"
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setNameBeforeEdit(outfitName);
+                  setIsEditingName(true);
+                }}
+                className="bg-transparent text-left text-[#1F2124] text-[24px] font-[600] leading-[150%] tracking-[-2%]"
+              >
+                {outfitName}
+              </button>
+            )}
             <div className="flex">
               {result?.styleTags.map((tag) => (
                 <p
@@ -121,6 +180,11 @@ const OutfitSharePage = () => {
         </div>
         <div className="mt-[12px] mx-[24px]">
           <textarea
+            value={memo}
+            onChange={(event) => setMemo(event.target.value)}
+            onBlur={() => {
+              if (result && memo !== (result.memo ?? '')) updateSavedOutfit(outfitName, memo);
+            }}
             placeholder="설명을 작성해 주세요"
             className="w-full bg-[#F6F7F8] rounded-[4px] px-[8px] py-[10px] text-[#B2B8BD] text-[12px] font-[500] leading-[165%] tracking-[-2%] outline-none resize-none overflow-hidden "
           ></textarea>

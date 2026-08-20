@@ -1,10 +1,10 @@
 import type { ComponentProps } from 'react';
 
 import PageLayout from '@/components/layout/PageLayout';
-import useClosetStore from '@/store/closetStore';
+import usePuzzleStore from '@/store/puzzleStore';
 
-const ClosetItemCount = () => {
-  const count = useClosetStore((state) => state.items.length);
+const PuzzleCount = () => {
+  const count = usePuzzleStore((state) => state.balance);
 
   return (
     <span className="flex items-center gap-1 whitespace-nowrap text-[12px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124]">
@@ -26,7 +26,7 @@ const ClosetItemCount = () => {
 };
 
 const MyOutfitPageLayout = ({
-  headerRight = <ClosetItemCount />,
+  headerRight = <PuzzleCount />,
   ...props
 }: ComponentProps<typeof PageLayout>) => <PageLayout {...props} headerRight={headerRight} />;
 

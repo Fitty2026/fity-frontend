@@ -152,7 +152,7 @@ const ClosetReceiptRecognizingPage = () => {
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
       <div className="flex flex-col flex-1 min-h-0 bg-white">
-        <OnboardingTopBar progress={300 / 375} showSkip onSkip={() => navigate('/closet')} />
+        <OnboardingTopBar progress={300 / 375} showSkip />
 
         {/* 스피너 60×60 — 진행 바 아래 156, 가로 중앙 (Figma) */}
         <div className="mt-[156px] flex justify-center">

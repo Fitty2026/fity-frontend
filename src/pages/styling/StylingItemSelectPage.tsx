@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { StudioHeader, ScreenTitle, SearchField, FilterChips, SortChip, BottomCTA } from '@/features/styling/components';
+import { StudioHeader, ScreenTitle, SearchField, FilterChips, SortChip, BottomCTA, PuzzleShortageOverlay } from '@/features/styling/components';
 import useClosets from '@/features/closet/hooks/useClosets';
+import usePuzzleStore, { GENERATION_COST } from '@/store/puzzleStore';
 import type { OutfitJobInput } from '@/features/styling/types';
 import type { ClothingCategory } from '@/types';
 
@@ -52,7 +53,8 @@ const StylingItemSelectPage = () => {
 
   const { data } = useClosets();
   const items = useMemo(() => data?.items ?? [], [data]);
-  const totalCount = data?.categoryCount?.total ?? items.length;
+  const puzzleBalance = usePuzzleStore((s) => s.balance);
+  const [shortageOpen, setShortageOpen] = useState(false);
 
   const toggleItem = (id: string) =>
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]));
@@ -89,7 +91,7 @@ const StylingItemSelectPage = () => {
   return (
     <div className="min-h-screen bg-neutral-100 flex justify-center">
       <div className="relative w-full max-w-[430px] h-screen bg-white flex flex-col overflow-hidden">
-        <StudioHeader onBack={() => navigate(-1)} count={totalCount} />
+        <StudioHeader onBack={() => navigate(-1)} count={puzzleBalance} />
 
         <div className="flex-1 overflow-y-auto pb-32">
           {/* 타이틀 (375×52) */}
@@ -154,19 +156,28 @@ const StylingItemSelectPage = () => {
           </div>
         </div>
 
-        {/* 생성 CTA — 그리드 위 플로팅, 선택 전 disabled */}
+        {/* 생성 CTA — 그리드 위 플로팅, 선택 전 disabled. 잔량이 비용 미만이면 부족 안내 */}
         <div className="absolute inset-x-0 bottom-0">
           <BottomCTA
-            label="88 퍼즐로 코디 생성하기"
+            label={`${GENERATION_COST} 퍼즐로 코디 생성하기`}
             disabled={selectedIds.length === 0}
             // 선택한 아이템 id를 로딩 화면으로 전달 (OUTFIT-01은 숫자 배열을 받는다)
-            onClick={() =>
+            onClick={() => {
+              if (puzzleBalance < GENERATION_COST) {
+                setShortageOpen(true);
+                return;
+              }
               navigate('/styling/loading', {
                 state: { ...state, closetItemIds: selectedIds.map(Number) },
-              })
-            }
+              });
+            }}
           />
         </div>
+
+        {/* 퍼즐 부족 오버레이 */}
+        {shortageOpen && (
+          <PuzzleShortageOverlay balance={puzzleBalance} onClose={() => setShortageOpen(false)} />
+        )}
       </div>
     </div>
   );

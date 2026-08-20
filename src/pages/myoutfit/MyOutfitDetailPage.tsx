@@ -1,10 +1,13 @@
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import PageLayout from '@/features/myoutfit/components/MyOutfitPageLayout';
 import ErrorScreen from '@/components/ui/ErrorScreen';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 import OutfitItem from '@/features/myoutfit/components/OutfitItem';
-import { useMyOutfit } from '@/features/myoutfit/hooks/useMyOutfits';
+import {
+  useMyOutfit,
+  useRecentlyDeletedOutfits,
+} from '@/features/myoutfit/hooks/useMyOutfits';
 import useRecentlyDeletedOutfitActions from '@/features/myoutfit/hooks/useRecentlyDeletedOutfitActions';
 import type { ClothingCategory, Outfit } from '@/types';
 
@@ -13,22 +16,39 @@ const BASE_CATEGORIES: ClothingCategory[] = ['아우터', '상의', '하의', '�
 const MyOutfitDetailPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { outfitId } = useParams();
   const recentlyDeletedOutfit = (
     location.state as { recentlyDeletedOutfit?: Outfit } | null
   )?.recentlyDeletedOutfit;
+  const isRecentlyDeleted =
+    Boolean(recentlyDeletedOutfit) || searchParams.get('source') === 'deleted';
   const {
     data: fetchedOutfit,
-    error,
-    isPending,
-    refetch,
-  } = useMyOutfit(recentlyDeletedOutfit ? undefined : outfitId);
-  const outfit = recentlyDeletedOutfit ?? fetchedOutfit;
+    error: outfitError,
+    isPending: isOutfitPending,
+    refetch: refetchOutfit,
+  } = useMyOutfit(isRecentlyDeleted ? undefined : outfitId);
+  const {
+    data: recentlyDeletedData,
+    error: recentlyDeletedError,
+    isPending: isRecentlyDeletedPending,
+    refetch: refetchRecentlyDeleted,
+  } = useRecentlyDeletedOutfits(isRecentlyDeleted && !recentlyDeletedOutfit);
+  const fetchedRecentlyDeletedOutfit = recentlyDeletedData?.outfits.find(
+    ({ outfit }) => outfit.id === outfitId,
+  )?.outfit;
+  const outfit = recentlyDeletedOutfit ?? fetchedRecentlyDeletedOutfit ?? fetchedOutfit;
+  const error = isRecentlyDeleted ? recentlyDeletedError : outfitError;
+  const isPending = isRecentlyDeleted
+    ? !recentlyDeletedOutfit && isRecentlyDeletedPending
+    : isOutfitPending;
+  const refetch = isRecentlyDeleted ? refetchRecentlyDeleted : refetchOutfit;
   const { restoreMutation, permanentDeleteMutation } = useRecentlyDeletedOutfitActions();
   const actionError = restoreMutation.error ?? permanentDeleteMutation.error;
   const isActionPending = restoreMutation.isPending || permanentDeleteMutation.isPending;
 
-  if (!recentlyDeletedOutfit && isPending) {
+  if (isPending) {
     return (
       <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="룩북">
         <LoadingScreen message="코디 상세 정보를 불러오는 중이에요." />
@@ -125,7 +145,7 @@ const MyOutfitDetailPage = () => {
       </div>
 
       <div className="mt-[43px] mx-[24px] flex flex-col gap-[6px] ">
-        {recentlyDeletedOutfit ? (
+        {isRecentlyDeleted ? (
           <>
             {actionError ? (
               <p className="mb-[8px] text-center text-[13px] text-red-500">

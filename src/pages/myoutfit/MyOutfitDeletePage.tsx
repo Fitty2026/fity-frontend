@@ -78,7 +78,7 @@ const MyOutfitDeletePage = () => {
         </div>
         <button
           type="button"
-          onClick={() => navigate('/home')}
+          onClick={() => navigate('/myoutfit')}
           className="absolute bottom-[40px] left-[24px] right-[24px] rounded-[32px] bg-[#1F2124] py-[16px] text-[16px] font-[600] leading-[160%] tracking-[-2%] text-[#F6F7F8]"
         >
           룩북으로 돌아가기

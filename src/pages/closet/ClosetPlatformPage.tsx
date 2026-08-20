@@ -194,7 +194,7 @@ const ClosetPlatformPage = () => {
     <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col min-h-0">
       <div className="relative flex flex-col flex-1 min-h-0 bg-white overflow-hidden">
         <div className="relative z-20">
-          <OnboardingTopBar progress={300 / 375} showSkip onSkip={() => navigate('/closet')} />
+          <OnboardingTopBar progress={300 / 375} showSkip />
         </div>
 
         <p className="relative z-20 mt-[52px] text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">

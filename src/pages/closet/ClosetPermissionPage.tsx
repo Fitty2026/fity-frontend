@@ -97,7 +97,6 @@ const ClosetPermissionPage = () => {
           showBack
           onBack={() => navigate(-1)}
           showSkip
-          onSkip={() => navigate('/closet')}
         />
 
         <div className="flex-1 overflow-y-auto">
