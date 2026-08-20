@@ -264,7 +264,7 @@ const MyOutfitEditForm = ({ initialOutfit }: { initialOutfit: Outfit }) => {
                   title: title.trim(),
                   memo: memo.trim(),
                   styleTags: outfit.styleTags,
-                  itemIds: outfit.items.map((item) => item.id),
+                  outfitResultId: outfit.outfitResultId,
                 },
               },
               {

@@ -1,4 +1,5 @@
 import { categoryLabel, getClosets, imageSrc } from '@/features/closet/api/closetApi';
+import { getGenerationJob } from '@/features/codyplay/api/codyPlayApi';
 import api from '@/lib/axios';
 import type { ApiResponse, ClothingCategory, ClothingItem, Outfit } from '@/types';
 
@@ -19,6 +20,7 @@ interface SavedOutfitRaw {
   savedOutfitId?: number;
   outfit_id?: number;
   outfitId?: number;
+  outfitResultId?: number;
   id?: number | string;
   title?: string;
   name?: string;
@@ -72,7 +74,12 @@ export interface UpdateMyOutfitRequest {
   title: string;
   memo: string;
   styleTags: string[];
-  itemIds: string[];
+  outfitResultId?: string;
+  itemIds?: string[];
+}
+
+interface RevisionAcceptedRaw {
+  jobId: number;
 }
 
 const withHashTags = (tags: string[]) =>
@@ -126,6 +133,7 @@ const toOutfit = (
 
   return {
     id: String(id),
+    outfitResultId: outfit.outfitResultId == null ? undefined : String(outfit.outfitResultId),
     imageUrl:
       outfit.image_url || outfit.imageUrl
         ? imageSrc(outfit.image_url ?? outfit.imageUrl ?? '')
@@ -218,7 +226,7 @@ export const updateMyOutfit = async (
       name: body.title,
       memo: body.memo,
       tags: withHashTags(body.styleTags),
-      itemIds: body.itemIds.map(Number).filter(Number.isFinite),
+      ...(body.outfitResultId ? { outfitResultId: Number(body.outfitResultId) } : {}),
     },
   );
 
@@ -229,6 +237,48 @@ export const updateMyOutfit = async (
     ...updatedOutfit,
     id: updatedOutfit.id || savedOutfitId,
   };
+};
+
+export const regenerateMyOutfitWithReplacement = async ({
+  original,
+  newItem,
+}: {
+  original: Outfit;
+  newItem: ClothingItem;
+}): Promise<Outfit> => {
+  const replaceItem = original.items.find((item) => item.category === newItem.category);
+  if (!replaceItem) {
+    throw new Error('같은 카테고리의 교체할 아이템을 찾을 수 없어요.');
+  }
+  if (!original.outfitResultId) {
+    throw new Error('원본 코디 결과 ID를 찾을 수 없어요.');
+  }
+
+  const { data } = await api.post<ApiResponse<RevisionAcceptedRaw>>(
+    `/api/v1/outfits/${original.outfitResultId}/revisions`,
+    {
+      replaceItemId: Number(replaceItem.id),
+      newItemId: Number(newItem.id),
+    },
+    { headers: { 'Idempotency-Key': crypto.randomUUID() } },
+  );
+
+  for (;;) {
+    const job = await getGenerationJob(String(data.result.jobId));
+    if (job.status === 'COMPLETED') {
+      if (!job.result) throw new Error('재생성된 코디 결과가 없습니다.');
+      return {
+        ...original,
+        imageUrl: job.result.imageUrl,
+        items: job.result.items,
+        outfitResultId: job.result.id,
+      };
+    }
+    if (job.status === 'FAILED' || job.status === 'EXPIRED') {
+      throw new Error(job.failure?.message ?? '코디 재생성에 실패했습니다.');
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+  }
 };
 
 /** SAVED-05 저장한 코디 삭제 */

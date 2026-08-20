@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import PageLayout from '@/features/myoutfit/components/MyOutfitPageLayout';
@@ -7,6 +8,7 @@ import LoadingScreen from '@/components/ui/LoadingScreen';
 import { ClosetSearchField } from '@/features/closet/components';
 import useClosets from '@/features/closet/hooks/useClosets';
 import { matchesQuery } from '@/features/closet/searchItems';
+import { regenerateMyOutfitWithReplacement } from '@/features/myoutfit/api/myOutfitApi';
 import { useMyOutfit } from '@/features/myoutfit/hooks/useMyOutfits';
 import type { Outfit } from '@/types';
 
@@ -163,6 +165,19 @@ const MyOutfitAddItemPage = () => {
   const [color, setColor] = useState<string | null>(null);
   const [openDropdown, setOpenDropdown] = useState<'order' | 'brand' | 'color' | null>(null);
   const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
+  const regenerateMutation = useMutation({
+    mutationFn: (newItemId: string) => {
+      const newItem = items.find((item) => item.id === newItemId);
+      if (!outfit || !newItem) throw new Error('선택한 아이템을 찾을 수 없어요.');
+      return regenerateMyOutfitWithReplacement({ original: outfit, newItem });
+    },
+    onSuccess: (regeneratedOutfit) => {
+      navigate(`/myoutfit/edit/${regeneratedOutfit.id}`, {
+        replace: true,
+        state: { draftOutfit: regeneratedOutfit },
+      });
+    },
+  });
 
   const brandOptions = useMemo(
     () =>
@@ -206,11 +221,7 @@ const MyOutfitAddItemPage = () => {
   }, [brand, category, color, items, order, search]);
 
   const toggleItem = (itemId: string) => {
-    setSelectedItemIds((selectedIds) =>
-      selectedIds.includes(itemId)
-        ? selectedIds.filter((selectedId) => selectedId !== itemId)
-        : [...selectedIds, itemId],
-    );
+    setSelectedItemIds((selectedIds) => (selectedIds.includes(itemId) ? [] : [itemId]));
   };
 
   const toggleDropdown = (dropdown: 'order' | 'brand' | 'color') => {
@@ -242,16 +253,9 @@ const MyOutfitAddItemPage = () => {
   }
 
   const addSelectedItems = () => {
-    const selectedItems = items.filter((item) => selectedItemIds.includes(item.id));
-    const mergedItems = [...outfit.items, ...selectedItems].filter(
-      (item, index, allItems) =>
-        allItems.findIndex((candidate) => candidate.id === item.id) === index,
-    );
-
-    navigate(`/myoutfit/edit/${outfit.id}`, {
-      replace: true,
-      state: { draftOutfit: { ...outfit, items: mergedItems } },
-    });
+    const selectedItemId = selectedItemIds[0];
+    if (!selectedItemId || regenerateMutation.isPending) return;
+    regenerateMutation.mutate(selectedItemId);
   };
 
   return (
@@ -375,13 +379,18 @@ const MyOutfitAddItemPage = () => {
         </div>
 
         <div className="fixed bottom-[40px] left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 px-[24px]">
+          {regenerateMutation.isError && (
+            <p className="mb-[8px] text-center text-[13px] text-red-500">
+              {regenerateMutation.error.message}
+            </p>
+          )}
           <button
             type="button"
-            disabled={selectedItemIds.length === 0}
+            disabled={selectedItemIds.length === 0 || regenerateMutation.isPending}
             onClick={addSelectedItems}
             className="w-full rounded-[32px] bg-[#1F2124] py-[16px] text-[16px] font-[600] text-white disabled:bg-[#E6E8EA] disabled:text-[#959BA7]"
           >
-            확인
+            {regenerateMutation.isPending ? '재생성 중...' : '확인'}
           </button>
         </div>
       </div>
