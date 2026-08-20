@@ -49,6 +49,11 @@ export const getMyProfile = async (): Promise<User> => {
   };
 };
 
+// ── USER-04 프로필 이름 수정 (PATCH /api/v1/users/me) ──
+export const updateMyName = async (name: string): Promise<void> => {
+  await api.patch('/api/v1/users/me', { name });
+};
+
 // ── AUTH-02 이메일 로그인 ──
 export interface LoginRequest {
   email: string;
