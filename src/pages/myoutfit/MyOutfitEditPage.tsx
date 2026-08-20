@@ -89,17 +89,16 @@ const MyOutfitEditForm = ({ initialOutfit }: { initialOutfit: Outfit }) => {
   const navigate = useNavigate();
   const updateMutation = useUpdateMyOutfit();
 
-  const handleAddTag = (tag: string) => {
+  const handleCompleteTags = (tags: string[]) => {
     setResult((prev) => {
-      if (!prev || prev.styleTags.length >= MAX_TAG_COUNT || prev.styleTags.includes(tag)) {
-        return prev;
-      }
+      if (!prev) return prev;
 
       return {
         ...prev,
-        styleTags: [...prev.styleTags, tag],
+        styleTags: tags.slice(0, MAX_TAG_COUNT),
       };
     });
+    setSelectedTag(null);
   };
 
   return (
@@ -278,7 +277,7 @@ const MyOutfitEditForm = ({ initialOutfit }: { initialOutfit: Outfit }) => {
         isOpen={isTagSheetOpen}
         currentTags={outfit.styleTags}
         onClose={() => setIsTagSheetOpen(false)}
-        onAddTag={handleAddTag}
+        onComplete={handleCompleteTags}
       />
     </PageLayout>
   );
