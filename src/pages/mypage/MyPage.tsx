@@ -33,12 +33,11 @@ const MyPage = () => {
   const logoutMutation = useLogout();
   const { data: profile } = useMyProfile();
   const { data: bodyProfile } = useBodyProfile();
-  const profileSummary = [
-    bodyProfile?.bodyTypeResult.bodyTypeName,
-    ...(profile?.styleTags ?? []),
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  const bodySummary = bodyProfile?.bodyTypeResult.bodyTypeName
+    ? `${bodyProfile.bodyTypeResult.bodyTypeName} 체형`
+    : '';
+  const styleSummary = profile?.styleTags?.join(' · ') ?? '';
+  const profileSummary = [bodySummary, styleSummary].filter(Boolean).join(' | ');
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="pb-[110px]">
