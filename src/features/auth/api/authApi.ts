@@ -33,12 +33,11 @@ export const getMyProfile = async (): Promise<User> => {
       const id = style.id ?? style.tagId;
       return id == null ? [] : [id];
     });
-  const styleTags =
-    profile.styleTags ??
-    preferences.flatMap((style) => {
-      const name = style.name ?? style.tagName;
-      return name ? [name] : [];
-    });
+  const preferenceNames = preferences.flatMap((style) => {
+    const name = style.name ?? style.tagName;
+    return name ? [name] : [];
+  });
+  const styleTags = preferenceNames.length > 0 ? preferenceNames : (profile.styleTags ?? []);
 
   return {
     id: profile.id ?? profile.userId ?? 0,
