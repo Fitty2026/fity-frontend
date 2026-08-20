@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import PageLayout from '@/components/layout/PageLayout';
@@ -12,6 +13,10 @@ import starIcon from '@/assets/images/mypage/menu-star.svg';
 import settingsIcon from '@/assets/images/mypage/menu-settings.svg';
 import helpIcon from '@/assets/images/mypage/menu-help.svg';
 import chevronRight from '@/assets/images/mypage/chevron-right.svg';
+import useLogout from '@/features/auth/hooks/useLogout';
+import useMyProfile from '@/features/auth/hooks/useMyProfile';
+import ComingSoonModal from '@/features/mypage/components/ComingSoonModal';
+import useBodyProfile from '@/features/onboarding/hooks/useBodyProfile';
 
 const menuItems = [
   { label: '좋아요', icon: likeIcon, path: '/myoutfit' },
@@ -23,7 +28,17 @@ const menuItems = [
 
 const MyPage = () => {
   const navigate = useNavigate();
+  const [isComingSoonOpen, setIsComingSoonOpen] = useState(false);
   const puzzleBalance = usePuzzleStore((state) => state.balance);
+  const logoutMutation = useLogout();
+  const { data: profile } = useMyProfile();
+  const { data: bodyProfile } = useBodyProfile();
+  const profileSummary = [
+    bodyProfile?.bodyTypeResult.bodyTypeName,
+    ...(profile?.styleTags ?? []),
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="pb-[110px]">
@@ -38,9 +53,11 @@ const MyPage = () => {
       />
       <section className="flex flex-col items-center px-6 pt-8">
         <img src={profilePlaceholder} alt="프로필" className="h-[120px] w-[120px]" />
-        <h2 className="mt-2 text-[24px] font-semibold tracking-[-0.48px] text-[#1F2124]">이름</h2>
+        <h2 className="mt-2 text-[24px] font-semibold tracking-[-0.48px] text-[#1F2124]">
+          {profile?.name || '이름'}
+        </h2>
         <p className="mt-1 text-[14px] font-medium tracking-[-0.28px] text-[#959BA7]">
-          슬림 스트레이트 체형&nbsp; | &nbsp;미니멀 · 캐주얼 · 스트릿
+          {profileSummary || '프로필 정보를 등록해 주세요'}
         </p>
         <button
           type="button"
@@ -80,7 +97,11 @@ const MyPage = () => {
           <button
             key={item.label}
             type="button"
-            onClick={() => ('path' in item && item.path ? navigate(item.path) : undefined)}
+            onClick={() =>
+              'path' in item && item.path
+                ? navigate(item.path)
+                : setIsComingSoonOpen(true)
+            }
             className="flex h-[56px] w-full items-center border-b border-[#E6E8EA] px-5 text-left last:border-0"
           >
             <span className="w-10">
@@ -91,9 +112,21 @@ const MyPage = () => {
           </button>
         ))}
       </section>
+      <button
+        type="button"
+        disabled={logoutMutation.isPending}
+        onClick={() => logoutMutation.mutate()}
+        className="mx-auto mb-8 block text-[14px] font-medium text-[#959BA7] underline underline-offset-4 disabled:opacity-50"
+      >
+        {logoutMutation.isPending ? '로그아웃 중...' : '로그아웃'}
+      </button>
       <div className="fixed bottom-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2">
         <ClosetBottomNav />
       </div>
+      <ComingSoonModal
+        isOpen={isComingSoonOpen}
+        onClose={() => setIsComingSoonOpen(false)}
+      />
     </PageLayout>
   );
 };
