@@ -268,7 +268,7 @@ const MyOutfitEditForm = ({ initialOutfit }: { initialOutfit: Outfit }) => {
               },
             );
           }}
-          className="w-full mt-[8px] bg-[#1F2124] rounded-[32px] py-[16px] text-[#F6F7F8] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
+          className="w-full mt-[8px] mb-[24px] bg-[#1F2124] rounded-[32px] py-[16px] text-[#F6F7F8] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
         >
           {updateMutation.isPending ? '저장 중...' : '확인'}
         </button>
