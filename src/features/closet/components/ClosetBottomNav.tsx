@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 /** 하단 탭 아이콘(라벨 포함 svg) — 홈/스튜디오/옷장(활성)/마이 */
 const TabHome = () => (
@@ -29,19 +29,42 @@ const TabMy = () => (
 /** 옷장 파트 하단 탭바 — 375×92, 우상단 radius 56, 위쪽 그림자, padding 18/24/32/24 */
 const ClosetBottomNav = () => {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const tabs = [
     { key: 'home', to: '/home', Icon: TabHome },
     { key: 'studio', to: '/styling', Icon: TabStudio },
     { key: 'closet', to: '/closet', Icon: TabCloset },
     { key: 'my', to: '/mypage', Icon: TabMy },
   ];
+
+  const isActiveTab = (key: string, to: string) => {
+    if (key === 'my') {
+      return pathname.startsWith('/mypage') || pathname.startsWith('/myoutfit');
+    }
+
+    return pathname.startsWith(to);
+  };
+
   return (
     <nav className="w-full rounded-tr-[56px] bg-white pt-[18px] pr-6 pb-[calc(32px+env(safe-area-inset-bottom,0px))] pl-6 shadow-[0_-8px_16px_0_rgba(0,0,0,0.08)]">
       <ul className="flex items-center justify-between gap-4">
         {tabs.map(({ key, to, Icon }) => (
           <li key={key}>
-            <button type="button" onClick={() => navigate(to)} className="cursor-pointer">
-              <Icon />
+            <button
+              type="button"
+              onClick={() => navigate(to)}
+              className="cursor-pointer"
+              aria-current={isActiveTab(key, to) ? 'page' : undefined}
+            >
+              <span
+                className={
+                  isActiveTab(key, to)
+                    ? '[&_path]:!fill-[#1F2124]'
+                    : '[&_path]:!fill-[#959BA7]'
+                }
+              >
+                <Icon />
+              </span>
             </button>
           </li>
         ))}
