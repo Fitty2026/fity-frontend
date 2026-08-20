@@ -1,10 +1,10 @@
 import type { ComponentProps } from 'react';
 
 import PageLayout from '@/components/layout/PageLayout';
-import usePuzzleStore from '@/store/puzzleStore';
+import usePuzzleBalance from '@/features/puzzle/hooks/usePuzzleBalance';
 
 const PuzzleCount = () => {
-  const count = usePuzzleStore((state) => state.balance);
+  const count = usePuzzleBalance();
 
   return (
     <span className="flex items-center gap-1 whitespace-nowrap text-[12px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124]">
@@ -20,7 +20,7 @@ const PuzzleCount = () => {
           fill="#1F2124"
         />
       </svg>
-      {count}개
+      {count ?? 0}개
     </span>
   );
 };

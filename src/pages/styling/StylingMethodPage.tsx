@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { StudioHeader, StudioBottomNav, OptionCard } from '@/features/styling/components';
-import usePuzzleStore from '@/store/puzzleStore';
+import usePuzzleBalance from '@/features/puzzle/hooks/usePuzzleBalance';
 import methodBlob from '@/assets/images/styling/method-blob.png';
 
 /** 직접 코디하기 — 이미지/사진 아이콘 (Figma 32×32) */
@@ -24,7 +24,7 @@ const BagIcon = () => (
  */
 const StylingMethodPage = () => {
   const navigate = useNavigate();
-  const puzzleBalance = usePuzzleStore((s) => s.balance);
+  const puzzleBalance = usePuzzleBalance();
 
   return (
     <div className="min-h-screen bg-neutral-100 flex justify-center">

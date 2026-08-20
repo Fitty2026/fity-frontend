@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { StudioHeader, StudioBottomNav, SectionHeader } from '@/features/styling/components';
-import usePuzzleStore from '@/store/puzzleStore';
+import usePuzzleBalance from '@/features/puzzle/hooks/usePuzzleBalance';
 import MyOutfitCard from '@/features/myoutfit/components/MyOutfitCard';
 import useMyOutfits from '@/features/myoutfit/hooks/useMyOutfits';
 import heroBlob from '@/assets/images/styling/hero-blob.png';
@@ -11,7 +11,7 @@ import heroBlob from '@/assets/images/styling/hero-blob.png';
  */
 const StylingStartPage = () => {
   const navigate = useNavigate();
-  const puzzleBalance = usePuzzleStore((s) => s.balance);
+  const puzzleBalance = usePuzzleBalance();
   const { data, error, isPending, refetch } = useMyOutfits();
   const recentOutfits = [...(data?.outfits ?? [])]
     .sort((first, second) => second.createdAt.localeCompare(first.createdAt))
