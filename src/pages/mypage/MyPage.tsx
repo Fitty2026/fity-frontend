@@ -58,7 +58,7 @@ const WithdrawIcon = () => (
 
 const menuItems = [
   { label: '룩북', Icon: LookbookIcon, path: '/myoutfit' },
-  { label: '좋아요', icon: likeIcon, path: '/myoutfit' },
+  { label: '좋아요', icon: likeIcon, path: '/myoutfit?liked=true' },
   { label: '최근 삭제된 코디', icon: trashIcon, path: '/myoutfit/recently-deleted' },
   { label: '스타 충전', icon: starIcon },
   { label: '설정', icon: settingsIcon },
@@ -127,7 +127,9 @@ const MyPage = () => {
               {styleStats.map(({ label, value }) => (
                 <span
                   key={label}
-                  style={{ height: value === 0 ? 6 : `${Math.max((value / maxStyleStat) * 76, 6)}px` }}
+                  style={{
+                    height: value === 0 ? 6 : `${Math.max((value / maxStyleStat) * 76, 6)}px`,
+                  }}
                   className="w-[6px] rounded-t bg-[#1F2124]"
                 />
               ))}

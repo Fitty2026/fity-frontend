@@ -12,15 +12,16 @@ export type { MyOutfitList };
 export const myOutfitKeys = {
   all: ['myoutfits'] as const,
   lists: () => [...myOutfitKeys.all, 'list'] as const,
+  list: (likedOnly: boolean) => [...myOutfitKeys.lists(), { likedOnly }] as const,
   recentlyDeleted: () => [...myOutfitKeys.all, 'recently-deleted'] as const,
   details: () => [...myOutfitKeys.all, 'detail'] as const,
   detail: (savedOutfitId: string) => [...myOutfitKeys.details(), savedOutfitId] as const,
 };
 
-const useMyOutfits = () =>
+const useMyOutfits = (likedOnly = false) =>
   useInfiniteQuery({
-    queryKey: myOutfitKeys.lists(),
-    queryFn: ({ pageParam }) => getMyOutfits(pageParam),
+    queryKey: myOutfitKeys.list(likedOnly),
+    queryFn: ({ pageParam }) => getMyOutfits(pageParam, 10, likedOnly),
     initialPageParam: 1,
     getNextPageParam: (lastPage, pages) => {
       const loadedCount = pages.reduce((count, page) => count + page.outfits.length, 0);
