@@ -8,6 +8,7 @@ interface PageLayoutProps {
   showBack?: boolean;
   headerRight?: React.ReactNode;
   onBack?: () => void;
+  customHeader?: React.ReactNode;
   // Layout 옵션
   showHeader?: boolean;
   showBottomNav?: boolean;
@@ -25,31 +26,36 @@ const PageLayout = ({
   showBack = false,
   headerRight,
   onBack,
+  customHeader,
   showHeader = true,
   showBottomNav = true,
   className = '',
 }: PageLayoutProps) => {
   return (
     // 바깥 래퍼 - 전체 화면 배경
-    <div className="h-screen overflow-hidden bg-neutral-50 flex justify-center" style={{ height: '100dvh' }}>
+    <div
+      className="h-screen overflow-hidden bg-neutral-50 flex justify-center"
+      style={{ height: '100dvh' }}
+    >
       {/* 모바일 컨테이너 */}
-      <div id="app-container" className="relative w-full max-w-[430px] h-full bg-white flex flex-col shadow-xl overflow-hidden">
-        {showHeader && (
-          <Header
-            title={title}
-            showBack={showBack}
-            rightElement={headerRight}
-            onBack={onBack}
-          />
-        )}
+      <div
+        id="app-container"
+        className="relative w-full max-w-[430px] h-full bg-white flex flex-col shadow-xl overflow-hidden"
+      >
+        {showHeader
+          ? (customHeader ?? (
+              <Header
+                title={title}
+                showBack={showBack}
+                rightElement={headerRight}
+                onBack={onBack}
+              />
+            ))
+          : null}
 
         {/* 메인 콘텐츠 - BottomNav 높이(92px)만큼 패딩 */}
         <main
-          className={[
-            'flex-1 min-h-0 overflow-y-auto',
-            showBottomNav ? 'pb-[92px]' : '',
-            className,
-          ]
+          className={['flex-1 min-h-0 overflow-y-auto', showBottomNav ? 'pb-[92px]' : '', className]
             .filter(Boolean)
             .join(' ')}
         >

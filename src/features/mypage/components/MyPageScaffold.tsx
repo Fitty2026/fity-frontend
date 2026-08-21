@@ -1,6 +1,5 @@
 import PageLayout from '@/components/layout/PageLayout';
-
-import MyPageHeader from './MyPageHeader';
+import PuzzleTopBar from '@/components/layout/PuzzleTopBar';
 
 interface MyPageScaffoldProps {
   title: string;
@@ -15,8 +14,13 @@ const MyPageScaffold = ({
   footer,
   contentClassName = '',
 }: MyPageScaffoldProps) => (
-  <PageLayout showHeader={false} showBottomNav={false} className="flex flex-col">
-    <MyPageHeader title={title} showBack />
+  <PageLayout
+    title={title}
+    showBack
+    showBottomNav={false}
+    className="flex flex-col"
+    customHeader={<PuzzleTopBar title={title} />}
+  >
     <div className={`min-h-0 flex-1 overflow-y-auto ${contentClassName}`}>{children}</div>
     {footer ? <div className="shrink-0 bg-white px-6 pb-10 pt-3">{footer}</div> : null}
   </PageLayout>

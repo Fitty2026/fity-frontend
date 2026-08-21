@@ -2,10 +2,8 @@ import { useNavigate } from 'react-router-dom';
 
 import PageLayout from '@/components/layout/PageLayout';
 import BottomNav from '@/components/layout/BottomNav';
-import MyPageHeader from '@/features/mypage/components/MyPageHeader';
+import PuzzleTopBar from '@/components/layout/PuzzleTopBar';
 import profilePlaceholder from '@/assets/images/mypage/profile-placeholder.svg';
-import hangerIcon from '@/assets/images/mypage/hanger.svg';
-import usePuzzleBalance from '@/features/puzzle/hooks/usePuzzleBalance';
 import chevronRight from '@/assets/images/mypage/chevron-right.svg';
 import useMyProfile from '@/features/auth/hooks/useMyProfile';
 import useBodyProfile from '@/features/onboarding/hooks/useBodyProfile';
@@ -14,12 +12,9 @@ import { BODY_TYPES } from '@/features/onboarding/bodyConstants';
 
 const ProfileEditPage = () => {
   const navigate = useNavigate();
-  const puzzleBalance = usePuzzleBalance();
   const { data: profile } = useMyProfile();
   const { data: bodyProfile } = useBodyProfile();
-  const selectedStyles = STYLE_TILES.filter((style) =>
-    profile?.styleTagIds.includes(style.tagId),
-  );
+  const selectedStyles = STYLE_TILES.filter((style) => profile?.styleTagIds.includes(style.tagId));
   const bodyType = bodyProfile?.bodyTypeResult.bodyType.toLowerCase();
   const selectedBody = BODY_TYPES.find((body) => bodyType?.includes(body.type));
   const updatedAt = bodyProfile?.updatedAt
@@ -31,17 +26,13 @@ const ProfileEditPage = () => {
     : null;
 
   return (
-    <PageLayout showHeader={false} showBottomNav={false} className="pb-[110px]">
-      <MyPageHeader
-        title="프로필 수정"
-        showBack
-        right={
-          <span className="flex items-center gap-1 text-[12px]">
-            <img src={hangerIcon} alt="스타" className="h-4 w-4" />
-            {puzzleBalance ?? 0}개
-          </span>
-        }
-      />
+    <PageLayout
+      title="프로필 수정"
+      showBack
+      showBottomNav={false}
+      className="pb-[110px]"
+      customHeader={<PuzzleTopBar title="프로필 수정" />}
+    >
       <div className="space-y-4 px-6 py-6">
         <button
           type="button"
