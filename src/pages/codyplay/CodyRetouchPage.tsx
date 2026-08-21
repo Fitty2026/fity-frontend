@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import useStudioBack from '@/features/styling/hooks/useStudioBack';
+
 import PageLayout from '@/components/layout/PageLayout';
 import AddItemBottomSheet from '@/features/codyplay/components/AddItemBottomSheet';
 import RetouchItem from '@/features/codyplay/components/RetouchItem';
@@ -61,6 +63,7 @@ const CodyRetouchPage = () => {
   const [isAddItemSheetOpen, setIsAddItemSheetOpen] = useState(false);
   const saveRetouchMutation = useSaveRetouchedOutfit();
   const navigate = useNavigate();
+  const goBack = useStudioBack();
 
   const handleChangeItem = () => {
     if (!selectItem || !changeItem) return;
@@ -155,7 +158,7 @@ const CodyRetouchPage = () => {
     <PageLayout
       showBottomNav={false}
       showHeader={true}
-      showBack={true}
+      showBack={true} onBack={goBack}
       title="스튜디오"
       className="select-none"
     >

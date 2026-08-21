@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { StudioHeader } from '@/features/styling/components';
+import useStudioBack from '@/features/styling/hooks/useStudioBack';
 import { WEATHER_CONDITION } from '@/features/styling/types';
 import useWeather from '@/features/styling/hooks/useWeather';
 import type { WeatherType } from '@/features/styling/api/weatherApi';
@@ -71,6 +72,7 @@ interface WeatherLocationState {
  */
 const StylingWeatherPage = () => {
   const navigate = useNavigate();
+  const goBack = useStudioBack();
   const { state } = useLocation() as { state: WeatherLocationState | null };
   const { year = 2026, month = 6, day = 28, weather: override, selectedDate } = state ?? {};
 
@@ -119,7 +121,7 @@ const StylingWeatherPage = () => {
     return (
       <div className="min-h-screen bg-neutral-100 flex justify-center">
         <div className="relative w-full max-w-[430px] min-h-screen bg-white flex flex-col">
-          <StudioHeader onBack={() => navigate(-1)} />
+          <StudioHeader onBack={goBack} />
           <p className="mt-14 px-6 text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
             날씨를 확인하고 있어요
           </p>
@@ -138,7 +140,7 @@ const StylingWeatherPage = () => {
         <img src={w.bg} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover" />
 
         <div className="relative">
-          <StudioHeader onBack={() => navigate(-1)} />
+          <StudioHeader onBack={goBack} />
 
           {/* 문구 — Figma: 375×60, 헤더↔문구 56, Pretendard 600 / 20px / lh150% / -2% / #1F2124 */}
           <p className="mt-14 px-6 text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">

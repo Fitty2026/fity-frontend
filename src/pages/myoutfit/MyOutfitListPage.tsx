@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 
 import ErrorScreen from '@/components/ui/ErrorScreen';
 import LoadingScreen from '@/components/ui/LoadingScreen';
-import ClosetBottomNav from '@/features/closet/components/ClosetBottomNav';
+import BottomNav from '@/components/layout/BottomNav';
 import MyOutfitCard from '@/features/myoutfit/components/MyOutfitCard';
 import PageLayout from '@/features/myoutfit/components/MyOutfitPageLayout';
 import useMyOutfits from '@/features/myoutfit/hooks/useMyOutfits';
@@ -76,9 +76,7 @@ const MyOutfitListPage = () => {
       className="flex min-h-0 flex-col"
     >
       <div className="min-h-0 flex-1 overflow-y-auto pb-[110px]">{renderContent()}</div>
-      <div className="fixed bottom-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2">
-        <ClosetBottomNav />
-      </div>
+      <BottomNav />
     </PageLayout>
   );
 };

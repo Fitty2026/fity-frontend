@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageLayout';
-import { ClosetBottomNav, ClosetSearchField, ClosetTopBar } from '@/features/closet/components';
+import BottomNav from '@/components/layout/BottomNav';
+import { ClosetSearchField, ClosetTopBar } from '@/features/closet/components';
 import { matchesQuery } from '@/features/closet/searchItems';
 import useClosets from '@/features/closet/hooks/useClosets';
 
@@ -178,7 +179,7 @@ const ClosetItemListPage = () => {
       <div className="relative flex flex-col flex-1 min-h-0 bg-white">
         <ClosetTopBar height={53} />
 
-        <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto pb-[92px]">
           {/* 타이틀 — 전체 아이템 + 보유 개수 */}
           <div className="px-6 pt-6">
             <h1 className="text-[20px] font-bold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">전체 아이템</h1>
@@ -277,7 +278,7 @@ const ClosetItemListPage = () => {
           </div>
         </div>
 
-        <ClosetBottomNav />
+        <BottomNav />
       </div>
     </PageLayout>
   );

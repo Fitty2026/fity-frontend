@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { StudioHeader, ScreenTitle, DateField, StudioCalendar, WheelDatePicker, BottomCTA } from '@/features/styling/components';
+import useStudioBack from '@/features/styling/hooks/useStudioBack';
 
 /** OUTFIT-01 selectedDate 형식 (YYYY-MM-DD) */
 const toApiDate = (year: number, month: number, day: number) =>
@@ -15,6 +16,7 @@ const toApiDate = (year: number, month: number, day: number) =>
  */
 const StylingDatePage = () => {
   const navigate = useNavigate();
+  const goBack = useStudioBack('/styling/method');
   // 화면에 들어온 시점의 오늘로 시작한다 (시안의 고정 날짜는 예시값이었다)
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [month, setMonth] = useState(() => new Date().getMonth() + 1);
@@ -47,7 +49,7 @@ const StylingDatePage = () => {
   return (
     <div className="min-h-screen bg-neutral-100 flex justify-center">
       <div className="relative w-full max-w-[430px] min-h-screen bg-white flex flex-col">
-        <StudioHeader onBack={() => navigate(-1)} onSkip={() => navigate('/styling/mood')} />
+        <StudioHeader onBack={goBack} onSkip={() => navigate('/styling/mood')} />
 
         <div className="flex-1 overflow-y-auto px-6 pt-14">
           {/* 헤더↔타이틀 56 */}
