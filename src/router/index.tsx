@@ -76,6 +76,8 @@ import StyleEditPage from '../pages/mypage/StyleEditPage';
 import StyleSelectPage from '../pages/mypage/StyleSelectPage';
 import BodyEditPage from '../pages/mypage/BodyEditPage';
 import BodyPhotoEditPage from '../pages/mypage/BodyPhotoEditPage';
+import BodyAnalysisEditPage from '../pages/mypage/BodyAnalysisEditPage';
+import BodyResultEditPage from '../pages/mypage/BodyResultEditPage';
 import WithdrawPage from '../pages/mypage/WithdrawPage';
 
 // 9. 에러
@@ -583,6 +585,22 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <BodyPhotoEditPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/mypage/profile/body/analysis',
+        element: (
+          <ProtectedRoute>
+            <BodyAnalysisEditPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/mypage/profile/body/result',
+        element: (
+          <ProtectedRoute>
+            <BodyResultEditPage />
           </ProtectedRoute>
         ),
       },

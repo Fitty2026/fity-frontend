@@ -18,7 +18,7 @@ const MyOutfitDeletePage = () => {
 
   if (isPending) {
     return (
-      <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="룩북">
+      <PageLayout showBottomNav={false} showHeader={false}>
         <LoadingScreen message="삭제할 코디를 불러오는 중이에요." />
       </PageLayout>
     );
@@ -26,7 +26,7 @@ const MyOutfitDeletePage = () => {
 
   if (error || !outfit) {
     return (
-      <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="룩북">
+      <PageLayout showBottomNav={false} showHeader={false}>
         <ErrorScreen
           title="코디를 불러오지 못했어요."
           description={error?.message ?? '코디 정보를 찾을 수 없어요.'}
@@ -51,8 +51,7 @@ const MyOutfitDeletePage = () => {
     return (
       <PageLayout
         showBottomNav={false}
-        showHeader={true}
-        title="Fitty"
+        showHeader={false}
         className="relative select-none"
       >
         <div className="flex flex-col items-center pt-[87px] text-center">
@@ -90,9 +89,7 @@ const MyOutfitDeletePage = () => {
   return (
     <PageLayout
       showBottomNav={false}
-      showHeader={true}
-      showBack={true}
-      title="룩북"
+      showHeader={false}
       className="select-none"
     >
       <h1 className=" w-full text-[#1F2124] text-[20px] text-center font-[600] leading-[150%] mt-[56px] tracking-[-2%]">
