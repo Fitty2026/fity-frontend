@@ -13,7 +13,7 @@ import FindPasswordPage from '../pages/auth/FindPasswordPage';
 import ConsentPage from '../pages/onboarding/ConsentPage';
 import StyleSwipePage from '../pages/onboarding/StyleSwipePage';
 import StyleConfirmPage from '../pages/onboarding/StyleConfirmPage';
-import BodyTypePage from '../pages/onboarding/BodyTypePage';
+import BodyIntroPage from '../pages/onboarding/BodyIntroPage';
 import BodyPhotoGuidePage from '../pages/onboarding/BodyPhotoGuidePage';
 import BodyCameraPage from '../pages/onboarding/BodyCameraPage';
 import BodyUploadPage from '../pages/onboarding/BodyUploadPage';
@@ -129,7 +129,7 @@ const router = createBrowserRouter([
         path: '/onboarding/body',
         element: (
           <ProtectedRoute>
-            <BodyTypePage />
+            <BodyIntroPage />
           </ProtectedRoute>
         ),
       },

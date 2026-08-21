@@ -3,11 +3,8 @@ import { persist } from 'zustand/middleware';
 import type { BodyAnalyzeResult } from '../features/onboarding/api/bodyProfileApi';
 import type { StyleTag } from '../types';
 
-export type BodyType = 'straight' | 'wave' | 'natural';
-
 interface OnboardingState {
   selectedStyles: StyleTag[];
-  bodyType: BodyType | null;
   /** 촬영/업로드한 체형 사진 objectURL - 세션 한정이라 persist 제외 */
   bodyPhotoUrls: string[];
   analysisResult: BodyAnalyzeResult | null;
@@ -19,7 +16,6 @@ interface OnboardingState {
   closetPermissionSeen: boolean;
 
   toggleStyle: (style: StyleTag) => void;
-  setBodyType: (type: BodyType) => void;
   setBodyPhotoUrls: (urls: string[]) => void;
   setAnalysisResult: (result: BodyAnalyzeResult) => void;
   
@@ -39,7 +35,6 @@ const useOnboardingStore = create<OnboardingState>()(
   persist(
     (set) => ({
       selectedStyles: [],
-      bodyType: null,
       bodyPhotoUrls: [],
       analysisResult: null,
       isOnboardingComplete: false,
@@ -54,8 +49,6 @@ const useOnboardingStore = create<OnboardingState>()(
             ? state.selectedStyles.filter((s) => s !== style)
             : [...state.selectedStyles, style],
         })),
-
-      setBodyType: (type) => set({ bodyType: type }),
 
       setBodyPhotoUrls: (urls) => set({ bodyPhotoUrls: urls }),
 
@@ -80,7 +73,6 @@ const useOnboardingStore = create<OnboardingState>()(
       reset: () =>
         set({
           selectedStyles: [],
-          bodyType: null,
           bodyPhotoUrls: [],
           analysisResult: null,
           isOnboardingComplete: false,
@@ -94,7 +86,6 @@ const useOnboardingStore = create<OnboardingState>()(
       partialize: (state) => ({
         // objectURL/분석 결과는 세션 한정이므로 제외
         selectedStyles: state.selectedStyles,
-        bodyType: state.bodyType,
         isOnboardingComplete: state.isOnboardingComplete,
         marketingAgreed: state.marketingAgreed,
         closetCompleteSeen: state.closetCompleteSeen,
