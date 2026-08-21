@@ -83,7 +83,7 @@ const StyleSwipePage = () => {
   };
 
   return (
-    <OnboardingLayout progress={0.4}>
+    <OnboardingLayout progress={0.2}>
       {showIntro ? (
         <BlobIntro message="취향을 알아볼게요" size="md" />
       ) : (

@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import PasswordInput from '@/features/auth/components/PasswordInput';
 import SocialLoginButton from '@/features/auth/components/SocialLoginButton';
+import { buildAuthorizeUrl } from '@/features/auth/api/socialAuth';
 import useLogin from '@/features/auth/hooks/useLogin';
 import { getErrorMessage } from '@/lib/apiError';
 
@@ -18,13 +19,19 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
-const SOCIAL_PROVIDERS = ['google', 'apple', 'kakao'] as const;
+// 애플 로그인은 미지원(시안에서 제외)이라 카카오/구글만 노출한다
+const SOCIAL_PROVIDERS = ['google', 'kakao'] as const;
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { loginWithEmail, loginWithSocial, isLoading, error } = useLogin();
+  const { loginWithEmail, isLoading, error } = useLogin();
   // TODO: API 연동 시 "로그인 상태 유지" 여부를 토큰 저장 방식에 반영
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+
+  // 소셜 인가 페이지로 이동 → /oauth/:provider/callback에서 로그인 마무리
+  const handleSocialClick = (provider: (typeof SOCIAL_PROVIDERS)[number]) => {
+    window.location.assign(buildAuthorizeUrl(provider));
+  };
   const {
     register,
     handleSubmit,
@@ -103,7 +110,7 @@ const LoginPage = () => {
             <SocialLoginButton
               key={provider}
               provider={provider}
-              onClick={() => loginWithSocial(provider)}
+              onClick={() => handleSocialClick(provider)}
               disabled={isLoading}
             />
           ))}

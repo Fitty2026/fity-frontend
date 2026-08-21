@@ -168,7 +168,7 @@ const ClosetAddedPage = () => {
           {/* 코디 시작하기 — 코디 생성 시작 화면(타 파트)으로 이동 */}
           <button
             type="button"
-            onClick={() => leaveTo('/styling')}
+            onClick={() => leaveTo('/styling/method')}
             className="w-full h-[58px] rounded-[32px] bg-[#1F2124] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8] cursor-pointer"
           >
             코디 시작하기

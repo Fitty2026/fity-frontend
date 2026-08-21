@@ -3,14 +3,16 @@ import { persist } from 'zustand/middleware';
 import type { BodyAnalyzeResult } from '../features/onboarding/api/bodyProfileApi';
 import type { StyleTag } from '../types';
 
-export type BodyType = 'straight' | 'wave' | 'natural';
-
 interface OnboardingState {
   selectedStyles: StyleTag[];
-  bodyType: BodyType | null;
-  /** 촬영/업로드한 체형 사진 objectURL - 세션 한정이라 persist 제외 */
+  /**
+   * 촬영/업로드한 체형 사진 objectURL (정면/측면/후면 슬롯 고정, 빈 슬롯은 '')
+   * - 세션 한정이라 persist 제외
+   */
   bodyPhotoUrls: string[];
   analysisResult: BodyAnalyzeResult | null;
+  /** 체형 분석 진행 상태 — 촬영/업로드 확정 시 시작해 화면 이동과 무관하게 유지된다 */
+  analysisStatus: 'idle' | 'pending' | 'success' | 'error';
   isOnboardingComplete: boolean;
   marketingAgreed: boolean;
   /** 옷장 준비 완료 화면(/closet/register/complete)을 이미 봤는지 — 최초 1회만 보여준다 */
@@ -19,14 +21,16 @@ interface OnboardingState {
   closetPermissionSeen: boolean;
 
   toggleStyle: (style: StyleTag) => void;
-  setBodyType: (type: BodyType) => void;
   setBodyPhotoUrls: (urls: string[]) => void;
   setAnalysisResult: (result: BodyAnalyzeResult) => void;
+  setAnalysisStatus: (status: 'idle' | 'pending' | 'error') => void;
   
   /** 체형 사진 한 장 추가 (최대 3장) */
   addBodyPhotoUrl: (url: string) => void;
   /** 특정 슬롯(index)의 체형 사진 교체 */
   replaceBodyPhotoUrl: (index: number, url: string) => void;
+  /** 특정 슬롯(index)의 체형 사진 삭제 (뒤 사진이 앞으로 당겨짐) */
+  removeBodyPhotoUrl: (index: number) => void;
   
   setMarketingAgreed: (agreed: boolean) => void;
   completeOnboarding: () => void;
@@ -39,9 +43,9 @@ const useOnboardingStore = create<OnboardingState>()(
   persist(
     (set) => ({
       selectedStyles: [],
-      bodyType: null,
       bodyPhotoUrls: [],
       analysisResult: null,
+      analysisStatus: 'idle',
       isOnboardingComplete: false,
       marketingAgreed: false,
       closetCompleteSeen: false,
@@ -55,19 +59,37 @@ const useOnboardingStore = create<OnboardingState>()(
             : [...state.selectedStyles, style],
         })),
 
-      setBodyType: (type) => set({ bodyType: type }),
-
       setBodyPhotoUrls: (urls) => set({ bodyPhotoUrls: urls }),
 
+      // 첫 빈 슬롯('')부터 채운다
       addBodyPhotoUrl: (url) =>
-        set((state) => ({ bodyPhotoUrls: [...state.bodyPhotoUrls, url].slice(0, 3) })),
+        set((state) => {
+          const next = [...state.bodyPhotoUrls];
+          const empty = next.findIndex((u) => !u);
+          if (empty >= 0) next[empty] = url;
+          else if (next.length < 3) next.push(url);
+          return { bodyPhotoUrls: next };
+        }),
 
+      // 해당 슬롯에 채움/교체 (짧으면 빈 슬롯으로 패딩)
       replaceBodyPhotoUrl: (index, url) =>
-        set((state) => ({
-          bodyPhotoUrls: state.bodyPhotoUrls.map((u, i) => (i === index ? url : u)),
-        })),
+        set((state) => {
+          const next = [...state.bodyPhotoUrls];
+          while (next.length <= index) next.push('');
+          next[index] = url;
+          return { bodyPhotoUrls: next };
+        }),
 
-      setAnalysisResult: (result) => set({ analysisResult: result }),
+      // 그 슬롯만 비운다 (뒤 사진이 앞으로 당겨지지 않음). 전부 비면 초기 상태로
+      removeBodyPhotoUrl: (index) =>
+        set((state) => {
+          const next = state.bodyPhotoUrls.map((u, i) => (i === index ? '' : u));
+          return { bodyPhotoUrls: next.some(Boolean) ? next : [] };
+        }),
+
+      setAnalysisResult: (result) => set({ analysisResult: result, analysisStatus: 'success' }),
+
+      setAnalysisStatus: (status) => set({ analysisStatus: status }),
 
       setMarketingAgreed: (agreed) => set({ marketingAgreed: agreed }),
 
@@ -80,9 +102,9 @@ const useOnboardingStore = create<OnboardingState>()(
       reset: () =>
         set({
           selectedStyles: [],
-          bodyType: null,
           bodyPhotoUrls: [],
           analysisResult: null,
+          analysisStatus: 'idle',
           isOnboardingComplete: false,
           marketingAgreed: false,
           closetCompleteSeen: false,
@@ -94,7 +116,6 @@ const useOnboardingStore = create<OnboardingState>()(
       partialize: (state) => ({
         // objectURL/분석 결과는 세션 한정이므로 제외
         selectedStyles: state.selectedStyles,
-        bodyType: state.bodyType,
         isOnboardingComplete: state.isOnboardingComplete,
         marketingAgreed: state.marketingAgreed,
         closetCompleteSeen: state.closetCompleteSeen,
