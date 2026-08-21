@@ -58,19 +58,26 @@
   }
 }
 
-/* 스플래시 - 글자 낙하 (위에서 떨어져 바운스로 착지)
-   회전은 CSS rotate 속성(개별 transform)이 담당하므로 여기서는 translateY만 다룬다 */
-/* 스플래시 글자 낙하 - 일직선 수직으로, 바운스 없이 감속하며 차분하게 내려앉는다 */
-@keyframes splash-letter-drop {
-  0% {
-    transform: translateY(-120vh);
+/* 스플래시 - 글자 낙하. 화면 위 밖(--fall-from)에서 정착점까지 감속하며 내려앉는다.
+   x/y -50%는 글자 중심 기준 배치 — Tailwind translate 유틸과 겹치지 않게 키프레임이 전담한다.
+   회전은 CSS rotate 속성이 담당한다 */
+@keyframes splash-fall {
+  from {
+    /* 도착점(-50% 중심 보정)과 같은 기준에서 fall-from만큼 위 + 회전 여유 20px */
+    translate: -50% calc(-50% + var(--fall-from) - 20px);
+  }
+  to {
+    translate: -50% -50%;
+  }
+}
+
+/* 스플래시 - 글자 흐려짐. 마지막 글자(y)가 내려올 때 일제히 시작되고,
+   글자별 지속시간이 달라 오래된 글자일수록 먼저 사라진다 */
+@keyframes splash-age {
+  from {
+    opacity: 1;
+  }
+  to {
     opacity: 0;
-  }
-  12% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
   }
 }
