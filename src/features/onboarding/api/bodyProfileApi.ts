@@ -45,7 +45,6 @@ export interface BodyAnalyzeResult {
 /** PROFILE-04 조회 응답 (bodyImage는 명세에서 제거됨 — 체형별 이미지는 프론트 에셋 사용) */
 export interface BodyProfile {
   bodyProfileId: number;
-  userSelectedBodyType: ServerBodyType;
   measurements: BodyMeasurements;
   bodyTypeResult: BodyTypeResult;
   updatedAt: string;

@@ -72,14 +72,16 @@ const BodyEditPage = () => {
               체형을 업로드해주세요
             </h2>
             <div className="mt-auto space-y-3 pb-5">
-              {[
-                [cameraIcon, '카메라로 촬영', '/onboarding/body/camera'],
-                [albumIcon, '앨범에서 선택', '/onboarding/body/upload'],
-              ].map(([icon, label, path]) => (
+              {(
+                [
+                  [cameraIcon, '카메라로 촬영', true],
+                  [albumIcon, '앨범에서 선택', false],
+                ] as const
+              ).map(([icon, label, openCamera]) => (
                 <button
                   type="button"
                   key={label}
-                  onClick={() => navigate(path)}
+                  onClick={() => navigate('/mypage/profile/body/photos', { state: { openCamera } })}
                   className="flex h-[80px] w-full items-center gap-10 rounded-[16px] bg-white px-6 text-left shadow-[0_8px_16px_rgba(0,0,0,0.08)]"
                 >
                   <img src={icon} alt="" className="h-8 w-8" />
