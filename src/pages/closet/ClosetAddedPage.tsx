@@ -161,7 +161,7 @@ const ClosetAddedPage = () => {
           {/* 코디 시작하기 — 체크 반전과 함께 검정으로 전환. 코디 생성 시작 화면(타 파트)으로 이동 */}
           <button
             type="button"
-            onClick={() => leaveTo('/styling')}
+            onClick={() => leaveTo('/styling/method')}
             className={`w-full h-[58px] rounded-[32px] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] cursor-pointer transition-colors duration-300 ${
               filledCheck ? 'bg-[#1F2124] text-[#F6F7F8]' : 'bg-[#F6F7F8] text-[#1F2124]'
             }`}
