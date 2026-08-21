@@ -21,18 +21,20 @@ const BodyUploadPage = () => {
   const navigate = useNavigate();
   const bodyPhotoUrls = useOnboardingStore((s) => s.bodyPhotoUrls);
   const setBodyPhotoUrls = useOnboardingStore((s) => s.setBodyPhotoUrls);
-  const addBodyPhotoUrl = useOnboardingStore((s) => s.addBodyPhotoUrl);
+  const replaceBodyPhotoUrl = useOnboardingStore((s) => s.replaceBodyPhotoUrl);
   const removeBodyPhotoUrl = useOnboardingStore((s) => s.removeBodyPhotoUrl);
   const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
   const [phase, setPhase] = useState<Phase>('select');
-  const [sheetOpen, setSheetOpen] = useState(false);
+  /** 사진을 추가할 슬롯 index (null=바텀시트 닫힘) */
+  const [sheetTarget, setSheetTarget] = useState<number | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
 
-  const count = bodyPhotoUrls.length;
+  // 슬롯 고정형(빈 슬롯 '') — 채워진 장수 기준으로 계산한다
+  const count = bodyPhotoUrls.filter(Boolean).length;
   const hasPhotos = count > 0;
   const isReady = count === MAX_PHOTOS;
-  /** 아직 비어있는 슬롯 라벨들 (정면→측면→후면 순서로 채워진다) */
-  const missingLabels = SLOT_LABELS.slice(count);
+  /** 아직 비어있는 슬롯의 라벨들 */
+  const missingLabels = SLOT_LABELS.filter((_, i) => !bodyPhotoUrls[i]);
 
   const handleSkip = () => {
     completeOnboarding();
@@ -50,11 +52,12 @@ const BodyUploadPage = () => {
 
   const closeAll = () => {
     setCameraOpen(false);
-    setSheetOpen(false);
+    setSheetTarget(null);
   };
 
-  const handleCapture = (url: string) => {
-    addBodyPhotoUrl(url);
+  /** 시트/카메라에서 고른 사진을 대상 슬롯에 채운다 */
+  const applyPhoto = (url: string) => {
+    if (sheetTarget !== null) replaceBodyPhotoUrl(sheetTarget, url);
     closeAll();
   };
 
@@ -122,7 +125,7 @@ const BodyUploadPage = () => {
                 photos={bodyPhotoUrls}
                 max={MAX_PHOTOS}
                 labels={SLOT_LABELS}
-                onAdd={() => setSheetOpen(true)}
+                onAdd={setSheetTarget}
                 onRemove={removeBodyPhotoUrl}
               />
             </div>
@@ -164,16 +167,13 @@ const BodyUploadPage = () => {
       </div>
 
       <PhotoAddSheet
-        isOpen={sheetOpen && !cameraOpen}
-        onClose={() => setSheetOpen(false)}
-        onSelect={(url) => {
-          addBodyPhotoUrl(url);
-          setSheetOpen(false);
-        }}
+        isOpen={sheetTarget !== null && !cameraOpen}
+        onClose={() => setSheetTarget(null)}
+        onSelect={applyPhoto}
         onCamera={() => setCameraOpen(true)}
       />
 
-      {cameraOpen && <CameraCapture onClose={closeAll} onCapture={handleCapture} />}
+      {cameraOpen && <CameraCapture onClose={closeAll} onCapture={applyPhoto} />}
     </OnboardingLayout>
   );
 };

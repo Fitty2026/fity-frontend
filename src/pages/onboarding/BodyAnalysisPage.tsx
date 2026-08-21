@@ -16,8 +16,8 @@ const BodyAnalysisPage = () => {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    // 사진 3장이 없으면 업로드 화면으로 되돌림
-    if (bodyPhotoUrls.length < 3) {
+    // 사진 3장(빈 슬롯 '' 제외)이 없으면 업로드 화면으로 되돌림
+    if (bodyPhotoUrls.filter(Boolean).length < 3) {
       navigate('/onboarding/body/upload', { replace: true });
       return;
     }

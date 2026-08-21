@@ -5,7 +5,10 @@ import type { StyleTag } from '../types';
 
 interface OnboardingState {
   selectedStyles: StyleTag[];
-  /** 촬영/업로드한 체형 사진 objectURL - 세션 한정이라 persist 제외 */
+  /**
+   * 촬영/업로드한 체형 사진 objectURL (정면/측면/후면 슬롯 고정, 빈 슬롯은 '')
+   * - 세션 한정이라 persist 제외
+   */
   bodyPhotoUrls: string[];
   analysisResult: BodyAnalyzeResult | null;
   isOnboardingComplete: boolean;
@@ -54,18 +57,31 @@ const useOnboardingStore = create<OnboardingState>()(
 
       setBodyPhotoUrls: (urls) => set({ bodyPhotoUrls: urls }),
 
+      // 첫 빈 슬롯('')부터 채운다
       addBodyPhotoUrl: (url) =>
-        set((state) => ({ bodyPhotoUrls: [...state.bodyPhotoUrls, url].slice(0, 3) })),
+        set((state) => {
+          const next = [...state.bodyPhotoUrls];
+          const empty = next.findIndex((u) => !u);
+          if (empty >= 0) next[empty] = url;
+          else if (next.length < 3) next.push(url);
+          return { bodyPhotoUrls: next };
+        }),
 
+      // 해당 슬롯에 채움/교체 (짧으면 빈 슬롯으로 패딩)
       replaceBodyPhotoUrl: (index, url) =>
-        set((state) => ({
-          bodyPhotoUrls: state.bodyPhotoUrls.map((u, i) => (i === index ? url : u)),
-        })),
+        set((state) => {
+          const next = [...state.bodyPhotoUrls];
+          while (next.length <= index) next.push('');
+          next[index] = url;
+          return { bodyPhotoUrls: next };
+        }),
 
+      // 그 슬롯만 비운다 (뒤 사진이 앞으로 당겨지지 않음). 전부 비면 초기 상태로
       removeBodyPhotoUrl: (index) =>
-        set((state) => ({
-          bodyPhotoUrls: state.bodyPhotoUrls.filter((_, i) => i !== index),
-        })),
+        set((state) => {
+          const next = state.bodyPhotoUrls.map((u, i) => (i === index ? '' : u));
+          return { bodyPhotoUrls: next.some(Boolean) ? next : [] };
+        }),
 
       setAnalysisResult: (result) => set({ analysisResult: result }),
 

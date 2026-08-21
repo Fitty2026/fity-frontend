@@ -79,12 +79,13 @@ const BodyResultPage = () => {
                 ))}
             </div>
 
-            <div className="h-[360px] w-[170px] shrink-0 overflow-hidden rounded-3xl bg-neutral-200">
+            {/* 사진이 잘리지 않게 전체를 보여주고, 비율 차 여백은 흰색으로 둔다 */}
+            <div className="h-[360px] w-[170px] shrink-0 overflow-hidden rounded-3xl border border-neutral-200 bg-white">
               {bodyPhotoUrls[0] && (
                 <img
                   src={bodyPhotoUrls[0]}
                   alt="분석한 체형 사진"
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain"
                 />
               )}
             </div>
