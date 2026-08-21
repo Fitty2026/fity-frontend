@@ -149,8 +149,15 @@ const ClosetAddedPage = () => {
           })}
         </div>
 
-        {/* 버튼 — 화면 바닥 고정, 바닥 여백 40 (간격 8) */}
-        <div className="mt-auto flex flex-col gap-2 px-6 pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
+        {/* 버튼 — 화면 바닥 고정, 바닥 여백 40 (간격 8).
+            체크가 반전될 때까지는 감춘다(시안 '옷 추가 성공 3'에는 버튼이 없다).
+            자리는 비워 둬야 등장 전후로 캐러셀이 흔들리지 않는다 */}
+        <div
+          aria-hidden={!filledCheck}
+          className={`mt-auto flex flex-col gap-2 px-6 pb-[calc(40px+env(safe-area-inset-bottom,0px))] transition-opacity duration-300 ${
+            filledCheck ? 'opacity-100' : 'pointer-events-none opacity-0'
+          }`}
+        >
           <button
             type="button"
             onClick={() => leaveTo('/closet')}
@@ -158,13 +165,11 @@ const ClosetAddedPage = () => {
           >
             옷장 보러가기
           </button>
-          {/* 코디 시작하기 — 체크 반전과 함께 검정으로 전환. 코디 생성 시작 화면(타 파트)으로 이동 */}
+          {/* 코디 시작하기 — 코디 생성 시작 화면(타 파트)으로 이동 */}
           <button
             type="button"
             onClick={() => leaveTo('/styling')}
-            className={`w-full h-[58px] rounded-[32px] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] cursor-pointer transition-colors duration-300 ${
-              filledCheck ? 'bg-[#1F2124] text-[#F6F7F8]' : 'bg-[#F6F7F8] text-[#1F2124]'
-            }`}
+            className="w-full h-[58px] rounded-[32px] bg-[#1F2124] text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#F6F7F8] cursor-pointer"
           >
             코디 시작하기
           </button>
