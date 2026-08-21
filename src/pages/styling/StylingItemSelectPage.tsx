@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { StudioHeader, ScreenTitle, SearchField, FilterChips, SortChip, BottomCTA, PuzzleShortageOverlay } from '@/features/styling/components';
+import useStudioBack from '@/features/styling/hooks/useStudioBack';
 import useClosets from '@/features/closet/hooks/useClosets';
-import usePuzzleStore, { GENERATION_COST } from '@/store/puzzleStore';
+import usePuzzleBalance from '@/features/puzzle/hooks/usePuzzleBalance';
+import { GENERATION_COST } from '@/features/puzzle/api/puzzleApi';
 import type { OutfitJobInput } from '@/features/styling/types';
 import type { ClothingCategory } from '@/types';
 
@@ -43,6 +45,7 @@ const HeartIcon = ({ liked }: { liked: boolean }) => (
  */
 const StylingItemSelectPage = () => {
   const navigate = useNavigate();
+  const goBack = useStudioBack();
   // 앞 화면(날짜·날씨·상황)에서 넘어온 값을 그대로 실어 보낸다
   const { state } = useLocation() as { state: Partial<OutfitJobInput> | null };
   const [search, setSearch] = useState('');
@@ -53,7 +56,7 @@ const StylingItemSelectPage = () => {
 
   const { data } = useClosets();
   const items = useMemo(() => data?.items ?? [], [data]);
-  const puzzleBalance = usePuzzleStore((s) => s.balance);
+  const puzzleBalance = usePuzzleBalance();
   const [shortageOpen, setShortageOpen] = useState(false);
 
   const toggleItem = (id: string) =>
@@ -91,7 +94,7 @@ const StylingItemSelectPage = () => {
   return (
     <div className="min-h-screen bg-neutral-100 flex justify-center">
       <div className="relative w-full max-w-[430px] h-screen bg-white flex flex-col overflow-hidden">
-        <StudioHeader onBack={() => navigate(-1)} count={puzzleBalance} />
+        <StudioHeader onBack={goBack} count={puzzleBalance} />
 
         <div className="flex-1 overflow-y-auto pb-32">
           {/* 타이틀 (375×52) */}
@@ -163,7 +166,8 @@ const StylingItemSelectPage = () => {
             disabled={selectedIds.length === 0}
             // 선택한 아이템 id를 로딩 화면으로 전달 (OUTFIT-01은 숫자 배열을 받는다)
             onClick={() => {
-              if (puzzleBalance < GENERATION_COST) {
+              // 잔량 조회 전(undefined)에는 막지 않는다 — 부족 여부는 서버 응답을 받은 뒤에만 판단
+              if (puzzleBalance !== undefined && puzzleBalance < GENERATION_COST) {
                 setShortageOpen(true);
                 return;
               }
@@ -176,7 +180,7 @@ const StylingItemSelectPage = () => {
 
         {/* 퍼즐 부족 오버레이 */}
         {shortageOpen && (
-          <PuzzleShortageOverlay balance={puzzleBalance} onClose={() => setShortageOpen(false)} />
+          <PuzzleShortageOverlay balance={puzzleBalance ?? 0} onClose={() => setShortageOpen(false)} />
         )}
       </div>
     </div>

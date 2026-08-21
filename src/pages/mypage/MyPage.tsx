@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 
 import PageLayout from '@/components/layout/PageLayout';
-import ClosetBottomNav from '@/features/closet/components/ClosetBottomNav';
+import BottomNav from '@/components/layout/BottomNav';
 import MyPageHeader from '@/features/mypage/components/MyPageHeader';
 import profilePlaceholder from '@/assets/images/mypage/profile-placeholder.svg';
 import hangerIcon from '@/assets/images/mypage/hanger.svg';
-import usePuzzleStore from '@/store/puzzleStore';
+import usePuzzleBalance from '@/features/puzzle/hooks/usePuzzleBalance';
 import likeIcon from '@/assets/images/mypage/menu-like.svg';
 import trashIcon from '@/assets/images/mypage/menu-trash.svg';
 import starIcon from '@/assets/images/mypage/menu-star.svg';
@@ -23,7 +23,7 @@ const menuItems = [
 
 const MyPage = () => {
   const navigate = useNavigate();
-  const puzzleBalance = usePuzzleStore((state) => state.balance);
+  const puzzleBalance = usePuzzleBalance();
 
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="pb-[110px]">
@@ -32,7 +32,7 @@ const MyPage = () => {
         right={
           <span className="flex items-center gap-1 text-[12px] font-medium text-[#1F2124]">
             <img src={hangerIcon} alt="스타" className="h-4 w-4" />
-            {puzzleBalance}개
+            {puzzleBalance ?? 0}개
           </span>
         }
       />
@@ -91,9 +91,7 @@ const MyPage = () => {
           </button>
         ))}
       </section>
-      <div className="fixed bottom-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2">
-        <ClosetBottomNav />
-      </div>
+      <BottomNav />
     </PageLayout>
   );
 };

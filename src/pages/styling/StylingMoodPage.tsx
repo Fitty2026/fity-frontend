@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { StudioHeader, ScreenTitle, BottomCTA } from '@/features/styling/components';
+import useStudioBack from '@/features/styling/hooks/useStudioBack';
 import { SITUATION_VALUE, type SituationOption, type OutfitJobInput } from '@/features/styling/types';
 import dateImg from '@/assets/images/styling/situation-date.png';
 import workImg from '@/assets/images/styling/situation-work.png';
@@ -29,6 +30,7 @@ type StylingRequestState = Partial<OutfitJobInput>;
  */
 const StylingMoodPage = () => {
   const navigate = useNavigate();
+  const goBack = useStudioBack();
   const { state } = useLocation() as { state: StylingRequestState | null };
   const [active, setActive] = useState(1);
   const [confirming, setConfirming] = useState(false);
@@ -59,7 +61,7 @@ const StylingMoodPage = () => {
     <div className="min-h-screen bg-neutral-100 flex justify-center">
       <div className="relative w-full max-w-[430px] min-h-screen bg-white flex flex-col overflow-hidden">
         <StudioHeader
-          onBack={() => (confirming ? setConfirming(false) : navigate(-1))}
+          onBack={() => (confirming ? setConfirming(false) : goBack())}
           onSkip={() => goItems()}
         />
 

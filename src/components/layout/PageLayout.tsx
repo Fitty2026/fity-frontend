@@ -43,11 +43,11 @@ const PageLayout = ({
           />
         )}
 
-        {/* 메인 콘텐츠 - BottomNav 높이(64px)만큼 패딩 */}
+        {/* 메인 콘텐츠 - BottomNav 높이(92px)만큼 패딩 */}
         <main
           className={[
             'flex-1 overflow-y-auto',
-            showBottomNav ? 'pb-16' : '',
+            showBottomNav ? 'pb-[92px]' : '',
             className,
           ]
             .filter(Boolean)

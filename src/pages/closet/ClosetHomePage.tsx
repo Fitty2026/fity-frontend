@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageLayout';
-import { ClosetBottomNav, ClosetSearchField, ClosetTopBar } from '@/features/closet/components';
+import BottomNav from '@/components/layout/BottomNav';
+import { ClosetSearchField, ClosetTopBar } from '@/features/closet/components';
 import { matchesQuery } from '@/features/closet/searchItems';
 import { registerStartPath } from '@/features/closet/registerFlow';
 import useOnboardingStore from '@/store/onboardingStore';
@@ -202,7 +203,7 @@ const ClosetHomePage = () => {
 
         {filled ? (
           /* 옷 있는 상태 (러프 — 세부 스펙 대기) */
-          <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="flex-1 min-h-0 overflow-y-auto pb-[92px]">
             {/* 내 옷장 현황 카드 — 375×149, padding 16/24, gap 16, bg #F6F7F8 */}
             <div className="flex flex-col gap-4 bg-[#F6F7F8] px-6 py-4">
               <div className="flex items-center justify-between">
@@ -277,7 +278,7 @@ const ClosetHomePage = () => {
           </div>
         ) : (
           /* 빈 상태 */
-          <div className="flex flex-1 flex-col">
+          <div className="flex flex-1 flex-col overflow-y-auto pb-[92px]">
             {/* 점선 아이콘 — 상단바 아래 156, 중앙 */}
             <div className="mt-[156px] flex flex-col items-center">
               <EmptyDashedIcon />
@@ -318,7 +319,7 @@ const ClosetHomePage = () => {
           </div>
         )}
 
-        <ClosetBottomNav />
+        <BottomNav />
 
         {/* 아이템 추가하기 바텀시트 — + 버튼으로 오픈. 기기 뷰포트 하단 고정(fixed) */}
         {showAddSheet && (

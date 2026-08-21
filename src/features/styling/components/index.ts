@@ -1,5 +1,4 @@
 export { default as StudioHeader } from './StudioHeader';
-export { default as StudioBottomNav } from './StudioBottomNav';
 export { default as BottomCTA } from './BottomCTA';
 export { default as ScreenTitle } from './ScreenTitle';
 export { default as SectionHeader } from './SectionHeader';

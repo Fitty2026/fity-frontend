@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import useStudioBack from '@/features/styling/hooks/useStudioBack';
+
 import PageLayout from '@/components/layout/PageLayout';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 import { imageSrc } from '@/features/closet/api/closetApi';
@@ -41,10 +43,11 @@ const CodyPlayPage = () => {
   const setGeneratedOutfit = useStylingStore((state) => state.setGeneratedOutfit);
   const saveMutation = useSaveGeneratedOutfit();
   const navigate = useNavigate();
+  const goBack = useStudioBack();
 
   if (isPending) {
     return (
-      <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="스튜디오">
+      <PageLayout showBottomNav={false} showHeader={true} showBack={true} onBack={goBack} title="스튜디오">
         <LoadingScreen message="완성된 코디를 불러오는 중이에요." />
       </PageLayout>
     );
@@ -52,7 +55,7 @@ const CodyPlayPage = () => {
 
   if (error || !result) {
     return (
-      <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="스튜디오">
+      <PageLayout showBottomNav={false} showHeader={true} showBack={true} onBack={goBack} title="스튜디오">
         <div className="flex min-h-[60vh] flex-col items-center justify-center px-6 text-center">
           <p className="text-[18px] font-semibold text-[#1F2124]">코디를 불러오지 못했어요.</p>
           <button
@@ -68,7 +71,7 @@ const CodyPlayPage = () => {
   }
 
   return (
-    <PageLayout showBottomNav={false} showHeader={true} showBack={true} title="스튜디오">
+    <PageLayout showBottomNav={false} showHeader={true} showBack={true} onBack={goBack} title="스튜디오">
       {isEditingName ? (
         <input
           autoFocus
