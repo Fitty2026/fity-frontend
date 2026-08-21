@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { StudioHeader, StudioBottomNav, OptionCard } from '@/features/styling/components';
-import usePuzzleStore from '@/store/puzzleStore';
+import BottomNav from '@/components/layout/BottomNav';
+import { StudioHeader, OptionCard } from '@/features/styling/components';
+import usePuzzleBalance from '@/features/puzzle/hooks/usePuzzleBalance';
 import methodBlob from '@/assets/images/styling/method-blob.png';
 
 /** 직접 코디하기 — 이미지/사진 아이콘 (Figma 32×32) */
@@ -24,14 +25,14 @@ const BagIcon = () => (
  */
 const StylingMethodPage = () => {
   const navigate = useNavigate();
-  const puzzleBalance = usePuzzleStore((s) => s.balance);
+  const puzzleBalance = usePuzzleBalance();
 
   return (
     <div className="min-h-screen bg-neutral-100 flex justify-center">
       <div className="relative w-full max-w-[430px] min-h-screen bg-[#F8F8FF] flex flex-col overflow-hidden">
         <StudioHeader count={puzzleBalance} />
 
-        <div className="relative flex-1 overflow-y-auto pb-28">
+        <div className="relative flex-1 overflow-y-auto pb-[92px]">
           {/* 배경 blob — Figma: 289.26×314.27, top123/left69(아트보드) → 콘텐츠 top~20, rot -11.65°, crop */}
           <img
             src={methodBlob}
@@ -69,7 +70,7 @@ const StylingMethodPage = () => {
           </div>
         </div>
 
-        <StudioBottomNav />
+        <BottomNav />
       </div>
     </div>
   );

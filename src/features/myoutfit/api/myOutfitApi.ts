@@ -158,15 +158,17 @@ export const getMyOutfits = async (page = 1, size = 10): Promise<MyOutfitList> =
     }),
     getClosetItemMap(),
   ]);
-  const rawOutfits = data.result.items ?? data.result.saved_outfits ?? data.result.outfits ?? [];
+  // result가 비어 오는 경우(빈 목록·null)를 대비해 옵셔널로 접근한다
+  const result: SavedOutfitListRaw = data.result ?? {};
+  const rawOutfits = result.items ?? result.saved_outfits ?? result.outfits ?? [];
 
   return {
     outfits: rawOutfits.map((outfit) => toOutfit(outfit, closetItems)),
     total:
-      data.result.pagination?.totalCount ??
-      data.result.pagination?.total_count ??
-      data.result.total_count ??
-      data.result.total ??
+      result.pagination?.totalCount ??
+      result.pagination?.total_count ??
+      result.total_count ??
+      result.total ??
       rawOutfits.length,
     page,
     size,
@@ -179,7 +181,9 @@ export const getRecentlyDeletedOutfits = async (): Promise<RecentlyDeletedOutfit
     api.get<ApiResponse<SavedOutfitListRaw>>('/api/v1/outfits/saved/deleted'),
     getClosetItemMap(),
   ]);
-  const rawOutfits = data.result.items ?? data.result.saved_outfits ?? data.result.outfits ?? [];
+  // result가 비어 오는 경우(빈 목록·null)를 대비해 옵셔널로 접근한다
+  const result: SavedOutfitListRaw = data.result ?? {};
+  const rawOutfits = result.items ?? result.saved_outfits ?? result.outfits ?? [];
 
   return {
     outfits: rawOutfits.map((rawOutfit) => {
@@ -197,10 +201,10 @@ export const getRecentlyDeletedOutfits = async (): Promise<RecentlyDeletedOutfit
       };
     }),
     total:
-      data.result.pagination?.totalCount ??
-      data.result.pagination?.total_count ??
-      data.result.total_count ??
-      data.result.total ??
+      result.pagination?.totalCount ??
+      result.pagination?.total_count ??
+      result.total_count ??
+      result.total ??
       rawOutfits.length,
   };
 };

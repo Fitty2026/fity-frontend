@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { StudioHeader, HangerLoader } from '@/features/styling/components';
+import useStudioBack from '@/features/styling/hooks/useStudioBack';
 import useGenerateOutfit from '@/features/styling/hooks/useGenerateOutfit';
 import useOutfitJob from '@/features/styling/hooks/useOutfitJob';
 import useActiveOutfitJob from '@/features/styling/hooks/useActiveOutfitJob';
 import useMyProfile from '@/features/auth/hooks/useMyProfile';
-import usePuzzleStore, { GENERATION_COST } from '@/store/puzzleStore';
+import usePuzzleBalance, { useRefreshPuzzleBalance } from '@/features/puzzle/hooks/usePuzzleBalance';
 import { ApiError } from '@/lib/apiError';
 import type { OutfitJobInput } from '@/features/styling/types';
 
@@ -25,6 +26,7 @@ type LoadingLocationState = Partial<OutfitJobInput>;
  */
 const StylingLoadingPage = () => {
   const navigate = useNavigate();
+  const goBack = useStudioBack();
   const { state } = useLocation() as { state: LoadingLocationState | null };
   const { closetItemIds, situation, selectedDate, weather } = state ?? {};
 
@@ -49,14 +51,13 @@ const StylingLoadingPage = () => {
   const jobId = newJobId ?? activeJob?.jobId ?? null;
   const { job, progress: jobProgress, isCompleted, isFailed, error: jobError } = useOutfitJob(jobId);
 
-  const puzzleBalance = usePuzzleStore((s) => s.balance);
-  const spendPuzzle = usePuzzleStore((s) => s.spend);
+  const puzzleBalance = usePuzzleBalance();
+  const refreshPuzzleBalance = useRefreshPuzzleBalance();
 
-  // 퍼즐 차감 — 새 job이 실제로 접수됐을 때 1회 (이어받은 기존 job은 이미 차감된 것).
-  // TODO: 서버 차감 API가 생기면 이 로컬 차감을 걷어내고 응답 잔액을 반영한다.
+  // 차감은 서버가 한다 (생성 접수 시 10개). 접수됐으면 잔량을 다시 받아온다.
   useEffect(() => {
-    if (accepted && !accepted.isExistingJob) spendPuzzle(GENERATION_COST);
-  }, [accepted, spendPuzzle]);
+    if (accepted && !accepted.isExistingJob) refreshPuzzleBalance();
+  }, [accepted, refreshPuzzleBalance]);
 
   // 생성 요청 — 입력값이 갖춰진 경우에만 1회
   useEffect(() => {
@@ -90,6 +91,8 @@ const StylingLoadingPage = () => {
   // 완성 1초 후 코디 플레이로 이동 (결과는 state로 전달)
   useEffect(() => {
     if (!done) return;
+    // 서버 차감이 반영된 잔량을 완료 시점에 한 번 더 맞춘다
+    refreshPuzzleBalance();
     const timer = setTimeout(
       () =>
         navigate('/codyplay', {
@@ -100,12 +103,12 @@ const StylingLoadingPage = () => {
       1000,
     );
     return () => clearTimeout(timer);
-  }, [done, job, jobId, navigate]);
+  }, [done, job, jobId, navigate, refreshPuzzleBalance]);
 
   return (
     <div className="min-h-screen bg-neutral-100 flex justify-center">
       <div className="relative w-full max-w-[430px] min-h-screen bg-white flex flex-col">
-        <StudioHeader onBack={() => navigate(-1)} count={puzzleBalance} />
+        <StudioHeader onBack={goBack} count={puzzleBalance} />
 
         <div className="flex-1 flex flex-col items-center pt-[156px]">
           {/* 문구 — Title/T3: Pretendard 600 / 20px / lh150% / -2% / #1F2124, 헤더↔문구 156 */}

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { StudioHeader, StudioBottomNav, SectionHeader } from '@/features/styling/components';
-import usePuzzleStore from '@/store/puzzleStore';
+import BottomNav from '@/components/layout/BottomNav';
+import { StudioHeader, SectionHeader } from '@/features/styling/components';
+import usePuzzleBalance from '@/features/puzzle/hooks/usePuzzleBalance';
 import MyOutfitCard from '@/features/myoutfit/components/MyOutfitCard';
 import useMyOutfits from '@/features/myoutfit/hooks/useMyOutfits';
 import heroBlob from '@/assets/images/styling/hero-blob.png';
@@ -11,7 +12,7 @@ import heroBlob from '@/assets/images/styling/hero-blob.png';
  */
 const StylingStartPage = () => {
   const navigate = useNavigate();
-  const puzzleBalance = usePuzzleStore((s) => s.balance);
+  const puzzleBalance = usePuzzleBalance();
   const { data, error, isPending, refetch } = useMyOutfits();
   const recentOutfits = [...(data?.outfits ?? [])]
     .sort((first, second) => second.createdAt.localeCompare(first.createdAt))
@@ -22,8 +23,8 @@ const StylingStartPage = () => {
       <div className="relative w-full max-w-[430px] min-h-screen bg-white flex flex-col">
         <StudioHeader logo count={puzzleBalance} />
 
-        {/* 스크롤 콘텐츠 — 좌우 24, 하단 네비(66)만큼 여유 */}
-        <div className="flex-1 overflow-y-auto px-6 pt-5 pb-28">
+        {/* 스크롤 콘텐츠 — 좌우 24, 하단 네비(92)만큼 여유 */}
+        <div className="flex-1 overflow-y-auto px-6 pt-5 pb-[92px]">
           {/* 히어로 카드 — AI 코디 추천 받기 (Figma: 327×236.82, radius8, pad 10/10/16/10, gap10, #312C48, shadow 0 8 16 #000 8%) */}
           <button
             type="button"
@@ -91,7 +92,7 @@ const StylingStartPage = () => {
           )}
         </div>
 
-        <StudioBottomNav />
+        <BottomNav />
       </div>
     </div>
   );
