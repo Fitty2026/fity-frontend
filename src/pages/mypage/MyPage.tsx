@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
 import PageLayout from '@/components/layout/PageLayout';
-import ClosetBottomNav from '@/features/closet/components/ClosetBottomNav';
+import BottomNav from '@/components/layout/BottomNav';
 import MyPageHeader from '@/features/mypage/components/MyPageHeader';
 import profilePlaceholder from '@/assets/images/mypage/profile-placeholder.svg';
 import hangerIcon from '@/assets/images/mypage/hanger.svg';
@@ -91,9 +91,7 @@ const MyPage = () => {
           </button>
         ))}
       </section>
-      <div className="fixed bottom-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2">
-        <ClosetBottomNav />
-      </div>
+      <BottomNav />
     </PageLayout>
   );
 };
