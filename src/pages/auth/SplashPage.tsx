@@ -4,39 +4,43 @@ import PageLayout from '@/components/layout/PageLayout';
 import { INTRO_SEEN_KEY } from '@/features/auth/constants';
 import useAuthStore from '@/store/authStore';
 
-/** 흩어진 낙하 위치(시안처럼 큼직하게, 크기 제각각으로 리듬감) → 로고 정렬 위치를 글자별로 정의 */
+/**
+ * 낙하 글자 정의 — 온보딩 영상 프레임을 측정해 옮긴 값 (332×720 기준 → % 환산).
+ * 글자들이 검정으로 떨어져 좌하→우상 대각선으로 쌓이고,
+ * 마지막 y가 내려올 때부터 오래된 글자일수록 빨리 흐려진다(fadeDur).
+ * - left/top: 정착 위치(글자 중심), fallFrom: 낙하 시작 오프셋(화면 위 밖)
+ */
 const LETTERS = [
-  { char: 'F', drop: { left: '14%', top: '52%', rot: '-14deg', size: '3.8rem' }, logo: { left: '8%', top: '74%' } },
-  { char: 'i', drop: { left: '32%', top: '42%', rot: '16deg', size: '2.8rem' }, logo: { left: '17%', top: '74%' } },
-  { char: 't', drop: { left: '48%', top: '32%', rot: '-26deg', size: '4.6rem' }, logo: { left: '23%', top: '74%' } },
-  { char: 't', drop: { left: '62%', top: '22%', rot: '30deg', size: '5.4rem' }, logo: { left: '30%', top: '74%' } },
-  { char: 'y', drop: { left: '76%', top: '12%', rot: '-18deg', size: '4.8rem' }, logo: { left: '37%', top: '74%' } },
+  { char: 'F', left: '30%', top: '83%', rot: '-35deg', size: '5rem', delay: 900, fallFrom: '-95dvh', fadeDur: 900 },
+  { char: 'i', left: '60%', top: '74%', rot: '25deg', size: '2.75rem', delay: 1750, fallFrom: '-86dvh', fadeDur: 1150 },
+  { char: 'T', left: '66%', top: '65%', rot: '30deg', size: '5.25rem', delay: 2600, fallFrom: '-77dvh', fadeDur: 1400 },
+  { char: 'T', left: '82%', top: '42%', rot: '115deg', size: '8rem', delay: 3450, fallFrom: '-56dvh', fadeDur: 1700 },
+  { char: 'y', left: '58%', top: '19%', rot: '-155deg', size: '5rem', delay: 4300, fallFrom: '-33dvh', fadeDur: 1900 },
 ];
 
-/** 로고 정렬 시 글자 공통 크기 (text-6xl) */
-const LOGO_SIZE = '3.75rem';
+/** 낙하 시간 - 감속하며 내려앉는다 */
+const FALL_DURATION_MS = 1100;
+/** 흐려짐이 일제히 시작되는 시각 - 마지막 글자(y)의 낙하 시작 시점 */
+const FADE_START_MS = 4300;
 
-/** 한 글자씩 여유를 두고 떨어지도록 시차를 크게 */
-const DROP_DELAY_STEP_MS = 380;
-/** 낙하 시간 - 바운스 없이 감속하며 천천히 내려앉는다 */
-const DROP_DURATION_MS = 1500;
+/** 각 단계 시작 시각(ms): 낙하 → 로고 페이드 인(F 기울음) → F 회전 정렬 → 페이드 아웃 → 이동 */
+const PHASE_LOGO_MS = 6900;
+const PHASE_ALIGN_MS = 8200;
+const PHASE_LEAVE_MS = 9800;
+const NAVIGATE_MS = 10300;
 
-/** 각 단계 시작 시각(ms): 낙하 → 기울어진 채 로고 자리로 모임 → 각도만 회전 정렬 → 마지막 화면 → 이동 */
-const PHASE_GATHER_MS = 3500;
-const PHASE_LOGO_MS = 4300;
-const PHASE_FINAL_MS = 5400;
-const NAVIGATE_MS = 6700;
+type Phase = 'drop' | 'logo' | 'align' | 'leave';
 
-type Phase = 'drop' | 'gather' | 'logo' | 'final';
-
-/** 모션 최소화 설정 시 애니메이션 없이 마지막 화면만 잠깐 보여준다 */
+/** 모션 최소화 설정 시 애니메이션 없이 마지막 로고만 잠깐 보여준다 */
 const prefersReducedMotion = () =>
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const SplashPage = () => {
   const navigate = useNavigate();
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
-  const [phase, setPhase] = useState<Phase>(() => (prefersReducedMotion() ? 'final' : 'drop'));
+  const [phase, setPhase] = useState<Phase>(() => (prefersReducedMotion() ? 'align' : 'drop'));
+  /** 로고 페이드 인 트리거 - 마운트 다음 프레임에 켜야 opacity 트랜지션이 걸린다 */
+  const [logoVisible, setLogoVisible] = useState(() => prefersReducedMotion());
 
   useEffect(() => {
     const reduceMotion = prefersReducedMotion();
@@ -44,9 +48,9 @@ const SplashPage = () => {
     const timers = reduceMotion
       ? []
       : [
-          setTimeout(() => setPhase('gather'), PHASE_GATHER_MS),
           setTimeout(() => setPhase('logo'), PHASE_LOGO_MS),
-          setTimeout(() => setPhase('final'), PHASE_FINAL_MS),
+          setTimeout(() => setPhase('align'), PHASE_ALIGN_MS),
+          setTimeout(() => setPhase('leave'), PHASE_LEAVE_MS),
         ];
 
     const navigateTimer = setTimeout(() => {
@@ -65,62 +69,72 @@ const SplashPage = () => {
     };
   }, [isLoggedIn, navigate]);
 
+  // 로고가 마운트된 다음 프레임에 opacity 트랜지션 시작 (페이드 인)
+  useEffect(() => {
+    if (phase !== 'logo') return;
+    const raf = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setLogoVisible(true));
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [phase]);
+
   return (
     <PageLayout showHeader={false} showBottomNav={false} className="relative overflow-hidden">
-      {/* 1~3단계: 글자 낙하 → 기울어진 채 로고 자리로 모임 → 각도만 슥 회전하며 정렬 */}
-      {LETTERS.map(({ char, drop, logo }, i) => {
-        const pos = phase === 'drop' ? drop : logo;
-        return (
+      {/* 1단계: 글자 낙하 - 검정으로 쌓이다가 y가 내려올 때부터 오래된 순으로 흐려진다.
+          낙하 대기 중인 글자가 화면 위로 비치지 않게 전용 레이어에서 클리핑한다 */}
+      {phase === 'drop' && (
+        <div className="absolute inset-0 overflow-hidden">
+          {LETTERS.map(({ char, left, top, rot, size, delay, fallFrom, fadeDur }, i) => (
+            <span
+              key={`${char}-${i}`}
+              className="splash-letter absolute font-extrabold text-[#1F2124]"
+              style={{
+                left,
+                top,
+                fontSize: size,
+                rotate: rot,
+                '--fall-from': fallFrom,
+                animation: [
+                  `splash-fall ${FALL_DURATION_MS}ms cubic-bezier(0.18, 0.6, 0.24, 1) ${delay}ms both`,
+                  `splash-age ${fadeDur}ms ease-out ${FADE_START_MS}ms both`,
+                ].join(', '),
+              } as React.CSSProperties}
+            >
+              {char}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* 2~4단계: 하단 로고 - 기울어진 F로 페이드 인 → F만 슥 회전 정렬 → 페이드 아웃 */}
+      {phase !== 'drop' && (
+        <div
+          className={`absolute bottom-[11%] left-1/2 flex -translate-x-1/2 items-baseline whitespace-nowrap font-extrabold text-[#1F2124] transition-opacity ${
+            phase === 'leave' ? 'opacity-0 duration-500' : 'duration-[1100ms]'
+          } ${logoVisible && phase !== 'leave' ? 'opacity-100' : phase !== 'leave' ? 'opacity-0' : ''}`}
+          style={{ fontSize: 'calc(min(100vw, 430px) * 0.32)' }}
+        >
           <span
-            key={`${char}-${i}`}
-            className="absolute font-extrabold transition-all duration-700 ease-out"
+            className="inline-block"
             style={{
-              left: pos.left,
-              top: pos.top,
-              // 낙하 중엔 글자별 크기로 리듬감을 주고, 로고 정렬 시 공통 크기로 모인다
-              fontSize: phase === 'drop' ? drop.size : LOGO_SIZE,
-              // 시안대로 맨 앞 F만 기울기를 유지한 채 자리를 잡고 logo 단계에서 각도만 풀린다.
-              // 나머지 글자는 자리로 모이면서 바로 반듯해진다.
-              rotate: phase === 'drop' || (phase === 'gather' && i === 0) ? drop.rot : '0deg',
-              animation:
-                phase === 'drop'
-                  ? `splash-letter-drop ${DROP_DURATION_MS}ms cubic-bezier(0.18, 0.6, 0.24, 1) ${i * DROP_DELAY_STEP_MS}ms both`
-                  : undefined,
+              rotate: phase === 'logo' ? '-15deg' : '0deg',
+              transition: 'rotate 600ms ease-out',
             }}
           >
-            {char}
+            F
           </span>
-        );
-      })}
-
-      {/* 자리 잡을 때 마침표 등장 - 글자 기준선에 붙도록 살짝 아래(온점 위치) */}
-      <span
-        className={`absolute left-[44%] top-[75.2%] text-6xl font-extrabold transition-opacity duration-500 ${
-          phase === 'gather' || phase === 'logo' ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
-        .
-      </span>
-
-      {/* 3단계: 마지막 화면 슬라이드 인 */}
-      <div
-        className={`absolute inset-0 flex flex-col justify-center gap-4 bg-white px-8 transition-transform duration-500 ease-out ${
-          phase === 'final' ? 'translate-y-0' : 'translate-y-full'
-        }`}
-      >
-        <h1 className="text-5xl font-extrabold leading-tight">
-          Fit
-          <br />
-          Your
-          <br />
-          Style
-        </h1>
-        <p className="text-sm text-neutral-400">
-          내 옷으로 시작하는 나만의 스타일링,
-          <br />
-          Fitty에서 시작해보세요
-        </p>
-      </div>
+          {/* F가 회전해 들어와도 닿지 않도록 최소 간격을 유지한다 */}
+          <span
+            className="inline-block"
+            style={{
+              marginLeft: phase === 'logo' ? '0.12em' : '0.04em',
+              transition: 'margin-left 600ms ease-out',
+            }}
+          >
+            itty.
+          </span>
+        </div>
+      )}
     </PageLayout>
   );
 };
