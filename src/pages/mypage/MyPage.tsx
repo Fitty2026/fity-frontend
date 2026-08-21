@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import PageLayout from '@/components/layout/PageLayout';
@@ -69,11 +69,12 @@ const menuItems = [
 const MyPage = () => {
   const navigate = useNavigate();
   const [isComingSoonOpen, setIsComingSoonOpen] = useState(false);
+  const [isStatsAnimated, setIsStatsAnimated] = useState(false);
   const logoutMutation = useLogout();
   const { data: profile } = useMyProfile();
   const { data: bodyProfile } = useBodyProfile();
-  const { data: closet } = useClosets();
-  const { data: outfits } = useMyOutfits();
+  const { data: closet, isPending: isClosetPending } = useClosets();
+  const { data: outfits, isPending: isOutfitsPending } = useMyOutfits();
   const styleStats = [
     { label: '옷 개수', value: closet?.items.length ?? 0 },
     { label: '코디 생성', value: 0 },
@@ -85,6 +86,13 @@ const MyPage = () => {
     : '';
   const styleSummary = profile?.styleTags?.join(' · ') ?? '';
   const profileSummary = [bodySummary, styleSummary].filter(Boolean).join(' | ');
+
+  useEffect(() => {
+    if (isClosetPending || isOutfitsPending) return;
+
+    const animationFrame = requestAnimationFrame(() => setIsStatsAnimated(true));
+    return () => cancelAnimationFrame(animationFrame);
+  }, [isClosetPending, isOutfitsPending]);
 
   return (
     <PageLayout
@@ -124,13 +132,18 @@ const MyPage = () => {
               ))}
             </div>
             <div className="flex h-[76px] items-end gap-3 border-b border-[#CED1D5] px-1">
-              {styleStats.map(({ label, value }) => (
+              {styleStats.map(({ label, value }, index) => (
                 <span
                   key={label}
                   style={{
-                    height: value === 0 ? 6 : `${Math.max((value / maxStyleStat) * 76, 6)}px`,
+                    height: isStatsAnimated
+                      ? value === 0
+                        ? 6
+                        : `${Math.max((value / maxStyleStat) * 76, 6)}px`
+                      : 0,
+                    transitionDelay: isStatsAnimated ? `${index * 90}ms` : '0ms',
                   }}
-                  className="w-[6px] rounded-t bg-[#1F2124]"
+                  className="w-[6px] rounded-t bg-[#1F2124] transition-[height] duration-700 ease-out motion-reduce:transition-none"
                 />
               ))}
             </div>
