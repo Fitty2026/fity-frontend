@@ -22,10 +22,12 @@ const HangerLoader = ({ progress, className = '' }: HangerLoaderProps) => {
 
   return (
     <div className={`relative mx-auto h-[160px] w-[189px] ${className}`}>
+      {/* overflow-visible — 선 굵기(5)의 절반이 viewBox 경계 밖으로 나가 양 끝이 잘리던 것을 넘치게 둔다 */}
       <svg
         width="189"
         height="160"
         viewBox="2 3.5 60 46"
+        className="overflow-visible"
         fill="none"
         role="img"
         aria-label={done ? '코디 완성' : '코디 생성 중'}
