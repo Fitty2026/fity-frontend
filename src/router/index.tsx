@@ -14,6 +14,7 @@ import ConsentPage from '../pages/onboarding/ConsentPage';
 import StyleSwipePage from '../pages/onboarding/StyleSwipePage';
 import StyleConfirmPage from '../pages/onboarding/StyleConfirmPage';
 import BodyIntroPage from '../pages/onboarding/BodyIntroPage';
+import BodyMethodPage from '../pages/onboarding/BodyMethodPage';
 import BodyPhotoGuidePage from '../pages/onboarding/BodyPhotoGuidePage';
 import BodyCameraPage from '../pages/onboarding/BodyCameraPage';
 import BodyUploadPage from '../pages/onboarding/BodyUploadPage';
@@ -130,6 +131,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <BodyIntroPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/onboarding/body/method',
+        element: (
+          <ProtectedRoute>
+            <BodyMethodPage />
           </ProtectedRoute>
         ),
       },

@@ -14,14 +14,14 @@ const BodyIntroPage = () => {
 
   useEffect(() => {
     const timer = setTimeout(
-      () => navigate('/onboarding/body/photo', { replace: true }),
+      () => navigate('/onboarding/body/method', { replace: true }),
       INTRO_DURATION_MS,
     );
     return () => clearTimeout(timer);
   }, [navigate]);
 
   return (
-    <OnboardingLayout progress={0.7}>
+    <OnboardingLayout progress={0.33}>
       <BlobIntro message="이번엔 체형을 알아볼게요" size="lg" />
     </OnboardingLayout>
   );

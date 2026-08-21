@@ -56,10 +56,11 @@ const BodyPhotoEditPage = () => {
     () => (location.state as { openCamera?: boolean } | null)?.openCamera === true,
   );
 
-  const count = bodyPhotoUrls.length;
+  // 온보딩 업로드 화면과 스토어를 공유 — 빈 슬롯('')은 장수에서 제외
+  const count = bodyPhotoUrls.filter(Boolean).length;
   const hasPhotos = count > 0;
   const isReady = count === MAX_PHOTOS;
-  const shuffledPhotos = useMemo(() => shuffle(bodyPhotoUrls), [bodyPhotoUrls]);
+  const shuffledPhotos = useMemo(() => shuffle(bodyPhotoUrls.filter(Boolean)), [bodyPhotoUrls]);
 
   const handleMultipleFiles = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []).slice(0, MAX_PHOTOS);
