@@ -10,6 +10,13 @@ import usePuzzleBalance, { useRefreshPuzzleBalance } from '@/features/puzzle/hoo
 import { ApiError } from '@/lib/apiError';
 import type { OutfitJobInput } from '@/features/styling/types';
 
+/** 실패 안내 아이콘 48×48 (시안 제공 SVG) */
+const WarningIcon = () => (
+  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M23.9996 17.9999V25.4999M5.39364 32.2519C3.66164 35.2519 5.82764 38.9999 9.28964 38.9999H38.7096C42.1696 38.9999 44.3356 35.2519 42.6056 32.2519L27.8976 6.75586C26.1656 3.75586 21.8336 3.75586 20.1016 6.75586L5.39364 32.2519ZM23.9996 31.4999H24.0136V31.5159H23.9996V31.4999Z" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 /** 이전 화면에서 넘어오는 코디 생성 입력값 (체형 프로필은 서버가 JWT로 조회) */
 type LoadingLocationState = Partial<OutfitJobInput>;
 
@@ -20,7 +27,7 @@ type LoadingLocationState = Partial<OutfitJobInput>;
  * - 입력값이 있으면 OUTFIT-01로 생성 요청 후 OUTFIT-02를 폴링
  * - 입력값이 없으면(새로고침·재진입으로 jobId 유실) 진행 중인 job을 조회해 폴링을 이어받고,
  *   그것도 없으면 실패로 처리한다 (예전 목업 타이머는 가짜 완료를 만들어서 제거)
- * - 실패 시 문구만 남기고 옷걸이는 숨긴다 (재시도 수단은 시안 미수급)
+ * - 실패 시 상단바·옷걸이를 숨기고 문구와 되돌아가기 링크만 남긴다
  * - 입력값이 모두 있으면 OUTFIT-01로 생성 요청 후 OUTFIT-02를 폴링,
  *   없으면 기존 목업 타이머로 진행 (입력값 확정 전까지 화면 확인용)
  */
@@ -71,15 +78,15 @@ const StylingLoadingPage = () => {
   const noJobToResume = !hasInput && !activePending && !activeJob;
   const failed = isFailed || !!generateError || !!jobError || !!activeError || noJobToResume;
 
-  // 실패 사유별 안내 — 문구는 시안 미수급이라 임시.
-  // 체형 프로필이 없으면 서버가 생성 자체를 받지 않는다(404 NOT_FOUND404).
+  // 실패 사유별 안내. 체형 프로필이 없으면 서버가 생성 자체를 받지 않는다(404 NOT_FOUND404).
   // 만료(JOB_TIMEOUT)는 정상 200 응답의 status: expired + failure.code로 온다.
+  // 체형 프로필 문구만 시안 미수급 — 확정되면 교체
   const noBodyProfile =
     generateError instanceof ApiError && generateError.code === 'NOT_FOUND404';
   const failedMessage = noBodyProfile
     ? '체형 정보를 먼저 등록해야 코디를 만들 수 있어요'
     : job?.status === 'expired'
-      ? '생성 시간이 초과됐어요. 다시 시도해주세요'
+      ? '작업이 만료되었어요'
       : '코디 생성에 실패했어요';
 
   // 서버 progress(0~100) → 옷걸이 채움 비율(0~1).
@@ -108,14 +115,33 @@ const StylingLoadingPage = () => {
   return (
     <div className="h-screen overflow-hidden bg-neutral-100 flex justify-center" style={{ height: '100dvh' }}>
       <div className="relative w-full max-w-[430px] h-full bg-white flex flex-col">
-        <StudioHeader onBack={goBack} count={puzzleBalance} />
+        {/* 실패 화면엔 상단바를 두지 않는다 (시안) */}
+        {!failed && <StudioHeader onBack={goBack} count={puzzleBalance} />}
 
         <div className="flex-1 min-h-0 overflow-y-auto flex flex-col items-center pt-[156px]">
+          {/* 실패 아이콘 48×48 — 아이콘↔문구 간격 16은 Figma CSS 미수급이라 임시값 */}
+          {failed && (
+            <span className="mb-4">
+              <WarningIcon />
+            </span>
+          )}
+
           {/* 문구 — Title/T3: Pretendard 600 / 20px / lh150% / -2% / #1F2124, 헤더↔문구 156 */}
-          {/* 실패 문구는 시안 미수급 — 확정되면 교체 */}
           <p className="text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-center text-[#1F2124]">
             {failed ? failedMessage : done ? '코디가 완성되었어요' : '코디를 만들고 있어요'}
           </p>
+
+          {/* 실패 시 탈출구 — 아이템 선택으로 되돌린다. 앞서 고른 날짜·날씨·상황을 그대로 들려 보내
+              다시 고르지 않게 한다. 실패 화면은 히스토리에 남기지 않는다 */}
+          {failed && (
+            <button
+              type="button"
+              onClick={() => navigate('/styling/items', { state, replace: true })}
+              className="mt-1 cursor-pointer text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#5A6169] underline"
+            >
+              이전 화면으로 돌아가기
+            </button>
+          )}
 
           {/* 옷걸이 189×160 중앙, 문구↔옷걸이 76. 실패 시엔 진행 표시가 의미 없어 숨긴다 */}
           {!failed && <HangerLoader progress={progress} className="mt-[76px]" />}

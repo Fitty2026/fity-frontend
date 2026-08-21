@@ -56,6 +56,7 @@ import StylingWeatherPage from '../pages/styling/StylingWeatherPage';
 import StylingMoodPage from '../pages/styling/StylingMoodPage';
 import StylingItemSelectPage from '../pages/styling/StylingItemSelectPage';
 import StylingLoadingPage from '../pages/styling/StylingLoadingPage';
+import StylingRecentOutfitsPage from '../pages/styling/StylingRecentOutfitsPage';
 
 // 5. 코디 결과
 import CodyPlayPage from '@/pages/codyplay/CodyPlayPage';
@@ -395,13 +396,20 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-
       // 코디 생성
       {
         path: '/styling',
         element: (
           <ProtectedRoute>
             <StylingStartPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/styling/recent',
+        element: (
+          <ProtectedRoute>
+            <StylingRecentOutfitsPage />
           </ProtectedRoute>
         ),
       },
@@ -453,7 +461,6 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-
       //코디 플레이
       {
         path: '/codyplay',
