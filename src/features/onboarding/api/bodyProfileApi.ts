@@ -50,10 +50,7 @@ export interface BodyProfile {
   updatedAt: string;
 }
 
-// ── PROFILE-01 온보딩 체형 타입 저장 (POST /api/v1/body-profiles/type) ──
-export const saveBodyType = async (bodyType: ServerBodyType): Promise<void> => {
-  await api.post('/api/v1/body-profiles/type', { bodyType });
-};
+// PROFILE-01(체형 타입 저장)은 3택 선택 플로우 제거로 미사용 — AI 분석 결과 유형을 그대로 쓴다
 
 // ── PROFILE-02 체형 사진 AI 분석 (POST /api/v1/body-profiles/analyze, multipart) ──
 // 명세(2026-08-19): images 배열 3장, 정면/측면/후면 순서 무관

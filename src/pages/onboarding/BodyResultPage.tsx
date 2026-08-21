@@ -15,7 +15,6 @@ const BodyResultPage = () => {
   const navigate = useNavigate();
   const nickname = useAuthStore((s) => s.user?.name) ?? '회원';
   const result = useOnboardingStore((s) => s.analysisResult);
-  const bodyType = useOnboardingStore((s) => s.bodyType);
   const bodyPhotoUrls = useOnboardingStore((s) => s.bodyPhotoUrls);
   const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
   const { mutate: saveBodyProfile, isPending, error } = useSaveBodyProfile();
@@ -29,8 +28,11 @@ const BodyResultPage = () => {
   if (!result) return null;
 
   const view = toBodyResultView(result);
+  // 3택 선택 플로우가 없어져 분석 결과 유형(예: STANDARD_STRAIGHT)에서 일러스트를 고른다
+  const analyzedType = result.bodyTypeResult.bodyType.toLowerCase();
   const typeIllustration =
-    BODY_TYPES.find((option) => option.type === bodyType)?.imageSrc ?? BODY_TYPES[0].imageSrc;
+    BODY_TYPES.find((option) => analyzedType.includes(option.type))?.imageSrc ??
+    BODY_TYPES[0].imageSrc;
 
   const handleRetry = () => navigate('/onboarding/body/photo');
 
