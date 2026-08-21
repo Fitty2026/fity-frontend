@@ -43,6 +43,8 @@ import ClosetItemDetailPage from '../pages/closet/ClosetItemDetailPage';
 import ClosetItemDeletePage from '../pages/closet/ClosetItemDeletePage';
 import ClosetItemListPage from '../pages/closet/ClosetItemListPage';
 import ClosetIntroPage from '../pages/closet/ClosetIntroPage';
+import ClosetTagConfirmPage from '../pages/closet/ClosetTagConfirmPage';
+import ClosetTagEditPage from '../pages/closet/ClosetTagEditPage';
 
 // 3. 홈
 
@@ -54,6 +56,7 @@ import StylingWeatherPage from '../pages/styling/StylingWeatherPage';
 import StylingMoodPage from '../pages/styling/StylingMoodPage';
 import StylingItemSelectPage from '../pages/styling/StylingItemSelectPage';
 import StylingLoadingPage from '../pages/styling/StylingLoadingPage';
+import StylingRecentOutfitsPage from '../pages/styling/StylingRecentOutfitsPage';
 
 // 5. 코디 결과
 import CodyPlayPage from '@/pages/codyplay/CodyPlayPage';
@@ -336,6 +339,23 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      // 카메라·앨범으로 올린 옷 사진의 태그 확인·수정 (영수증·구매내역은 product-images/edit가 맡는다)
+      {
+        path: '/closet/register/tags',
+        element: (
+          <ProtectedRoute>
+            <ClosetTagConfirmPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/closet/register/tags/edit',
+        element: (
+          <ProtectedRoute>
+            <ClosetTagEditPage />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: '/closet/register/added',
         element: (
@@ -376,13 +396,20 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-
       // 코디 생성
       {
         path: '/styling',
         element: (
           <ProtectedRoute>
             <StylingStartPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/styling/recent',
+        element: (
+          <ProtectedRoute>
+            <StylingRecentOutfitsPage />
           </ProtectedRoute>
         ),
       },
@@ -434,7 +461,6 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-
       //코디 플레이
       {
         path: '/codyplay',

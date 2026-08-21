@@ -1,8 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '@/components/layout/BottomNav';
-import { StudioHeader, SectionHeader } from '@/features/styling/components';
+import { StudioHeader, SectionHeader, RecentOutfitCard } from '@/features/styling/components';
 import usePuzzleBalance from '@/features/puzzle/hooks/usePuzzleBalance';
-import MyOutfitCard from '@/features/myoutfit/components/MyOutfitCard';
 import useMyOutfits from '@/features/myoutfit/hooks/useMyOutfits';
 import heroBlob from '@/assets/images/styling/hero-blob.png';
 
@@ -56,7 +55,7 @@ const StylingStartPage = () => {
           <SectionHeader
             className="mt-[48.18px]"
             title="최근 코디 보기"
-            onAction={() => navigate('/myoutfit')}
+            onAction={() => navigate('/styling/recent')}
           />
           <div className="mt-4 grid grid-cols-2 gap-[15px]">
             {isPending &&
@@ -68,7 +67,11 @@ const StylingStartPage = () => {
               ))}
             {!isPending &&
               recentOutfits.map((outfit) => (
-                <MyOutfitCard key={outfit.id} outfit={outfit} />
+                <RecentOutfitCard
+                  key={outfit.id}
+                  outfit={outfit}
+                  onClick={() => navigate(`/myoutfit/${outfit.id}`)}
+                />
               ))}
           </div>
           {!isPending && error && (

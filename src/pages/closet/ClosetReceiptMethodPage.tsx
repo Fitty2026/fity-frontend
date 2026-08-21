@@ -3,6 +3,29 @@ import PageLayout from '@/components/layout/PageLayout';
 import { OnboardingTopBar } from '@/features/closet/components';
 import useClosetStore from '@/store/closetStore';
 
+/**
+ * 영수증 — 48×48, stroke 3 #1F2124 (Figma: majesticons:receipt-text-line).
+ * ※ 원본 아이콘 path 미수급이라 시안 크기(가로 8~40 / 세로 6~42)에 맞춰 그린 근사.
+ */
+const ReceiptIcon = () => (
+  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path
+      d="M8 39V9A3 3 0 0 1 11 6H37A3 3 0 0 1 40 9V39L36 42L32 39L28 42L24 39L20 42L16 39L12 42L8 39Z"
+      stroke="#1F2124"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M15 16H33M15 24H27"
+      stroke="#1F2124"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 /** 카메라 — 32×32, stroke #34363C */
 const CameraIcon = () => (
   <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
@@ -68,15 +91,19 @@ const ClosetReceiptMethodPage = () => {
         <OnboardingTopBar progress={300 / 375} showSkip />
 
         <div className="flex-1 overflow-y-auto">
-          {/* Title/T3 */}
-          {/* 타이틀 — 375×30 (Title/T3), 진행 바 아래 52 */}
-          <h1 className="mt-[52px] text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
+          {/* 영수증 아이콘 48×48 — 진행 바 아래 80 (Figma top 187) */}
+          <div className="mt-[80px] flex justify-center">
+            <ReceiptIcon />
+          </div>
+
+          {/* 타이틀 — 375×30 (Title/T3), 아이콘 아래 24 (Figma top 259) */}
+          <h1 className="mt-6 text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
             영수증을 불러올 방식을 선택해주세요
           </h1>
 
           {/* 방식 카드 327×80, 카드 간 12 (Figma 568/660).
-              타이틀(30)이 앱 139에서 끝나므로 518에 놓으려면 379 띄운다 */}
-          <div className="mt-[379px] flex flex-col gap-3 px-6 pb-10">
+              타이틀(30)이 앱 239에서 끝나므로 518에 놓으려면 279 띄운다 */}
+          <div className="mt-[279px] flex flex-col gap-3 px-6 pb-10">
             {METHODS.map((method) => (
               <button
                 key={method.key}

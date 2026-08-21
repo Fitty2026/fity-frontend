@@ -109,10 +109,10 @@ const StylingWeatherPage = () => {
     });
   }, [navigate, selectedDate, result]);
 
-  // 조회가 끝나면 1초 노출 후 자동 이동. 날씨를 못 받았으면 이 화면을 건너뛴다
+  // 조회가 끝나면 2초 노출 후 자동 이동. 날씨를 못 받았으면 이 화면을 건너뛴다
   useEffect(() => {
     if (loading) return;
-    const timer = setTimeout(goNext, result ? 1000 : 0);
+    const timer = setTimeout(goNext, result ? 2000 : 0);
     return () => clearTimeout(timer);
   }, [loading, result, goNext]);
 
