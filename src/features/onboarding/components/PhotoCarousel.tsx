@@ -9,11 +9,14 @@ const PhotoCarousel = ({
   imageSrcs,
   initialSlide = 0,
   fit = 'contain',
+  highlighted,
 }: {
   imageSrcs: string[];
   initialSlide?: number;
   /** contain: 마네킹 일러스트용(기본) / cover: 실사 촬영본용 */
   fit?: 'contain' | 'cover';
+  /** true인 사진은 빨간 테두리로 강조 (분석 실패 안내용) */
+  highlighted?: boolean[];
 }) => (
   <Swiper
     className="w-full"
@@ -24,7 +27,11 @@ const PhotoCarousel = ({
   >
     {imageSrcs.map((src, i) => (
       <SwiperSlide key={`${src}-${i}`} className="!w-[64%] max-w-[270px]">
-        <div className="flex aspect-[246/420] w-full items-center justify-center overflow-hidden rounded-3xl border border-neutral-100 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
+        <div
+          className={`flex aspect-[246/420] w-full items-center justify-center overflow-hidden rounded-3xl border bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)] ${
+            highlighted?.[i] ? 'border-red-400' : 'border-neutral-100'
+          }`}
+        >
           <img
             src={src}
             alt={`체형 사진 ${i + 1}`}

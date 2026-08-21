@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/ui/Button';
+import AnalyzeFailView from '@/features/onboarding/components/AnalyzeFailView';
 import CompleteView from '@/features/onboarding/components/CompleteView';
 import OnboardingLayout from '@/features/onboarding/components/OnboardingLayout';
 import PhotoCarousel from '@/features/onboarding/components/PhotoCarousel';
+import { startBodyAnalysis } from '@/features/onboarding/bodyAnalysis';
 import useOnboardingStore from '@/store/onboardingStore';
 
 /** 촬영 3연속(정면→측면→후면) → 확인 → 완료 */
@@ -35,6 +37,8 @@ const CameraDots = () => (
 const BodyCameraPage = () => {
   const navigate = useNavigate();
   const setBodyPhotoUrls = useOnboardingStore((s) => s.setBodyPhotoUrls);
+  const analysisStatus = useOnboardingStore((s) => s.analysisStatus);
+  const setAnalysisStatus = useOnboardingStore((s) => s.setAnalysisStatus);
   const [phase, setPhase] = useState<Phase>('camera');
   /** 이번 세션에서 촬영한 사진 (정면→측면→후면 순서) */
   const [shots, setShots] = useState<string[]>([]);
@@ -79,6 +83,12 @@ const BodyCameraPage = () => {
       setBodyPhotoUrls(next);
       setPhase('confirm');
     }
+  };
+
+  /** 확인 → 완료 화면으로 넘어가며 분석을 미리 시작한다 (정면/측면/후면 순서) */
+  const handleConfirm = () => {
+    setPhase('done');
+    void startBodyAnalysis(shots);
   };
 
   const handleCapture = () => {
@@ -198,17 +208,29 @@ const BodyCameraPage = () => {
               사진은 분석 후 즉시 삭제되며, 안전하게 보호돼요
             </p>
             <div className="mt-auto px-6 pt-6">
-              <Button label="다음" shape="pill" fullWidth onClick={() => setPhase('done')} />
+              <Button label="다음" shape="pill" fullWidth onClick={handleConfirm} />
             </div>
           </>
         )}
 
-        {phase === 'done' && (
-          <CompleteView
-            message="촬영이 완료되었어요"
-            onNext={() => navigate('/onboarding/body/analysis')}
-          />
-        )}
+        {/* 완료 — 분석은 백그라운드 진행. 전신 인식 실패면 완료 화면 없이 바로 에러 안내로 전환 */}
+        {phase === 'done' &&
+          (analysisStatus === 'error' ? (
+            <AnalyzeFailView
+              photos={shots}
+              mode="camera"
+              onRetry={() => {
+                setAnalysisStatus('idle');
+                setShots([]);
+                setPhase('camera');
+              }}
+            />
+          ) : (
+            <CompleteView
+              message="촬영이 완료되었어요"
+              onNext={() => navigate('/onboarding/body/analysis', { state: { from: 'camera' } })}
+            />
+          ))}
       </div>
     </OnboardingLayout>
   );

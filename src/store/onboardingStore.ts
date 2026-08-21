@@ -11,6 +11,8 @@ interface OnboardingState {
    */
   bodyPhotoUrls: string[];
   analysisResult: BodyAnalyzeResult | null;
+  /** 체형 분석 진행 상태 — 촬영/업로드 확정 시 시작해 화면 이동과 무관하게 유지된다 */
+  analysisStatus: 'idle' | 'pending' | 'success' | 'error';
   isOnboardingComplete: boolean;
   marketingAgreed: boolean;
   /** 옷장 준비 완료 화면(/closet/register/complete)을 이미 봤는지 — 최초 1회만 보여준다 */
@@ -21,6 +23,7 @@ interface OnboardingState {
   toggleStyle: (style: StyleTag) => void;
   setBodyPhotoUrls: (urls: string[]) => void;
   setAnalysisResult: (result: BodyAnalyzeResult) => void;
+  setAnalysisStatus: (status: 'idle' | 'pending' | 'error') => void;
   
   /** 체형 사진 한 장 추가 (최대 3장) */
   addBodyPhotoUrl: (url: string) => void;
@@ -42,6 +45,7 @@ const useOnboardingStore = create<OnboardingState>()(
       selectedStyles: [],
       bodyPhotoUrls: [],
       analysisResult: null,
+      analysisStatus: 'idle',
       isOnboardingComplete: false,
       marketingAgreed: false,
       closetCompleteSeen: false,
@@ -83,7 +87,9 @@ const useOnboardingStore = create<OnboardingState>()(
           return { bodyPhotoUrls: next.some(Boolean) ? next : [] };
         }),
 
-      setAnalysisResult: (result) => set({ analysisResult: result }),
+      setAnalysisResult: (result) => set({ analysisResult: result, analysisStatus: 'success' }),
+
+      setAnalysisStatus: (status) => set({ analysisStatus: status }),
 
       setMarketingAgreed: (agreed) => set({ marketingAgreed: agreed }),
 
@@ -98,6 +104,7 @@ const useOnboardingStore = create<OnboardingState>()(
           selectedStyles: [],
           bodyPhotoUrls: [],
           analysisResult: null,
+          analysisStatus: 'idle',
           isOnboardingComplete: false,
           marketingAgreed: false,
           closetCompleteSeen: false,

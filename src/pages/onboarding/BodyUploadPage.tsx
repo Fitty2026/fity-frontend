@@ -4,12 +4,14 @@ import mannequinBack from '@/assets/images/body/back.png';
 import mannequinFront from '@/assets/images/body/front.png';
 import mannequinSide from '@/assets/images/body/side.png';
 import Button from '@/components/ui/Button';
+import AnalyzeFailView from '@/features/onboarding/components/AnalyzeFailView';
 import CameraCapture from '@/features/onboarding/components/CameraCapture';
 import CompleteView from '@/features/onboarding/components/CompleteView';
 import OnboardingLayout from '@/features/onboarding/components/OnboardingLayout';
 import PhotoAddSheet from '@/features/onboarding/components/PhotoAddSheet';
 import PhotoCarousel from '@/features/onboarding/components/PhotoCarousel';
 import PhotoSlotGrid from '@/features/onboarding/components/PhotoSlotGrid';
+import { startBodyAnalysis } from '@/features/onboarding/bodyAnalysis';
 import useOnboardingStore from '@/store/onboardingStore';
 
 type Phase = 'select' | 'done';
@@ -24,6 +26,8 @@ const BodyUploadPage = () => {
   const replaceBodyPhotoUrl = useOnboardingStore((s) => s.replaceBodyPhotoUrl);
   const removeBodyPhotoUrl = useOnboardingStore((s) => s.removeBodyPhotoUrl);
   const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
+  const analysisStatus = useOnboardingStore((s) => s.analysisStatus);
+  const setAnalysisStatus = useOnboardingStore((s) => s.setAnalysisStatus);
   const [phase, setPhase] = useState<Phase>('select');
   /** 사진을 추가할 슬롯 index (null=바텀시트 닫힘) */
   const [sheetTarget, setSheetTarget] = useState<number | null>(null);
@@ -60,6 +64,7 @@ const BodyUploadPage = () => {
     if (sheetTarget !== null) replaceBodyPhotoUrl(sheetTarget, url);
     closeAll();
   };
+
 
   return (
     <OnboardingLayout progress={0.57} onSkip={phase === 'done' ? undefined : handleSkip}>
@@ -151,19 +156,33 @@ const BodyUploadPage = () => {
                 shape="pill"
                 fullWidth
                 disabled={!isReady}
-                onClick={() => setPhase('done')}
+                onClick={() => {
+                  // 완료 화면으로 넘어가며 분석을 미리 시작 — 실패면 완료 화면이 바로 에러로 바뀐다
+                  setPhase('done');
+                  void startBodyAnalysis(bodyPhotoUrls.filter(Boolean));
+                }}
               />
             </div>
           </>
         )}
 
-        {/* 완료 */}
-        {phase === 'done' && (
-          <CompleteView
-            message="사진이 업로드되었어요"
-            onNext={() => navigate('/onboarding/body/analysis')}
-          />
-        )}
+        {/* 완료 — 분석은 백그라운드 진행. 전신 인식 실패면 완료 화면 없이 바로 에러 안내로 전환 */}
+        {phase === 'done' &&
+          (analysisStatus === 'error' ? (
+            <AnalyzeFailView
+              photos={bodyPhotoUrls.filter(Boolean)}
+              mode="upload"
+              onRetry={() => {
+                setAnalysisStatus('idle');
+                setPhase('select');
+              }}
+            />
+          ) : (
+            <CompleteView
+              message="사진이 업로드되었어요"
+              onNext={() => navigate('/onboarding/body/analysis', { state: { from: 'upload' } })}
+            />
+          ))}
       </div>
 
       <PhotoAddSheet
