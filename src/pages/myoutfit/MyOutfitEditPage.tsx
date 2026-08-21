@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import PageLayout from '@/features/myoutfit/components/MyOutfitPageLayout';
 import ErrorScreen from '@/components/ui/ErrorScreen';
@@ -11,17 +11,18 @@ import useUpdateMyOutfit from '@/features/myoutfit/hooks/useUpdateMyOutfit';
 import { useMyOutfit } from '@/features/myoutfit/hooks/useMyOutfits';
 import type { ClothingCategory, Outfit } from '../../types';
 
-const ITEM_MARKER_TOP: Record<ClothingCategory, number> = {
-  아우터: 30,
-  상의: 42,
-  하의: 64,
-  신발: 88,
-  가방: 48,
-  액세서리: 25,
-  기타: 65,
+type MarkerCategory = Extract<ClothingCategory, '아우터' | '상의' | '하의'>;
+
+const ITEM_MARKER_POSITION: Record<MarkerCategory, { left: string; top: string }> = {
+  아우터: { left: '36%', top: '30%' },
+  상의: { left: '64%', top: '45%' },
+  하의: { left: '36%', top: '68%' },
 };
 
-const ItemMarker = ({ itemId }: { itemId: string }) => (
+const isMarkerCategory = (category: ClothingCategory): category is MarkerCategory =>
+  category === '아우터' || category === '상의' || category === '하의';
+
+const ItemMarker = ({ label }: { label: string }) => (
   <svg
     width="61"
     height="30"
@@ -32,8 +33,8 @@ const ItemMarker = ({ itemId }: { itemId: string }) => (
   >
     <rect width="61" height="24" rx="4" fill="black" fillOpacity="0.6" />
     <foreignObject x="4" y="0" width="53" height="24">
-      <div className="flex h-full items-center justify-center truncate px-[3px] text-[11px] font-[600] text-white">
-        {itemId || '-'}
+      <div className="h-full w-full overflow-hidden px-[3px] text-left text-[11px] leading-[24px] font-[600] text-ellipsis whitespace-nowrap text-white">
+        {label || '-'}
       </div>
     </foreignObject>
     <path d="M30.5 30L27.0359 24H33.9641L30.5 30Z" fill="black" fillOpacity="0.6" />
@@ -89,17 +90,16 @@ const MyOutfitEditForm = ({ initialOutfit }: { initialOutfit: Outfit }) => {
   const navigate = useNavigate();
   const updateMutation = useUpdateMyOutfit();
 
-  const handleAddTag = (tag: string) => {
+  const handleCompleteTags = (tags: string[]) => {
     setResult((prev) => {
-      if (!prev || prev.styleTags.length >= MAX_TAG_COUNT || prev.styleTags.includes(tag)) {
-        return prev;
-      }
+      if (!prev) return prev;
 
       return {
         ...prev,
-        styleTags: [...prev.styleTags, tag],
+        styleTags: tags.slice(0, MAX_TAG_COUNT),
       };
     });
+    setSelectedTag(null);
   };
 
   return (
@@ -121,17 +121,17 @@ const MyOutfitEditForm = ({ initialOutfit }: { initialOutfit: Outfit }) => {
             {outfit?.createdAt.slice(0, 10).split('-').join('.')}
           </p>
           {showItemMarkers &&
-            outfit?.items.map((item, index) => {
+            outfit?.items.map((item) => {
+              if (!isMarkerCategory(item.category)) return null;
+              const position = ITEM_MARKER_POSITION[item.category];
+
               return (
                 <span
                   key={item.id}
                   className="pointer-events-none absolute -translate-x-1/2 -translate-y-full"
-                  style={{
-                    left: index % 2 === 0 ? '30%' : '70%',
-                    top: `${ITEM_MARKER_TOP[item.category]}%`,
-                  }}
+                  style={position}
                 >
-                  <ItemMarker itemId={item.id} />
+                  <ItemMarker label={item.name ?? item.id} />
                 </span>
               );
             })}
@@ -148,7 +148,11 @@ const MyOutfitEditForm = ({ initialOutfit }: { initialOutfit: Outfit }) => {
         </div>
       </div>
       <div
-        onClick={() => navigate(`/myoutfit/additem/${outfit.id}`)}
+        onClick={() =>
+          navigate(`/myoutfit/additem/${outfit.id}`, {
+            state: { draftOutfit: outfit },
+          })
+        }
         className="mt-[16px] mx-[24px] bg-[#E9E9E9] rounded-[8px] p-[10px] flex justify-center items-center gap-[8px]"
       >
         <svg
@@ -260,7 +264,7 @@ const MyOutfitEditForm = ({ initialOutfit }: { initialOutfit: Outfit }) => {
                   title: title.trim(),
                   memo: memo.trim(),
                   styleTags: outfit.styleTags,
-                  itemIds: outfit.items.map((item) => item.id),
+                  outfitResultId: outfit.outfitResultId,
                 },
               },
               {
@@ -269,7 +273,7 @@ const MyOutfitEditForm = ({ initialOutfit }: { initialOutfit: Outfit }) => {
               },
             );
           }}
-          className="w-full mt-[8px] bg-[#1F2124] rounded-[32px] py-[16px] text-[#F6F7F8] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
+          className="w-full mt-[8px] mb-[24px] bg-[#1F2124] rounded-[32px] py-[16px] text-[#F6F7F8] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
         >
           {updateMutation.isPending ? '저장 중...' : '확인'}
         </button>
@@ -278,7 +282,7 @@ const MyOutfitEditForm = ({ initialOutfit }: { initialOutfit: Outfit }) => {
         isOpen={isTagSheetOpen}
         currentTags={outfit.styleTags}
         onClose={() => setIsTagSheetOpen(false)}
-        onAddTag={handleAddTag}
+        onComplete={handleCompleteTags}
       />
     </PageLayout>
   );
@@ -286,7 +290,9 @@ const MyOutfitEditForm = ({ initialOutfit }: { initialOutfit: Outfit }) => {
 
 const MyOutfitEditPage = () => {
   const { outfitId } = useParams();
+  const location = useLocation();
   const { data: outfit, error, isPending, refetch } = useMyOutfit(outfitId);
+  const draftOutfit = (location.state as { draftOutfit?: Outfit } | null)?.draftOutfit;
 
   if (isPending) {
     return (
@@ -308,7 +314,14 @@ const MyOutfitEditPage = () => {
     );
   }
 
-  return <MyOutfitEditForm key={outfit.id} initialOutfit={outfit} />;
+  const initialOutfit = draftOutfit?.id === outfit.id ? draftOutfit : outfit;
+
+  return (
+    <MyOutfitEditForm
+      key={`${initialOutfit.id}-${initialOutfit.items.map((item) => item.id).join('-')}`}
+      initialOutfit={initialOutfit}
+    />
+  );
 };
 
 export default MyOutfitEditPage;
