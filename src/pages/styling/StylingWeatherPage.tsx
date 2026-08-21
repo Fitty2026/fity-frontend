@@ -119,8 +119,8 @@ const StylingWeatherPage = () => {
   // 위치 허가 응답을 기다리는 동안 (최대 8초) — 안내 문구는 시안 미수급으로 임시
   if (loading || !w) {
     return (
-      <div className="min-h-screen bg-neutral-100 flex justify-center">
-        <div className="relative w-full max-w-[430px] min-h-screen bg-white flex flex-col">
+      <div className="h-screen overflow-hidden bg-neutral-100 flex justify-center" style={{ height: '100dvh' }}>
+        <div className="relative w-full max-w-[430px] h-full bg-white flex flex-col">
           <StudioHeader onBack={goBack} />
           <p className="mt-14 px-6 text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
             날씨를 확인하고 있어요
@@ -131,9 +131,9 @@ const StylingWeatherPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-100 flex justify-center">
+    <div className="h-screen overflow-hidden bg-neutral-100 flex justify-center" style={{ height: '100dvh' }}>
       <div
-        className="relative w-full max-w-[430px] min-h-screen flex flex-col overflow-hidden"
+        className="relative w-full max-w-[430px] h-full flex flex-col overflow-hidden"
         onClick={goNext}
       >
         {/* 전면 날씨 배경 */}

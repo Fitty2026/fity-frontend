@@ -106,11 +106,11 @@ const StylingLoadingPage = () => {
   }, [done, job, jobId, navigate, refreshPuzzleBalance]);
 
   return (
-    <div className="min-h-screen bg-neutral-100 flex justify-center">
-      <div className="relative w-full max-w-[430px] min-h-screen bg-white flex flex-col">
+    <div className="h-screen overflow-hidden bg-neutral-100 flex justify-center" style={{ height: '100dvh' }}>
+      <div className="relative w-full max-w-[430px] h-full bg-white flex flex-col">
         <StudioHeader onBack={goBack} count={puzzleBalance} />
 
-        <div className="flex-1 flex flex-col items-center pt-[156px]">
+        <div className="flex-1 min-h-0 overflow-y-auto flex flex-col items-center pt-[156px]">
           {/* 문구 — Title/T3: Pretendard 600 / 20px / lh150% / -2% / #1F2124, 헤더↔문구 156 */}
           {/* 실패 문구는 시안 미수급 — 확정되면 교체 */}
           <p className="text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-center text-[#1F2124]">

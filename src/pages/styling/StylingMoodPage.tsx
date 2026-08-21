@@ -58,14 +58,14 @@ const StylingMoodPage = () => {
   const selected = SITUATIONS[active];
 
   return (
-    <div className="min-h-screen bg-neutral-100 flex justify-center">
-      <div className="relative w-full max-w-[430px] min-h-screen bg-white flex flex-col overflow-hidden">
+    <div className="h-screen overflow-hidden bg-neutral-100 flex justify-center" style={{ height: '100dvh' }}>
+      <div className="relative w-full max-w-[430px] h-full bg-white flex flex-col overflow-hidden">
         <StudioHeader
           onBack={() => (confirming ? setConfirming(false) : goBack())}
           onSkip={() => goItems()}
         />
 
-        <div className="flex-1 pt-14">
+        <div className="flex-1 min-h-0 overflow-y-auto pt-14">
           {/* 헤더↔타이틀 56 (날짜 선택과 동일) */}
           <ScreenTitle
             title="코디가 필요한 상황을 선택해주세요"
