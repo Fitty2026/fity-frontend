@@ -61,7 +61,7 @@ const MyOutfitListPage = () => {
     return (
       <div className="mx-[24px] mt-[24px] grid grid-cols-2 gap-[15px] pb-[32px]">
         {outfits.map((outfit) => (
-          <MyOutfitCard key={outfit.id} outfit={outfit} />
+          <MyOutfitCard key={outfit.id} outfit={outfit} animateUnlikeRemoval={likedOnly} />
         ))}
         <div ref={loadMoreRef} className="col-span-2 h-px" aria-hidden="true" />
         {isFetchingNextPage ? (
