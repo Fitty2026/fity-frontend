@@ -1,5 +1,8 @@
+import { useState } from 'react';
+
+import useToggleMyOutfitLike from '@/features/myoutfit/hooks/useToggleMyOutfitLike';
+import '@/features/myoutfit/styles/myOutfitLike.css';
 import type { Outfit } from '@/types';
-import { useIsOutfitLiked, useToggleOutfitLike } from '../hooks/useOutfitLikes';
 
 interface RecentOutfitCardProps {
   outfit: Outfit;
@@ -8,16 +11,6 @@ interface RecentOutfitCardProps {
 }
 
 /** 하트 24×24 — 비어있을 땐 외곽선, 눌리면 채움 (#1F2124) */
-const HeartIcon = ({ filled }: { filled: boolean }) => (
-  <svg width="24" height="24" viewBox="0 0 256 256" fill="#1F2124" xmlns="http://www.w3.org/2000/svg">
-    {filled ? (
-      <path d="M240,98c0,70-103.79,126.66-108.21,129a8,8,0,0,1-7.58,0C119.79,224.66,16,168,16,98A62.07,62.07,0,0,1,78,36c20.65,0,38.73,8.88,50,23.89C139.27,44.88,157.35,36,178,36A62.07,62.07,0,0,1,240,98Z" />
-    ) : (
-      <path d="M178,36c-20.65,0-38.73,8.88-50,23.89C116.73,44.88,98.65,36,78,36A62.07,62.07,0,0,0,16,98c0,70,103.79,126.66,108.21,129a8,8,0,0,0,7.58,0C136.21,224.66,240,168,240,98A62.07,62.07,0,0,0,178,36Zm-50,174.8C109.74,200.16,32,151.69,32,98A46.06,46.06,0,0,1,78,52c19.45,0,35.78,10.36,42.6,27a8,8,0,0,0,14.8,0c6.82-16.67,23.15-27,42.6-27a46.06,46.06,0,0,1,46,46C224,151.69,146.26,200.16,128,210.8Z" />
-    )}
-  </svg>
-);
-
 /**
  * 홈 — 최근 코디 카드 (Figma: 156×247, radius8, 흰 bg)
  * - 이미지(156×211, top radius8, crop) + 하단 그라데이션 + 날짜/태그 오버레이
@@ -25,8 +18,9 @@ const HeartIcon = ({ filled }: { filled: boolean }) => (
  * - 타이틀 바(156×36, #1F2124, bottom radius8, 중앙 흰 텍스트)
  */
 const RecentOutfitCard = ({ outfit, onClick, className = '' }: RecentOutfitCardProps) => {
-  const isLiked = useIsOutfitLiked(outfit.id);
-  const toggleLike = useToggleOutfitLike();
+  const [likeAnimation, setLikeAnimation] = useState<'like' | 'unlike' | null>(null);
+  const likeMutation = useToggleMyOutfitLike();
+  const isLiked = outfit.isLiked ?? false;
 
   return (
     <div
@@ -54,13 +48,40 @@ const RecentOutfitCard = ({ outfit, onClick, className = '' }: RecentOutfitCardP
           type="button"
           aria-label={isLiked ? '찜 해제' : '찜하기'}
           aria-pressed={isLiked}
+          disabled={likeMutation.isPending}
           onClick={(event) => {
             event.stopPropagation();
-            toggleLike(outfit.id);
+            setLikeAnimation(isLiked ? 'unlike' : 'like');
+            likeMutation.mutate({ savedOutfitId: outfit.id, isLiked: !isLiked });
           }}
-          className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center"
+          onKeyDown={(event) => event.stopPropagation()}
+          className="my-outfit-like-button absolute right-2 top-2 z-10 flex h-6 w-6 cursor-pointer items-center justify-center disabled:cursor-default"
         >
-          <HeartIcon filled={isLiked} />
+          <span
+            className={
+              likeAnimation ? `my-outfit-heart my-outfit-heart--${likeAnimation}` : undefined
+            }
+            onAnimationEnd={() => setLikeAnimation(null)}
+          >
+            <svg
+              width="20"
+              height="18"
+              viewBox="0 0 20 18"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path
+                className={!isLiked ? 'my-outfit-heart-path--unliked' : undefined}
+                d="M18.75 5.25C18.75 2.765 16.651 0.75 14.062 0.75C12.127 0.75 10.465 1.876 9.75 3.483C9.035 1.876 7.373 0.75 5.437 0.75C2.85 0.75 0.75 2.765 0.75 5.25C0.75 12.47 9.75 17.25 9.75 17.25C9.75 17.25 18.75 12.47 18.75 5.25Z"
+                fill={isLiked ? '#1F2124' : 'none'}
+                stroke="#1F2124"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
         </button>
         {/* 날짜(좌) + 태그(우) */}
         <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 px-2 pb-2">

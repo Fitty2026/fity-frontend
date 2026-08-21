@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -9,8 +9,24 @@ import { STYLE_TILES } from '@/features/onboarding/constants';
 import useSaveOnboardingStyle from '@/features/onboarding/hooks/useSaveOnboardingStyle';
 import { getErrorMessage } from '@/lib/apiError';
 
-const getCardRotation = (index: number) =>
-  index % 4 === 0 || index % 4 === 3 ? '-rotate-[5deg]' : 'rotate-[5deg]';
+import './styleEditPage.css';
+
+const CARD_ROW_STEP = 208;
+const CARD_CENTER_OFFSET_X = 95.5;
+
+const getCardEnterStyle = (index: number, total: number) => {
+  const row = Math.floor(index / 2);
+  const rowCount = Math.ceil(total / 2);
+  const centerRow = (rowCount - 1) / 2;
+  const rotation = index % 4 === 0 || index % 4 === 3 ? -5 : 5;
+
+  return {
+    '--style-card-enter-x': `${index % 2 === 0 ? CARD_CENTER_OFFSET_X : -CARD_CENTER_OFFSET_X}px`,
+    '--style-card-enter-y': `${(centerRow - row) * CARD_ROW_STEP}px`,
+    '--style-card-rotation': `${rotation}deg`,
+    '--style-card-delay': `${index * 45}ms`,
+  } as CSSProperties;
+};
 
 const StyleEditPage = () => {
   const navigate = useNavigate();
@@ -25,6 +41,7 @@ const StyleEditPage = () => {
 
   const selectedStyles = STYLE_TILES.filter((style) => currentStyleIds.includes(style.tagId));
   const emptySlots = Math.max(1, 4 - selectedStyles.length);
+  const cardCount = selectedStyles.length + emptySlots;
 
   const handleSave = () => {
     saveStyles(currentStyleIds, {
@@ -64,7 +81,8 @@ const StyleEditPage = () => {
               onClick={() =>
                 setSelectedStyleIds(currentStyleIds.filter((id) => id !== style.tagId))
               }
-              className={`${getCardRotation(index)} h-[176px] w-[136px] overflow-hidden rounded-[16px]`}
+              style={getCardEnterStyle(index, cardCount)}
+              className="style-edit-card h-[176px] w-[136px] overflow-hidden rounded-[16px]"
             >
               <img
                 src={style.imageSrc}
@@ -79,13 +97,14 @@ const StyleEditPage = () => {
             return (
               <button
                 type="button"
-                key={slot}
+                key={`empty-${slot}`}
                 onClick={() =>
                   navigate('/mypage/profile/style/select', {
                     state: { styleTagIds: currentStyleIds },
                   })
                 }
-                className={`${getCardRotation(gridIndex)} h-[176px] w-[136px] rounded-[16px] border-2 border-dashed border-[#CED1D5] text-[44px] font-light text-[#B2B8BD]`}
+                style={getCardEnterStyle(gridIndex, cardCount)}
+                className="style-edit-card h-[176px] w-[136px] rounded-[16px] border-2 border-dashed border-[#CED1D5] text-[44px] font-light text-[#B2B8BD]"
               >
                 ＋
               </button>

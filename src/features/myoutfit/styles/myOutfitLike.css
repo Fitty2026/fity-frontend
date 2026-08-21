@@ -42,15 +42,6 @@
   will-change: transform;
 }
 
-.my-outfit-heart-path--unliked {
-  transition: stroke 140ms ease-out;
-}
-
-.my-outfit-like-button:hover .my-outfit-heart-path--unliked,
-.my-outfit-like-button:focus-visible .my-outfit-heart-path--unliked {
-  stroke: #ef4444;
-}
-
 .my-outfit-heart--like {
   animation: my-outfit-heart-like 360ms cubic-bezier(0.22, 1, 0.36, 1);
 }
