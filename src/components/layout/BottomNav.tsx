@@ -40,10 +40,10 @@ const MyIcon = () => (
 );
 
 const NAV_ITEMS = [
-  { label: '홈', path: '/home', Icon: HomeIcon },
-  { label: '스튜디오', path: '/styling', Icon: StudioIcon },
-  { label: '옷장', path: '/closet', Icon: ClosetIcon },
-  { label: '마이', path: '/mypage', Icon: MyIcon },
+  { label: '홈', path: '/home', activePath: '/home', Icon: HomeIcon },
+  { label: '스튜디오', path: '/styling/method', activePath: '/styling', Icon: StudioIcon },
+  { label: '옷장', path: '/closet', activePath: '/closet', Icon: ClosetIcon },
+  { label: '마이', path: '/mypage', activePath: '/mypage', Icon: MyIcon },
 ];
 
 const BottomNav = () => {
@@ -53,8 +53,8 @@ const BottomNav = () => {
   return (
     <nav className="fixed bottom-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 rounded-tr-[56px] bg-white pt-[18px] pr-6 pb-[calc(32px+env(safe-area-inset-bottom,0px))] pl-6 shadow-[0_-8px_16px_0_rgba(0,0,0,0.08)]">
       <ul className="flex items-center justify-between gap-4">
-        {NAV_ITEMS.map(({ label, path, Icon }) => {
-          const active = pathname === path || pathname.startsWith(`${path}/`);
+        {NAV_ITEMS.map(({ label, path, activePath, Icon }) => {
+          const active = pathname === activePath || pathname.startsWith(`${activePath}/`);
           return (
             <li key={path}>
               <button
