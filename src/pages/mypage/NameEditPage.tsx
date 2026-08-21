@@ -7,20 +7,42 @@ import profilePlaceholder from '@/assets/images/mypage/profile-placeholder.svg';
 import cameraFab from '@/assets/images/mypage/camera-fab.svg';
 import cameraIcon from '@/assets/images/mypage/camera.svg';
 import albumIcon from '@/assets/images/mypage/album.svg';
+import useMyProfile from '@/features/auth/hooks/useMyProfile';
+import useUpdateMyName from '@/features/auth/hooks/useUpdateMyName';
+import { getErrorMessage } from '@/lib/apiError';
 
 const NameEditPage = () => {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
+  const { data: profile } = useMyProfile();
+  const updateNameMutation = useUpdateMyName();
+  const [editedName, setEditedName] = useState<string | null>(null);
   const [showPhotoSheet, setShowPhotoSheet] = useState(false);
+  const name = editedName ?? profile?.name ?? '';
   const isValid = name.trim().length >= 2 && name.trim().length <= 10;
+
+  const handleSave = () => {
+    updateNameMutation.mutate(name.trim(), {
+      onSuccess: () => navigate('/mypage/profile'),
+    });
+  };
 
   return (
     <MyPageScaffold
       title="이름 수정"
       footer={
-        <MyPageButton disabled={!isValid} onClick={() => navigate('/mypage/profile')}>
-          저장하기
-        </MyPageButton>
+        <>
+          {updateNameMutation.error ? (
+            <p className="mb-2 text-center text-[13px] text-red-500">
+              {getErrorMessage(updateNameMutation.error)}
+            </p>
+          ) : null}
+          <MyPageButton
+            disabled={!isValid || !profile || updateNameMutation.isPending}
+            onClick={handleSave}
+          >
+            {updateNameMutation.isPending ? '저장 중...' : '저장하기'}
+          </MyPageButton>
+        </>
       }
     >
       <div className="px-6 pt-8">
@@ -39,12 +61,12 @@ const NameEditPage = () => {
           <input
             value={name}
             maxLength={10}
-            onChange={(event) => setName(event.target.value)}
+            onChange={(event) => setEditedName(event.target.value)}
             placeholder="이름을 입력해주세요"
             className="min-w-0 flex-1 outline-none placeholder:text-[#B2B8BD]"
           />
           {name ? (
-            <button type="button" onClick={() => setName('')} className="text-[#959BA7]">
+            <button type="button" onClick={() => setEditedName('')} className="text-[#959BA7]">
               <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#959BA7] text-[12px] text-white">
                 ×
               </span>

@@ -3,8 +3,9 @@ import { useEffect, useMemo, useRef } from 'react';
 import ErrorScreen from '@/components/ui/ErrorScreen';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 import BottomNav from '@/components/layout/BottomNav';
+import PageLayout from '@/components/layout/PageLayout';
+import PuzzleTopBar from '@/components/layout/PuzzleTopBar';
 import MyOutfitCard from '@/features/myoutfit/components/MyOutfitCard';
-import PageLayout from '@/features/myoutfit/components/MyOutfitPageLayout';
 import useMyOutfits from '@/features/myoutfit/hooks/useMyOutfits';
 
 const MyOutfitListPage = () => {
@@ -70,11 +71,10 @@ const MyOutfitListPage = () => {
   return (
     <PageLayout
       showBottomNav={false}
-      showHeader={true}
-      showBack={true}
-      title="룩북"
-      className="flex min-h-0 flex-col"
+      showHeader={false}
+      className="flex min-h-0 flex-col overflow-hidden"
     >
+      <PuzzleTopBar title="룩북" />
       <div className="min-h-0 flex-1 overflow-y-auto pb-[110px]">{renderContent()}</div>
       <BottomNav />
     </PageLayout>

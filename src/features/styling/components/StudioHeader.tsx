@@ -62,7 +62,7 @@ const StudioHeader = ({ title = '스튜디오', logo = false, onBack, count, onS
       )}
 
       {count !== undefined ? (
-        <span className="absolute right-5">
+        <span className="absolute right-6">
           <PuzzleCountBadge count={count} />
         </span>
       ) : onSkip ? (
@@ -70,7 +70,7 @@ const StudioHeader = ({ title = '스튜디오', logo = false, onBack, count, onS
         <button
           type="button"
           onClick={onSkip}
-          className="absolute right-[26px] flex items-center gap-1 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#B2B8BD]"
+          className="absolute right-6 flex items-center gap-1 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#B2B8BD]"
         >
           건너뛰기
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
