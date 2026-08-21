@@ -84,18 +84,19 @@ const PhotoIcon = () => (
 const ClosetReceiptFailedPage = () => {
   const navigate = useNavigate();
   const results = useClosetStore((state) => state.ocrResults);
-  // 카메라로 찍어 온 사람에게 앨범을 열어주면 흐름이 끊긴다 — 왔던 길로 되돌린다
-  const receiptMethod = useClosetStore((state) => state.receiptMethod);
+  // 다시 올릴 방식은 시트에서 고르므로, 고른 값을 스토어에 반영해 다음 화면이 같은 갈래를 타게 한다
   const setReceiptMethod = useClosetStore((state) => state.setReceiptMethod);
   // 구매내역은 촬영 갈래가 없어 항상 구매내역 업로드 안내로 돌아간다
   const registerEntry = useClosetStore((state) => state.registerEntry);
-  const retryPath =
-    registerEntry === 'purchase'
-      ? '/closet/register/purchase-guide'
-      : receiptMethod === 'camera'
-        ? '/closet/register/capture-guide'
-        : '/closet/register/upload-guide';
   const [uploadSheetOpen, setUploadSheetOpen] = useState(false);
+  // 다시 시도 시트를 연 장의 원본 인덱스 — 닫히면 null
+  const [retryIndex, setRetryIndex] = useState<number | null>(null);
+
+  // 2026-08-21 시안: 다시 시도는 바로 이동하지 않고 촬영·앨범을 시트에서 고른다
+  const goRetry = (path: string) => {
+    if (retryIndex === null) return;
+    navigate(path, { state: { replaceIndex: retryIndex } });
+  };
 
   // 원본 인덱스를 함께 들고 다녀야 '영수증 N'과 다시 업로드 대상이 어긋나지 않는다
   const failed = results
@@ -269,7 +270,7 @@ const ClosetReceiptFailedPage = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => navigate(retryPath, { state: { replaceIndex: index } })}
+                    onClick={() => setRetryIndex(index)}
                     className="flex h-9 flex-1 cursor-pointer items-center justify-center gap-1 rounded-[32px] border border-[#CED1D5] bg-[#1F2124] text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#F6F7F8]"
                   >
                     <RetryIcon />
@@ -291,6 +292,44 @@ const ClosetReceiptFailedPage = () => {
             지금 안 하고 넘어가기
           </button>
         </div>
+
+        {/* 다시 시도 시트 — 전부 실패 화면의 업로드 시트와 같은 모양, 타이틀만 다르다 */}
+        <PhotoSourceSheet
+          open={retryIndex !== null}
+          onClose={() => setRetryIndex(null)}
+          title="다시 시도"
+          options={
+            registerEntry === 'purchase'
+              ? [
+                  {
+                    key: 'album',
+                    icon: <PhotoIcon />,
+                    label: '앨범에서 선택',
+                    onSelect: () => goRetry('/closet/register/purchase-guide'),
+                  },
+                ]
+              : [
+                  {
+                    key: 'camera',
+                    icon: <CameraIcon />,
+                    label: '카메라로 촬영',
+                    onSelect: () => {
+                      setReceiptMethod('camera');
+                      goRetry('/closet/register/capture-guide');
+                    },
+                  },
+                  {
+                    key: 'album',
+                    icon: <PhotoIcon />,
+                    label: '앨범에서 선택',
+                    onSelect: () => {
+                      setReceiptMethod('album');
+                      goRetry('/closet/register/upload-guide');
+                    },
+                  },
+                ]
+          }
+        />
       </div>
     </PageLayout>
   );
