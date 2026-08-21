@@ -1,76 +1,38 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
 import mannequinBack from '@/assets/images/body/back.png';
 import mannequinFront from '@/assets/images/body/front.png';
 import mannequinSide from '@/assets/images/body/side.png';
 import Button from '@/components/ui/Button';
 import CameraCapture from '@/features/onboarding/components/CameraCapture';
+import CompleteView from '@/features/onboarding/components/CompleteView';
 import OnboardingLayout from '@/features/onboarding/components/OnboardingLayout';
 import PhotoAddSheet from '@/features/onboarding/components/PhotoAddSheet';
+import PhotoCarousel from '@/features/onboarding/components/PhotoCarousel';
 import PhotoSlotGrid from '@/features/onboarding/components/PhotoSlotGrid';
 import useOnboardingStore from '@/store/onboardingStore';
 
-type Phase = 'select' | 'confirm' | 'done';
-/** 바텀시트 대상: 'add'=새 슬롯 추가, number=해당 슬롯 교체, null=닫힘 */
-type SheetTarget = 'add' | number | null;
+type Phase = 'select' | 'done';
 
 const MAX_PHOTOS = 3;
-
-/** Fisher-Yates 셔플 (원본 배열 불변) */
-const shuffle = (arr: string[]) => {
-  const result = [...arr];
-  for (let i = result.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-};
-
-/** 정면/측면/후면 안내용 캐러셀 */
-const PhotoCarousel = ({
-  imageSrcs,
-  initialSlide = 0,
-}: {
-  imageSrcs: string[];
-  initialSlide?: number;
-}) => (
-  <Swiper
-    className="h-full w-full"
-    slidesPerView="auto"
-    centeredSlides
-    spaceBetween={16}
-    initialSlide={initialSlide}
-  >
-    {imageSrcs.map((src, i) => (
-      <SwiperSlide key={`${src}-${i}`} className="!w-[62%]">
-        <div className="mx-auto flex h-full max-h-[380px] items-center justify-center overflow-hidden rounded-3xl border border-neutral-200 bg-white p-6">
-          <img src={src} alt={`체형 사진 ${i + 1}`} className="h-full w-full object-contain" />
-        </div>
-      </SwiperSlide>
-    ))}
-  </Swiper>
-);
+const SLOT_LABELS = ['정면', '측면', '후면'];
 
 const BodyUploadPage = () => {
   const navigate = useNavigate();
   const bodyPhotoUrls = useOnboardingStore((s) => s.bodyPhotoUrls);
   const setBodyPhotoUrls = useOnboardingStore((s) => s.setBodyPhotoUrls);
   const addBodyPhotoUrl = useOnboardingStore((s) => s.addBodyPhotoUrl);
-  const replaceBodyPhotoUrl = useOnboardingStore((s) => s.replaceBodyPhotoUrl);
+  const removeBodyPhotoUrl = useOnboardingStore((s) => s.removeBodyPhotoUrl);
   const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
   const [phase, setPhase] = useState<Phase>('select');
-  const [sheetTarget, setSheetTarget] = useState<SheetTarget>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
 
   const count = bodyPhotoUrls.length;
   const hasPhotos = count > 0;
   const isReady = count === MAX_PHOTOS;
-  const remaining = MAX_PHOTOS - count;
-
-  // 확인 화면에 보여줄 랜덤 순서 (선택이 바뀔 때만 다시 섞음)
-  const shuffledPhotos = useMemo(() => shuffle(bodyPhotoUrls), [bodyPhotoUrls]);
+  /** 아직 비어있는 슬롯 라벨들 (정면→측면→후면 순서로 채워진다) */
+  const missingLabels = SLOT_LABELS.slice(count);
 
   const handleSkip = () => {
     completeOnboarding();
@@ -86,40 +48,41 @@ const BodyUploadPage = () => {
     e.target.value = '';
   };
 
-  // 앨범/카메라 선택 결과를 대상 슬롯에 반영 (새 슬롯 추가 또는 해당 슬롯 교체)
-  const applyPhoto = (url: string) => {
-    if (typeof sheetTarget === 'number') replaceBodyPhotoUrl(sheetTarget, url);
-    else addBodyPhotoUrl(url);
-  };
-
   const closeAll = () => {
     setCameraOpen(false);
-    setSheetTarget(null);
+    setSheetOpen(false);
   };
 
   const handleCapture = (url: string) => {
-    applyPhoto(url);
+    addBodyPhotoUrl(url);
     closeAll();
   };
 
   return (
-    <OnboardingLayout progress={0.8} onSkip={phase === 'done' ? undefined : handleSkip}>
+    <OnboardingLayout progress={0.57} onSkip={phase === 'done' ? undefined : handleSkip}>
       <div className="flex flex-1 flex-col pb-8 pt-10">
         {/* 가이드 — 사진 0장 */}
         {phase === 'select' && !hasPhotos && (
           <>
-            <h2 className="px-6 text-center text-lg font-semibold leading-relaxed">
+            <h2 className="break-keep px-6 text-center text-lg font-semibold leading-relaxed">
               체형이 잘 보이는
               <br />
               정면, 측면, 후면 사진을 업로드 해주세요
             </h2>
-            <div className="mt-8 flex flex-1 items-center overflow-hidden">
-              <PhotoCarousel imageSrcs={[mannequinSide, mannequinFront, mannequinBack]} initialSlide={1} />
+            <div className="mt-6 overflow-hidden">
+              <PhotoCarousel
+                imageSrcs={[mannequinSide, mannequinFront, mannequinBack]}
+                initialSlide={1}
+              />
             </div>
-            <p className="mt-4 px-6 text-center text-xs text-neutral-400">
+            <p className="mt-3 flex items-center justify-center gap-1 px-6 text-center text-xs text-neutral-400">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4Z" />
+                <path d="M9 12l2 2 4-4" />
+              </svg>
               사진은 분석 후 즉시 삭제되며, 안전하게 보호돼요
             </p>
-            <div className="mt-6 px-6">
+            <div className="mt-auto px-6 pt-6">
               <label className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-black text-sm font-medium text-white">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="3" width="18" height="18" rx="3" />
@@ -142,20 +105,25 @@ const BodyUploadPage = () => {
         {/* 슬롯 그리드 — 사진 1~3장 */}
         {phase === 'select' && hasPhotos && (
           <>
-            <h2 className="px-6 text-center text-lg font-semibold">총 3장의 사진이 필요해요</h2>
-            <p className="mt-1 px-6 text-center text-sm text-neutral-400">
+            <h2 className="px-6 text-center text-lg font-semibold leading-relaxed">
+              정면, 측면, 후면
+              <br />총 3장의 사진이 필요해요
+            </h2>
+            <p className="mt-1 px-6 text-center text-xs text-neutral-400">
               3장을 모두 등록해야 다음으로 넘어갈 수 있어요
             </p>
-            <p className="mt-4 text-center text-base font-semibold text-violet-500">
-              {count}/{MAX_PHOTOS}
+            <p className="mt-4 text-center text-base font-semibold">
+              <span className="text-violet-500">{count}</span>
+              <span className="text-neutral-400">/{MAX_PHOTOS}</span>
             </p>
 
             <div className="mt-6 px-6">
               <PhotoSlotGrid
                 photos={bodyPhotoUrls}
                 max={MAX_PHOTOS}
-                onAdd={() => setSheetTarget('add')}
-                onReplace={(index) => setSheetTarget(index)}
+                labels={SLOT_LABELS}
+                onAdd={() => setSheetOpen(true)}
+                onRemove={removeBodyPhotoUrl}
               />
             </div>
 
@@ -163,70 +131,45 @@ const BodyUploadPage = () => {
               {!isReady && (
                 <div className="flex flex-col gap-0.5 rounded-xl bg-amber-50 px-4 py-3">
                   <p className="flex items-center gap-1.5 text-sm font-medium text-amber-600">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="9" />
-                      <path d="M12 8v4M12 16h.01" />
+                    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden>
+                      <circle cx="12" cy="12" r="10" fill="#F5B22B" />
+                      <path d="M12 7v6M12 16.5h.01" stroke="white" strokeWidth="2.4" strokeLinecap="round" />
                     </svg>
-                    아직 {remaining}장이 부족해요
+                    아직 <span className="text-violet-500">{missingLabels.join(', ')}</span> 사진이
+                    부족해요
                   </p>
                   <p className="pl-[22px] text-xs text-amber-500">
-                    총 3장의 사진을 모두 등록해야 해요
+                    정면, 측면, 후면 총 3장의 사진을 모두 등록해야 해요
                   </p>
                 </div>
               )}
               <Button
-                label="다음"
+                label="확인"
                 shape="pill"
                 fullWidth
                 disabled={!isReady}
-                onClick={() => setPhase('confirm')}
+                onClick={() => setPhase('done')}
               />
-            </div>
-          </>
-        )}
-
-        {/* 확인 */}
-        {phase === 'confirm' && (
-          <>
-            <h2 className="px-6 text-center text-lg font-semibold leading-relaxed">
-              업로드한 사진이 다음과 같나요?
-            </h2>
-            <div className="mt-8 flex flex-1 items-center overflow-hidden">
-              <PhotoCarousel imageSrcs={shuffledPhotos} />
-            </div>
-            <div className="mt-6 px-6">
-              <Button label="확인" shape="pill" fullWidth onClick={() => setPhase('done')} />
             </div>
           </>
         )}
 
         {/* 완료 */}
         {phase === 'done' && (
-          <>
-            <div className="flex flex-1 flex-col items-center justify-center gap-4">
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-black">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                  <path d="M5 13l4 4L19 7" />
-                </svg>
-              </span>
-              <p className="text-base font-medium">사진이 업로드되었어요</p>
-            </div>
-            <div className="mt-6 px-6">
-              <Button
-                label="다음"
-                shape="pill"
-                fullWidth
-                onClick={() => navigate('/onboarding/body/analysis')}
-              />
-            </div>
-          </>
+          <CompleteView
+            message="사진이 업로드되었어요"
+            onNext={() => navigate('/onboarding/body/analysis')}
+          />
         )}
       </div>
 
       <PhotoAddSheet
-        isOpen={sheetTarget !== null && !cameraOpen}
-        onClose={() => setSheetTarget(null)}
-        onSelect={applyPhoto}
+        isOpen={sheetOpen && !cameraOpen}
+        onClose={() => setSheetOpen(false)}
+        onSelect={(url) => {
+          addBodyPhotoUrl(url);
+          setSheetOpen(false);
+        }}
         onCamera={() => setCameraOpen(true)}
       />
 

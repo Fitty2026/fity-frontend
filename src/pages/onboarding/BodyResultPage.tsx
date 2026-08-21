@@ -61,7 +61,7 @@ const BodyResultPage = () => {
   };
 
   return (
-    <OnboardingLayout progress={1}>
+    <OnboardingLayout progress={0.57}>
       {phase === 'measurements' ? (
         <div className="flex flex-1 flex-col px-4 pb-8 pt-10">
           <h2 className="text-center text-lg font-semibold">분석이 완료되었어요</h2>

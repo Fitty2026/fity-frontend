@@ -23,6 +23,8 @@ interface OnboardingState {
   addBodyPhotoUrl: (url: string) => void;
   /** 특정 슬롯(index)의 체형 사진 교체 */
   replaceBodyPhotoUrl: (index: number, url: string) => void;
+  /** 특정 슬롯(index)의 체형 사진 삭제 (뒤 사진이 앞으로 당겨짐) */
+  removeBodyPhotoUrl: (index: number) => void;
   
   setMarketingAgreed: (agreed: boolean) => void;
   completeOnboarding: () => void;
@@ -58,6 +60,11 @@ const useOnboardingStore = create<OnboardingState>()(
       replaceBodyPhotoUrl: (index, url) =>
         set((state) => ({
           bodyPhotoUrls: state.bodyPhotoUrls.map((u, i) => (i === index ? url : u)),
+        })),
+
+      removeBodyPhotoUrl: (index) =>
+        set((state) => ({
+          bodyPhotoUrls: state.bodyPhotoUrls.filter((_, i) => i !== index),
         })),
 
       setAnalysisResult: (result) => set({ analysisResult: result }),

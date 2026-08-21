@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Button from '@/components/ui/Button';
 import HangerIcon from '@/features/onboarding/components/HangerIcon';
 import OnboardingLayout from '@/features/onboarding/components/OnboardingLayout';
 import useAnalyzeBody from '@/features/onboarding/hooks/useAnalyzeBody';
-import { getErrorMessage } from '@/lib/apiError';
 import useOnboardingStore from '@/store/onboardingStore';
 
 /** 분석 완료 화면을 보여준 뒤 결과로 넘어가기까지의 시간 */
@@ -58,25 +56,42 @@ const BodyAnalysisPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 분석 실패 — 다시 촬영/업로드로 안내
+  // 분석 실패(전신 인식 불가 포함) — 시안 '작업이 만료되었어요' 화면으로 안내
   if (error) {
     return (
-      <OnboardingLayout progress={0.9}>
-        <div className="flex flex-1 flex-col items-center justify-center gap-6 px-8 pb-24 text-center">
-          <p className="text-sm text-neutral-500">{getErrorMessage(error)}</p>
-          <Button
-            label="다시 시도하기"
-            shape="pill"
-            fullWidth
-            onClick={() => navigate('/onboarding/body/upload', { replace: true })}
-          />
+      <OnboardingLayout progress={0.57}>
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 pb-24 text-center">
+          <svg
+            width="40"
+            height="40"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-neutral-800"
+            aria-hidden
+          >
+            <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+            <path d="M12 9v4" />
+            <path d="M12 17h.01" />
+          </svg>
+          <p className="text-base font-medium">작업이 만료되었어요</p>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="text-sm text-neutral-500 underline underline-offset-2"
+          >
+            이전 화면으로 돌아가기
+          </button>
         </div>
       </OnboardingLayout>
     );
   }
 
   return (
-    <OnboardingLayout progress={0.9}>
+    <OnboardingLayout progress={0.57}>
       <div className="flex flex-1 flex-col items-center justify-center gap-10 pb-24">
         <p className="text-base font-medium">
           {done ? '체형이 분석되었어요' : 'AI가 체형을 분석하고 있어요'}

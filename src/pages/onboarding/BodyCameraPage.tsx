@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import mannequin from '@/assets/images/body/mannequin.png';
 import Button from '@/components/ui/Button';
+import CompleteView from '@/features/onboarding/components/CompleteView';
 import OnboardingLayout from '@/features/onboarding/components/OnboardingLayout';
-import PhotoFrameCard from '@/features/onboarding/components/PhotoFrameCard';
+import PhotoCarousel from '@/features/onboarding/components/PhotoCarousel';
 import useOnboardingStore from '@/store/onboardingStore';
 
-type Phase = 'guide' | 'camera' | 'done';
+/** 촬영 3연속(정면→측면→후면) → 확인 → 완료 */
+type Phase = 'camera' | 'confirm' | 'done';
+
+const SHOT_LABELS = ['정면', '측면', '후면'] as const;
+const SHOT_COUNT = SHOT_LABELS.length;
 
 const DOT_COUNT = 20;
 
@@ -30,9 +34,10 @@ const CameraDots = () => (
 
 const BodyCameraPage = () => {
   const navigate = useNavigate();
-  const bodyPhotoUrls = useOnboardingStore((s) => s.bodyPhotoUrls);
   const setBodyPhotoUrls = useOnboardingStore((s) => s.setBodyPhotoUrls);
-  const [phase, setPhase] = useState<Phase>('guide');
+  const [phase, setPhase] = useState<Phase>('camera');
+  /** 이번 세션에서 촬영한 사진 (정면→측면→후면 순서) */
+  const [shots, setShots] = useState<string[]>([]);
   const [cameraError, setCameraError] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -66,9 +71,14 @@ const BodyCameraPage = () => {
     };
   }, [phase]);
 
-  const finishWithUrls = (urls: string[]) => {
-    setBodyPhotoUrls(urls);
-    setPhase('done');
+  /** 3장이 모이면 스토어에 저장하고 확인 화면으로 */
+  const addShot = (url: string) => {
+    const next = [...shots, url];
+    setShots(next);
+    if (next.length >= SHOT_COUNT) {
+      setBodyPhotoUrls(next);
+      setPhase('confirm');
+    }
   };
 
   const handleCapture = () => {
@@ -101,17 +111,11 @@ const BodyCameraPage = () => {
     canvas.getContext('2d')?.drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
     canvas.toBlob(
       (blob) => {
-        if (blob) finishWithUrls([URL.createObjectURL(blob)]);
+        if (blob) addShot(URL.createObjectURL(blob));
       },
       'image/jpeg',
       0.9,
     );
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []);
-    if (files.length === 0) return;
-    finishWithUrls(files.map((file) => URL.createObjectURL(file)));
   };
 
   // 카메라 화면은 레이아웃 없이 전체 화면으로 표시
@@ -124,12 +128,15 @@ const BodyCameraPage = () => {
               <p className="text-sm leading-relaxed text-white">
                 카메라를 사용할 수 없어요.
                 <br />
-                갤러리에서 사진을 선택해주세요.
+                앨범에서 사진을 선택해주세요.
               </p>
-              <label className="flex h-12 cursor-pointer items-center justify-center rounded-full bg-white px-8 text-sm font-medium">
-                사진 선택
-                <input type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
-              </label>
+              <button
+                type="button"
+                onClick={() => navigate('/onboarding/body/upload', { replace: true })}
+                className="flex h-12 items-center justify-center rounded-full bg-white px-8 text-sm font-medium"
+              >
+                앨범에서 선택
+              </button>
             </div>
           ) : (
             <>
@@ -141,6 +148,10 @@ const BodyCameraPage = () => {
                 className="h-full w-full object-cover"
               />
               <CameraDots />
+              {/* 현재 촬영 차례 - 정면(1/3) → 측면(2/3) → 후면(3/3) */}
+              <p className="absolute top-5 left-1/2 -translate-x-1/2 text-sm font-medium text-white drop-shadow">
+                {SHOT_LABELS[shots.length]} 촬영 ({shots.length + 1}/{SHOT_COUNT})
+              </p>
             </>
           )}
 
@@ -148,7 +159,7 @@ const BodyCameraPage = () => {
           <button
             type="button"
             aria-label="촬영 닫기"
-            onClick={() => setPhase('guide')}
+            onClick={() => navigate(-1)}
             className="absolute left-4 top-4 text-2xl text-white"
           >
             ✕
@@ -156,18 +167,6 @@ const BodyCameraPage = () => {
 
           {!cameraError && (
             <div className="absolute bottom-8 left-0 flex w-full items-center justify-center">
-              {/* 갤러리에서 선택 */}
-              <label
-                aria-label="갤러리에서 선택"
-                className="absolute left-8 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-white/70 text-white"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="3" width="18" height="18" rx="3" />
-                  <circle cx="9" cy="9" r="2" />
-                  <path d="M21 15l-5-5-8 8" />
-                </svg>
-                <input type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
-              </label>
               {/* 셔터 */}
               <button
                 type="button"
@@ -183,41 +182,31 @@ const BodyCameraPage = () => {
   }
 
   return (
-    <OnboardingLayout progress={0.8}>
-      <div className="flex flex-1 flex-col px-6 pb-8 pt-10">
-        <h2 className="text-center text-lg font-semibold">
-          {phase === 'guide' ? '천천히 한 바퀴 돌아주세요' : '사진이 업로드되었어요'}
-        </h2>
+    <OnboardingLayout progress={0.57}>
+      <div className="flex flex-1 flex-col pb-8 pt-10">
+        {phase === 'confirm' && (
+          <>
+            <h2 className="px-6 text-center text-lg font-semibold">촬영한 사진이 다음과 같나요?</h2>
+            <div className="mt-6 overflow-hidden">
+              <PhotoCarousel imageSrcs={shots} fit="cover" />
+            </div>
+            <p className="mt-3 flex items-center justify-center gap-1 px-6 text-center text-xs text-neutral-400">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4Z" />
+                <path d="M9 12l2 2 4-4" />
+              </svg>
+              사진은 분석 후 즉시 삭제되며, 안전하게 보호돼요
+            </p>
+            <div className="mt-auto px-6 pt-6">
+              <Button label="다음" shape="pill" fullWidth onClick={() => setPhase('done')} />
+            </div>
+          </>
+        )}
 
-        <div className="mt-8 flex flex-1 items-start justify-center">
-          {phase === 'guide' ? (
-            <PhotoFrameCard imageSrc={mannequin} variant="plain" alt="한 바퀴 돌기 가이드" />
-          ) : (
-            <PhotoFrameCard imageSrc={bodyPhotoUrls[0]} alt="촬영된 체형 사진" fit="cover" showCheck />
-          )}
-        </div>
-
-        {phase === 'guide' ? (
-          <button
-            type="button"
-            onClick={() => {
-              setCameraError(false);
-              setPhase('camera');
-            }}
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-medium text-white"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
-              <circle cx="12" cy="13" r="4" />
-            </svg>
-            촬영하기
-          </button>
-        ) : (
-          <Button
-            label="다음"
-            shape="pill"
-            fullWidth
-            onClick={() => navigate('/onboarding/body/analysis')}
+        {phase === 'done' && (
+          <CompleteView
+            message="촬영이 완료되었어요"
+            onNext={() => navigate('/onboarding/body/analysis')}
           />
         )}
       </div>
