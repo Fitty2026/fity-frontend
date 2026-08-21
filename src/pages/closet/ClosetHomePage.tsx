@@ -336,7 +336,8 @@ const ClosetHomePage = () => {
             <div className="mt-[140px] flex flex-col items-center gap-3 px-6">
               <button
                 type="button"
-                onClick={() => navigate('/closet/register')}
+                // 화면 이동이 아니라 아이템 추가 시트를 연다 (현황 카드의 + 버튼과 같은 동작)
+                onClick={() => setShowAddSheet(true)}
                 className="flex h-20 w-full cursor-pointer items-center gap-10 rounded-2xl bg-white/20 p-6 text-left shadow-[0_8px_16px_0_rgba(0,0,0,0.08)]"
               >
                 <PlusCircleIcon />
