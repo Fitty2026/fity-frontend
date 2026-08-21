@@ -88,7 +88,6 @@ const ClosetReceiptFailedPage = () => {
   const setReceiptMethod = useClosetStore((state) => state.setReceiptMethod);
   // 구매내역은 촬영 갈래가 없어 항상 구매내역 업로드 안내로 돌아간다
   const registerEntry = useClosetStore((state) => state.registerEntry);
-  const [uploadSheetOpen, setUploadSheetOpen] = useState(false);
   // 다시 시도 시트를 연 장의 원본 인덱스 — 닫히면 null
   const [retryIndex, setRetryIndex] = useState<number | null>(null);
 
@@ -105,8 +104,6 @@ const ClosetReceiptFailedPage = () => {
 
   // 한 건도 못 읽었으면 보여줄 목록이 없다
   const nothingRecognized = results.length > 0 && failed.length === results.length;
-  // 전부 실패한 사유 — 장별로 같은 이유인 게 보통이라 첫 사유를 대표로 보여준다
-  const failReason = failed[0]?.result.failReason;
 
   if (nothingRecognized) {
     return (
@@ -122,80 +119,26 @@ const ClosetReceiptFailedPage = () => {
           {/* 안내 블록 375×128 — 진행 바 아래 80 (Figma top 187), 아이콘↔문구 24 */}
           <div className="mt-20 flex flex-col items-center gap-6">
             <WarnIcon />
-            {/* 문구 375×56, 줄 간격 4 */}
+            {/* 문구 375×56 — 타이틀 30 + gap 4 + 링크 22 */}
             <div className="flex w-full flex-col items-center gap-1">
               {/* Title/T3 */}
               <p className="w-full text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
                 인식된 상품이 없어요
               </p>
-              {/* 실패 사유 — 에러 코드별 안내가 여기서만 보인다(전부 실패가 가장 흔한 갈래).
-                  배치는 시안 미수급이라 임시 */}
-              {failReason && (
-                <p className="w-full text-center text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#6F7881]">
-                  {failReason}
-                </p>
-              )}
-              {/* 복구 수단 두 개를 한 줄에 — 직접 입력은 일부 실패 목록에는 있는 수단이라
-                  전부 실패에서만 없으면 안 된다 */}
-              <div className="flex items-center justify-center gap-4">
-                <button
-                  type="button"
-                  onClick={() =>
-                    navigate('/closet/register/manual?receipt=1', { state: { from: 'failed' } })
-                  }
-                  className="cursor-pointer text-center text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#5A6169] underline"
-                >
-                  직접 입력하기
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setUploadSheetOpen(true)}
-                  className="cursor-pointer text-center text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#5A6169] underline"
-                >
-                  다시 업로드하기
-                </button>
-              </div>
+              {/* Body/B7 + underline — 시안은 복구 수단을 이 링크 하나로만 둔다.
+                  한 건도 못 읽었으니 다시 올릴 곳은 첫 장(?receipt=1)이다 */}
+              <button
+                type="button"
+                onClick={() =>
+                  navigate('/closet/register/manual?receipt=1', { state: { from: 'failed' } })
+                }
+                className="w-full cursor-pointer text-center text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#5A6169] underline"
+              >
+                다시 업로드하기
+              </button>
             </div>
           </div>
 
-          {/* 이미지 업로드 시트 375×294 — radius 상단 56, padding 32/0/40, gap 40.
-              구매내역은 촬영 갈래가 없어 앨범 한 줄만 둔다 */}
-          <PhotoSourceSheet
-            open={uploadSheetOpen}
-            onClose={() => setUploadSheetOpen(false)}
-            title="이미지 업로드"
-            options={
-              registerEntry === 'purchase'
-                ? [
-                    {
-                      key: 'album',
-                      icon: <PhotoIcon />,
-                      label: '앨범에서 선택',
-                      onSelect: () => navigate('/closet/register/purchase-guide'),
-                    },
-                  ]
-                : [
-                    {
-                      key: 'camera',
-                      icon: <CameraIcon />,
-                      label: '카메라로 촬영',
-                      onSelect: () => {
-                        setReceiptMethod('camera');
-                        navigate('/closet/register/capture-guide');
-                      },
-                    },
-                    {
-                      key: 'album',
-                      icon: <PhotoIcon />,
-                      label: '앨범에서 선택',
-                      onSelect: () => {
-                        setReceiptMethod('album');
-                        navigate('/closet/register/upload-guide');
-                      },
-                    },
-                  ]
-            }
-          />
         </div>
       </PageLayout>
     );
