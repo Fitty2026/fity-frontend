@@ -18,9 +18,9 @@ const PhotoFrameCard = ({
   variant = 'card',
   alt = '체형 안내',
 }: PhotoFrameCardProps) => (
-  <div className="flex flex-col items-center gap-3">
+  <div className="flex w-full flex-col items-center gap-3">
     <div
-      className={`relative flex h-[340px] w-[220px] items-center justify-center overflow-hidden rounded-3xl ${
+      className={`relative flex aspect-[246/420] w-[68%] max-w-[264px] items-center justify-center overflow-hidden rounded-3xl ${
         variant === 'card' ? 'border border-neutral-100 bg-neutral-100' : ''
       }`}
     >
@@ -39,7 +39,7 @@ const PhotoFrameCard = ({
         </span>
       )}
     </div>
-    <p className="flex items-center gap-1 text-xs text-neutral-400">
+    <p className="flex items-center gap-1 whitespace-nowrap text-xs text-neutral-400">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4Z" />
         <path d="M9 12l2 2 4-4" />

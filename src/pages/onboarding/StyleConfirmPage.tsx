@@ -23,7 +23,7 @@ const StyleConfirmPage = () => {
   const handleNext = () => navigate('/onboarding/body');
 
   return (
-    <OnboardingLayout progress={0.55}>
+    <OnboardingLayout progress={0.28}>
       <div className="flex flex-1 flex-col pb-8 pt-10">
         <div className="px-6 text-center">
           <h2 className="text-lg font-semibold">{nickname}님의 취향을 모아왔어요!</h2>

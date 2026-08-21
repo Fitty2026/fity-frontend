@@ -64,10 +64,11 @@ export const analyzeBody = async (
   form.append('images', sideImage, 'side.jpg');
   form.append('images', backImage, 'back.jpg');
   // FormData면 axios가 boundary 포함 multipart 헤더를 자동 설정하도록 기본 json 헤더 제거
+  // AI 분석은 10초를 넘길 수 있어 이 요청만 타임아웃을 넉넉히 잡는다
   const { data } = await api.post<ApiResponse<BodyAnalyzeResult>>(
     '/api/v1/body-profiles/analyze',
     form,
-    { headers: { 'Content-Type': undefined } },
+    { headers: { 'Content-Type': undefined }, timeout: 60000 },
   );
   return data.result;
 };
