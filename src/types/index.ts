@@ -86,6 +86,7 @@ export interface StylingRequest {
 // ============================================================
 export interface Outfit {
   id: string;
+  outfitResultId?: string;
   imageUrl: string;        // AI 합성 실사 이미지
   items: ClothingItem[];
   styleTags: string[];

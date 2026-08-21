@@ -180,7 +180,7 @@ const MyOutfitDetailPage = () => {
         ) : (
           <button
             onClick={() => navigate(`/myoutfit/edit/${outfit.id}`)}
-            className="bg-[#F6F7F8] rounded-[32px] py-[16px] text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
+            className="bg-[#F6F7F8] rounded-[32px] mb-[24px] py-[16px] text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]"
           >
             수정하기
           </button>
