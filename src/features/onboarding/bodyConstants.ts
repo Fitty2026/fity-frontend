@@ -1,7 +1,8 @@
 import natural from '@/assets/images/body/natural.png';
 import straight from '@/assets/images/body/straight.png';
 import wave from '@/assets/images/body/wave.png';
-import type { BodyType } from '@/store/onboardingStore';
+
+export type BodyType = 'straight' | 'wave' | 'natural';
 
 export interface BodyTypeOption {
   type: BodyType;
