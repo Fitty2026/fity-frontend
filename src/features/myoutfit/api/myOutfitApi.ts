@@ -141,13 +141,9 @@ const toOutfit = (outfit: SavedOutfitRaw): Outfit => {
 };
 
 /** SAVED-02 저장한 코디 목록 조회 */
-export const getMyOutfits = async (
-  page = 1,
-  size = 10,
-  likedOnly = false,
-): Promise<MyOutfitList> => {
+export const getMyOutfits = async (page = 1, size = 10): Promise<MyOutfitList> => {
   const { data } = await api.get<ApiResponse<SavedOutfitListRaw>>('/api/v1/outfits/saved', {
-    params: { page, size, ...(likedOnly ? { liked: true } : {}) },
+    params: { page, size },
   });
   // result가 비어 오는 경우(빈 목록·null)를 대비해 옵셔널로 접근한다
   const result: SavedOutfitListRaw = data.result ?? {};

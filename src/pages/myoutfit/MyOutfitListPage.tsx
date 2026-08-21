@@ -18,6 +18,10 @@ const MyOutfitListPage = () => {
   const outfits = useMemo(() => data?.pages.flatMap((page) => page.outfits) ?? [], [data]);
 
   useEffect(() => {
+    if (likedOnly && hasNextPage && !isFetchingNextPage) void fetchNextPage();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, likedOnly]);
+
+  useEffect(() => {
     const target = loadMoreRef.current;
     if (!target || !hasNextPage) return;
     const observer = new IntersectionObserver(
@@ -43,6 +47,10 @@ const MyOutfitListPage = () => {
           onRetry={() => void refetch()}
         />
       );
+    }
+
+    if (likedOnly && outfits.length === 0 && (hasNextPage || isFetchingNextPage)) {
+      return <LoadingScreen message="좋아요한 코디를 불러오는 중이에요." />;
     }
 
     if (outfits.length === 0) {

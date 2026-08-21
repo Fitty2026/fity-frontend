@@ -21,16 +21,26 @@ export const myOutfitKeys = {
 const useMyOutfits = (likedOnly = false) =>
   useInfiniteQuery({
     queryKey: myOutfitKeys.list(likedOnly),
-    queryFn: ({ pageParam }) => getMyOutfits(pageParam, 10, likedOnly),
+    queryFn: ({ pageParam }) => getMyOutfits(pageParam),
     initialPageParam: 1,
     getNextPageParam: (lastPage, pages) => {
       const loadedCount = pages.reduce((count, page) => count + page.outfits.length, 0);
       return loadedCount < lastPage.total ? lastPage.page + 1 : undefined;
     },
-    select: (data) => ({
-      ...data,
-      outfits: data.pages.flatMap((page) => page.outfits),
-    }),
+    select: (data) => {
+      const pages = likedOnly
+        ? data.pages.map((page) => ({
+            ...page,
+            outfits: page.outfits.filter(({ isLiked }) => isLiked),
+          }))
+        : data.pages;
+
+      return {
+        ...data,
+        pages,
+        outfits: pages.flatMap((page) => page.outfits),
+      };
+    },
   });
 
 export default useMyOutfits;
