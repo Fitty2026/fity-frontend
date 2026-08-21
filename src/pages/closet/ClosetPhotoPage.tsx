@@ -9,20 +9,6 @@ const CloseIcon = () => (
   </svg>
 );
 
-/** 갤러리 — 48×48, stroke #F6F7F8 */
-const GalleryIcon = () => (
-  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M4.5 31.5L14.818 21.182C15.2359 20.7641 15.7319 20.4327 16.2779 20.2065C16.8239 19.9804 17.409 19.864 18 19.864C18.591 19.864 19.1761 19.9804 19.7221 20.2065C20.2681 20.4327 20.7641 20.7641 21.182 21.182L31.5 31.5M28.5 28.5L31.318 25.682C31.7359 25.2641 32.2319 24.9327 32.7779 24.7065C33.3239 24.4804 33.909 24.364 34.5 24.364C35.091 24.364 35.6761 24.4804 36.2221 24.7065C36.7681 24.9327 37.2641 25.2641 37.682 25.682L43.5 31.5M7.5 39H40.5C41.2956 39 42.0587 38.6839 42.6213 38.1213C43.1839 37.5587 43.5 36.7956 43.5 36V12C43.5 11.2044 43.1839 10.4413 42.6213 9.87868C42.0587 9.31607 41.2956 9 40.5 9H7.5C6.70435 9 5.94129 9.31607 5.37868 9.87868C4.81607 10.4413 4.5 11.2044 4.5 12V36C4.5 36.7956 4.81607 37.5587 5.37868 38.1213C5.94129 38.6839 6.70435 39 7.5 39ZM28.5 16.5H28.516V16.516H28.5V16.5ZM29.25 16.5C29.25 16.6989 29.171 16.8897 29.0303 17.0303C28.8897 17.171 28.6989 17.25 28.5 17.25C28.3011 17.25 28.1103 17.171 27.9697 17.0303C27.829 16.8897 27.75 16.6989 27.75 16.5C27.75 16.3011 27.829 16.1103 27.9697 15.9697C28.1103 15.829 28.3011 15.75 28.5 15.75C28.6989 15.75 28.8897 15.829 29.0303 15.9697C29.171 16.1103 29.25 16.3011 29.25 16.5Z" stroke="#F6F7F8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-/** 저장 — 48×48, stroke #F6F7F8 */
-const SaveIcon = () => (
-  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M18 7.5H13.824C12.8619 7.50017 11.9252 7.8087 11.1513 8.3803C10.3774 8.9519 9.80707 9.75648 9.524 10.676L4.7 26.354C4.56787 26.7822 4.50046 27.2278 4.5 27.676V36C4.5 37.1935 4.97411 38.3381 5.81802 39.182C6.66193 40.0259 7.80653 40.5 9 40.5H39C40.1935 40.5 41.3381 40.0259 42.182 39.182C43.0259 38.3381 43.5 37.1935 43.5 36V27.676C43.5 27.228 43.432 26.782 43.3 26.354L38.48 10.676C38.1969 9.75648 37.6266 8.9519 36.8527 8.3803C36.0788 7.8087 35.1421 7.50017 34.18 7.5H30M4.5 27H12.22C13.0556 27.0002 13.8746 27.2331 14.5853 27.6725C15.2961 28.1119 15.8704 28.7406 16.244 29.488L16.756 30.512C17.1298 31.2597 17.7044 31.8886 18.4155 32.328C19.1266 32.7675 19.9461 33.0002 20.782 33H27.218C28.0539 33.0002 28.8734 32.7675 29.5845 32.328C30.2956 31.8886 30.8702 31.2597 31.244 30.512L31.756 29.488C32.1298 28.7403 32.7044 28.1114 33.4155 27.672C34.1266 27.2325 34.9461 26.9998 35.782 27H43.5M24 6V22.5M30 16.5L24 22.5L18 16.5" stroke="#F6F7F8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
 /** 셔터 — 72×72, white (링 + 안쪽 원) */
 const ShutterIcon = () => (
   <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -51,13 +37,14 @@ const FlashIcon = ({ on }: { on: boolean }) => (
 
 /**
  * 옷 사진 직접 등록 — 카메라 촬영 화면.
- * 상단 닫기/플래시, 중앙 프리뷰, 하단 갤러리/셔터/저장.
+ * 상단 닫기/플래시, 중앙 프리뷰, 하단 셔터.
  */
 const ClosetPhotoPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [flashOn, setFlashOn] = useState(false);
-  const fileInput = useRef<HTMLInputElement>(null);
+  // 토치를 켜고 끄려면 프리뷰가 물고 있는 비디오 트랙이 필요하다
+  const trackRef = useRef<MediaStreamTrack | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // 다른 화면이 옷 사진을 찍으러 보낸 경우 — 돌아갈 주소와 그때 들고 갈 값을 함께 받는다
@@ -68,7 +55,7 @@ const ClosetPhotoPage = () => {
   /**
    * 촬영/갤러리 선택 후 이동.
    * 부른 화면이 있으면 사진만 얹어 그리로 되돌리고(편집 중이던 값은 returnState로 보존),
-   * 없으면 기존 등록 완료 경로를 탄다.
+   * 없으면 태그 확인 화면으로 이어진다.
    */
   const goNext = (photo: string) => {
     if (caller?.returnTo) {
@@ -78,7 +65,8 @@ const ClosetPhotoPage = () => {
       });
       return;
     }
-    navigate('/closet/register/added');
+    // 직접 등록으로 들어온 경우 — 찍은 사진을 들고 태그 확인으로
+    navigate('/closet/register/tags', { state: { photos: [photo] } });
   };
 
   // 후면 카메라 프리뷰 — 언마운트 시 트랙을 반드시 정리한다(영수증 촬영 화면과 같은 방식)
@@ -97,6 +85,7 @@ const ClosetPhotoPage = () => {
           stream.getTracks().forEach((track) => track.stop());
           return;
         }
+        trackRef.current = stream.getVideoTracks()[0] ?? null;
         if (videoRef.current) videoRef.current.srcObject = stream;
       } catch {
         // 권한 거부 / 카메라 없음 / http 환경(보안 컨텍스트 아님) → 온 곳으로 되돌린다
@@ -108,9 +97,29 @@ const ClosetPhotoPage = () => {
 
     return () => {
       cancelled = true;
+      trackRef.current = null;
       stream?.getTracks().forEach((track) => track.stop());
     };
   }, [navigate]);
+
+  /**
+   * 플래시 — 카메라 트랙의 토치를 켜고 끈다.
+   * torch는 기기·브라우저를 타는 기능이라(데스크톱 웹캠 등) 지원하지 않으면 표시만 바뀐다.
+   */
+  const toggleFlash = async () => {
+    const next = !flashOn;
+    setFlashOn(next);
+    const track = trackRef.current;
+    if (!track) return;
+    const capabilities = track.getCapabilities?.() as { torch?: boolean } | undefined;
+    if (!capabilities?.torch) return;
+    try {
+      await track.applyConstraints({ advanced: [{ torch: next } as MediaTrackConstraintSet] });
+    } catch {
+      // 적용에 실패하면 켜진 것으로 두지 않는다
+      setFlashOn(false);
+    }
+  };
 
   /** 셔터 — 현재 프레임을 잡아 사진으로 넘긴다 */
   const handleShoot = () => {
@@ -128,11 +137,6 @@ const ClosetPhotoPage = () => {
       'image/jpeg',
       0.92,
     );
-  };
-
-  const handlePickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) goNext(URL.createObjectURL(file));
   };
 
   return (
@@ -161,7 +165,7 @@ const ClosetPhotoPage = () => {
         {/* 플래시 — 상태바 아래 14px, 우 24px. 켜짐/꺼짐 토글 */}
         <button
           type="button"
-          onClick={() => setFlashOn((v) => !v)}
+          onClick={toggleFlash}
           className="absolute right-6 cursor-pointer"
           style={{ top: 'calc(env(safe-area-inset-top, 0px) + 14px)' }}
           aria-label={flashOn ? '플래시 끄기' : '플래시 켜기'}
@@ -179,29 +183,6 @@ const ClosetPhotoPage = () => {
           aria-label="촬영"
         >
           <ShutterIcon />
-        </button>
-
-        {/* 갤러리 — 좌 24, 하단 40. 파일 선택 후 분석으로 */}
-        <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePickFile} />
-        <button
-          type="button"
-          onClick={() => fileInput.current?.click()}
-          className="absolute left-6 cursor-pointer"
-          style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 40px)' }}
-          aria-label="갤러리"
-        >
-          <GalleryIcon />
-        </button>
-
-        {/* 저장 — 우 24, 하단 40 (갤러리와 대칭). 동작 정의 대기 → 임시로 다음 화면 진행 */}
-        <button
-          type="button"
-          onClick={handleShoot}
-          className="absolute right-6 cursor-pointer"
-          style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 40px)' }}
-          aria-label="저장"
-        >
-          <SaveIcon />
         </button>
       </div>
     </PageLayout>

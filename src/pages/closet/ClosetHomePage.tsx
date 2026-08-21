@@ -48,10 +48,10 @@ const PlusSmallIcon = () => (
   </svg>
 );
 
-/** 빈 옷장 점선 원 — 60×60 */
+/** 빈 옷장 점선 원 — 48×48, stroke 3 #1F2124 */
 const EmptyDashedIcon = () => (
-  <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M45.9101 45.9101C50.1297 41.6905 52.5003 35.9675 52.5003 30.0001C52.5003 24.0327 50.1297 18.3097 45.9101 14.0901C41.6905 9.87054 35.9675 7.5 30.0001 7.5C24.0327 7.5 18.3097 9.87054 14.0901 14.0901M45.9101 45.9101C41.6905 50.1297 35.9675 52.5003 30.0001 52.5003C24.0327 52.5003 18.3097 50.1297 14.0901 45.9101C9.87054 41.6905 7.5 35.9675 7.5 30.0001C7.5 24.0327 9.87054 18.3097 14.0901 14.0901M45.9101 45.9101L14.0901 14.0901" stroke="#1F2124" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="8 8" />
+  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M37.5763 37.5765C41.177 33.9758 43.1998 29.0922 43.1998 24C43.1998 18.9079 41.177 14.0243 37.5763 10.4236C33.9756 6.8229 29.092 4.80005 23.9998 4.80005C18.9076 4.80005 14.0241 6.8229 10.4234 10.4236M37.5763 37.5765C33.9756 41.1772 29.092 43.2001 23.9998 43.2001C18.9076 43.2001 14.0241 41.1772 10.4234 37.5765C6.82266 33.9758 4.7998 29.0922 4.7998 24C4.7998 18.9079 6.82266 14.0243 10.4234 10.4236M37.5763 37.5765L10.4234 10.4236" stroke="#1F2124" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="8 8" />
   </svg>
 );
 
@@ -95,10 +95,50 @@ const SheetPencilIcon = () => (
   </svg>
 );
 
-/** 아이템 추가 시트의 등록 방식 — /closet/register의 두 갈래와 같다 */
+/** 카메라 — 32×32, stroke 2.2 #34363C */
+const SheetCameraIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path
+      d="M9.10267 8.23361C8.86265 8.61349 8.54243 8.93625 8.16445 9.17925C7.78647 9.42225 7.3599 9.57961 6.91467 9.64027C6.408 9.71227 5.90533 9.78961 5.40267 9.87361C3.99867 10.1069 3 11.3429 3 12.7656V24.0003C3 24.7959 3.31607 25.559 3.87868 26.1216C4.44129 26.6842 5.20435 27.0003 6 27.0003H26C26.7957 27.0003 27.5587 26.6842 28.1213 26.1216C28.6839 25.559 29 24.7959 29 24.0003V12.7656C29 11.3429 28 10.1069 26.5973 9.87361C26.0943 9.78979 25.5902 9.71201 25.0853 9.64027C24.6403 9.57942 24.214 9.42198 23.8363 9.17899C23.4586 8.936 23.1385 8.61333 22.8987 8.23361L21.8027 6.47894C21.5565 6.07907 21.2176 5.7444 20.8147 5.50325C20.4118 5.26211 19.9567 5.1216 19.488 5.09361C17.1643 4.9688 14.8357 4.9688 12.512 5.09361C12.0433 5.1216 11.5882 5.26211 11.1853 5.50325C10.7824 5.7444 10.4435 6.07907 10.1973 6.47894L9.10267 8.23361Z"
+      stroke="#34363C"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M22 17C22 18.5913 21.3679 20.1174 20.2426 21.2426C19.1174 22.3679 17.5913 23 16 23C14.4087 23 12.8826 22.3679 11.7574 21.2426C10.6321 20.1174 10 18.5913 10 17C10 15.4087 10.6321 13.8826 11.7574 12.7574C12.8826 11.6321 14.4087 11 16 11C17.5913 11 19.1174 11.6321 20.2426 12.7574C21.3679 13.8826 22 15.4087 22 17ZM25 14H25.0107V14.0107H25V14Z"
+      stroke="#34363C"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+/** 사진(앨범) — 32×32, stroke 2 #1F2124 */
+const SheetPhotoIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path
+      d="M3 21L9.87867 14.1213C10.1572 13.8428 10.488 13.6218 10.8519 13.471C11.2159 13.3202 11.606 13.2426 12 13.2426C12.394 13.2426 12.7841 13.3202 13.1481 13.471C13.512 13.6218 13.8428 13.8428 14.1213 14.1213L21 21M19 19L20.8787 17.1213C21.1572 16.8428 21.488 16.6218 21.8519 16.471C22.2159 16.3202 22.606 16.2426 23 16.2426C23.394 16.2426 23.7841 16.3202 24.1481 16.471C24.512 16.6218 24.8428 16.8428 25.1213 17.1213L29 21M5 26H27C27.5304 26 28.0391 25.7893 28.4142 25.4142C28.7893 25.0391 29 24.5304 29 24V8C29 7.46957 28.7893 6.96086 28.4142 6.58579C28.0391 6.21071 27.5304 6 27 6H5C4.46957 6 3.96086 6.21071 3.58579 6.58579C3.21071 6.96086 3 7.46957 3 8V24C3 24.5304 3.21071 25.0391 3.58579 25.4142C3.96086 25.7893 4.46957 26 5 26ZM19 11H19.0107V11.0107H19V11ZM19.5 11C19.5 11.1326 19.4473 11.2598 19.3536 11.3536C19.2598 11.4473 19.1326 11.5 19 11.5C18.8674 11.5 18.7402 11.4473 18.6464 11.3536C18.5527 11.2598 18.5 11.1326 18.5 11C18.5 10.8674 18.5527 10.7402 18.6464 10.6464C18.7402 10.5527 18.8674 10.5 19 10.5C19.1326 10.5 19.2598 10.5527 19.3536 10.6464C19.4473 10.7402 19.5 10.8674 19.5 11Z"
+      stroke="#1F2124"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+/**
+ * 아이템 추가 시트의 방식 4종.
+ * 영수증·구매내역은 /closet/register의 두 갈래로 이어진다.
+ * 카메라·앨범은 시안만 반영 — 갈 화면 미정(entry 없음)이라 아직 이동하지 않는다.
+ */
 const ADD_OPTIONS = [
-  { key: 'receipt' as const, icon: <SheetReceiptIcon />, label: '영수증 불러오기' },
-  { key: 'purchase' as const, icon: <SheetPencilIcon />, label: '구매내역 불러오기' },
+  // 마지막 행만 72 (시안 그대로)
+  { key: 'camera' as const, entry: undefined, icon: <SheetCameraIcon />, label: '카메라로 촬영', height: 80 },
+  { key: 'album' as const, entry: undefined, icon: <SheetPhotoIcon />, label: '앨범에서 선택', height: 80 },
+  { key: 'receipt' as const, entry: 'receipt' as const, icon: <SheetReceiptIcon />, label: '영수증 불러오기', height: 80 },
+  { key: 'purchase' as const, entry: 'purchase' as const, icon: <SheetPencilIcon />, label: '구매내역 불러오기', height: 72 },
 ];
 
 /** 좋아요 하트 — 16×16, stroke #1F2124. 누르면 채워진다 */
@@ -279,28 +319,29 @@ const ClosetHomePage = () => {
         ) : (
           /* 빈 상태 */
           <div className="flex flex-1 flex-col overflow-y-auto pb-[92px]">
-            {/* 점선 아이콘 — 상단바 아래 156, 중앙 */}
-            <div className="mt-[156px] flex flex-col items-center">
+            {/* 점선 아이콘 — 상단바 아래 84, 중앙. 아이콘↔문구 24 */}
+            <div className="mt-[84px] flex flex-col items-center">
               <EmptyDashedIcon />
-              <p className="mt-4 text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
-                아직 등록된 옷이 없어요
+              <p className="mt-6 text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
+                아직 등록된 아이템이 없어요
               </p>
               <p className="mt-2 text-center text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#5A6169]">
-                첫 번째 옷을 추가하고
+                첫 번째 아이템을 추가하고
                 <br />
                 나만의 스타일 데이터를 쌓아보세요
               </p>
             </div>
 
-            {/* 액션 버튼 2개 — 326×80, radius16, bg #FFF 20%, shadow 0/8/16 8% */}
-            <div className="mt-16 flex flex-col items-center gap-[11px] px-6">
+            {/* 액션 버튼 2개 — 327×80, radius16, bg #FFF 20%, shadow 0/8/16 8%. 문구 아래 140, 버튼 사이 12 */}
+            <div className="mt-[140px] flex flex-col items-center gap-3 px-6">
               <button
                 type="button"
-                onClick={() => navigate('/closet/register')}
+                // 화면 이동이 아니라 아이템 추가 시트를 연다 (현황 카드의 + 버튼과 같은 동작)
+                onClick={() => setShowAddSheet(true)}
                 className="flex h-20 w-full cursor-pointer items-center gap-10 rounded-2xl bg-white/20 p-6 text-left shadow-[0_8px_16px_0_rgba(0,0,0,0.08)]"
               >
                 <PlusCircleIcon />
-                <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">옷 추가하기</span>
+                <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">아이템 추가하기</span>
               </button>
               <button
                 type="button"
@@ -333,26 +374,30 @@ const ClosetHomePage = () => {
                 onClick={() => setShowAddSheet(false)}
                 className="absolute inset-0 cursor-default bg-black/40"
               />
-              {/* 시트 — Figma: bg #F6F7F8, radius top 40, padding 40/40, gap 24, shadow 0/-1/16 #000 16% */}
+              {/* 시트 — Figma: bg #F6F7F8, radius top 56, padding 32/32, 제목↔목록 40, shadow 0/-1/16 #000 16% */}
               <div
-                className="absolute inset-x-0 bottom-0 flex flex-col rounded-t-[40px] bg-[#F6F7F8] pt-10 pb-[calc(40px+env(safe-area-inset-bottom,0px))] shadow-[0_-1px_16px_0_rgba(0,0,0,0.16)]"
+                className="absolute inset-x-0 bottom-0 flex flex-col rounded-t-[56px] bg-[#F6F7F8] pt-8 pb-[calc(32px+env(safe-area-inset-bottom,0px))] shadow-[0_-1px_16px_0_rgba(0,0,0,0.16)]"
                 style={{ animation: 'addSheetUp 250ms ease' }}
               >
-              <h2 className="mb-6 text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
-                아이템 추가하기
+              <h2 className="mb-10 text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
+                아이템 추가
               </h2>
-              {/* 등록 방식 — 등록 화면과 같은 두 갈래. 어느 쪽으로 들어왔는지 권한 안내까지 넘긴다 */}
+              {/* 방식 목록 — 행마다 상단 구분선. 영수증·구매내역은 어느 쪽으로 들어왔는지 권한 안내까지 넘긴다 */}
               {ADD_OPTIONS.map((option) => (
                 <button
                   key={option.key}
                   type="button"
                   // 권한 안내를 이미 봤으면 그 화면은 건너뛴다
-                  onClick={() =>
-                    navigate(registerStartPath(option.key, permissionSeen), {
-                      state: { entry: option.key },
-                    })
+                  onClick={
+                    option.entry
+                      ? () =>
+                          navigate(registerStartPath(option.entry, permissionSeen), {
+                            state: { entry: option.entry },
+                          })
+                      : undefined // TODO: 카메라·앨범 진입 화면 정해지면 연결
                   }
-                  className="flex h-20 w-full items-center gap-10 pl-6 pr-3.5 text-left cursor-pointer"
+                  style={{ height: option.height }}
+                  className="flex w-full shrink-0 items-center gap-10 border-t border-[#E6E8EA] pl-6 pr-3.5 text-left cursor-pointer"
                 >
                   {option.icon}
                   <span className="text-[16px] font-bold leading-[1.6] tracking-[-0.02em] text-[#1F2124]">

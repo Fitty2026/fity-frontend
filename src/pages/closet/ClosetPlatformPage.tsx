@@ -14,6 +14,11 @@ const LOGOS: Record<string, string> = {
   ZIGZAG: zigzagLogo,
 };
 
+/** 흰 배경 로고는 중앙 박스에서 경계가 안 보여 테두리를 준다 (Figma: 1px #CED1D5) */
+const LOGO_BORDERS: Record<string, string> = {
+  ABLY: '1px solid #CED1D5',
+};
+
 /** 고르지 않은 박스는 로고 위에 이만큼 색을 눌러 둔다 (Figma #00000029) */
 const DIM = 'rgba(0, 0, 0, 0.16)';
 
@@ -295,6 +300,7 @@ const ClosetPlatformPage = () => {
                 backgroundImage: centerSelected
                   ? `url(${LOGOS[selected.name]})`
                   : `linear-gradient(0deg, ${DIM}, ${DIM}), linear-gradient(0deg, ${LOGO_VEIL}, ${LOGO_VEIL}), url(${LOGOS[selected.name]})`,
+                border: LOGO_BORDERS[selected.name],
               }}
             />
             <span

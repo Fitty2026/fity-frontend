@@ -43,6 +43,8 @@ import ClosetItemDetailPage from '../pages/closet/ClosetItemDetailPage';
 import ClosetItemDeletePage from '../pages/closet/ClosetItemDeletePage';
 import ClosetItemListPage from '../pages/closet/ClosetItemListPage';
 import ClosetIntroPage from '../pages/closet/ClosetIntroPage';
+import ClosetTagConfirmPage from '../pages/closet/ClosetTagConfirmPage';
+import ClosetTagEditPage from '../pages/closet/ClosetTagEditPage';
 
 // 3. 홈
 
@@ -333,6 +335,23 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <ClosetPhotoPage />
+          </ProtectedRoute>
+        ),
+      },
+      // 카메라·앨범으로 올린 옷 사진의 태그 확인·수정 (영수증·구매내역은 product-images/edit가 맡는다)
+      {
+        path: '/closet/register/tags',
+        element: (
+          <ProtectedRoute>
+            <ClosetTagConfirmPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/closet/register/tags/edit',
+        element: (
+          <ProtectedRoute>
+            <ClosetTagEditPage />
           </ProtectedRoute>
         ),
       },
