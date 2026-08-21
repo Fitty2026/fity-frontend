@@ -1,0 +1,72 @@
+@keyframes my-outfit-heart-like {
+  0% {
+    transform: scale(0.82);
+  }
+  45% {
+    transform: scale(1.35) rotate(-8deg);
+  }
+  72% {
+    transform: scale(0.94) rotate(3deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes my-outfit-heart-unlike {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(0.72);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes my-outfit-card-remove {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+}
+
+.my-outfit-heart {
+  display: block;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.my-outfit-heart-path--unliked {
+  transition: stroke 140ms ease-out;
+}
+
+.my-outfit-like-button:hover .my-outfit-heart-path--unliked,
+.my-outfit-like-button:focus-visible .my-outfit-heart-path--unliked {
+  stroke: #ef4444;
+}
+
+.my-outfit-heart--like {
+  animation: my-outfit-heart-like 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.my-outfit-heart--unlike {
+  animation: my-outfit-heart-unlike 240ms ease-out;
+}
+
+.my-outfit-card--removing {
+  animation: my-outfit-card-remove 170ms ease-in forwards;
+  will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .my-outfit-heart--like,
+  .my-outfit-heart--unlike {
+    animation: none;
+  }
+}

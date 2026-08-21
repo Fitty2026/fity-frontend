@@ -90,7 +90,7 @@ const ConsentPage = () => {
   };
 
   return (
-    <OnboardingLayout progress={0.15}>
+    <OnboardingLayout progress={0.1}>
       {showIntro ? (
         <BlobIntro message="이제 시작해요" size="sm" />
       ) : (

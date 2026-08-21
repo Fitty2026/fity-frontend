@@ -1,54 +1,12 @@
-import { useNavigate } from 'react-router-dom';
-import useClosets from '../hooks/useClosets';
-
-/** 뒤로가기 — 24×24 */
-const BackIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M15.75 19.5L8.25 12L15.75 4.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-/** 카운트 옷걸이 — 16×16, #1F2124 */
-const CountIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M15.0982 10.7L8.83321 6L10.2995 4.9C10.3617 4.85349 10.4122 4.79313 10.447 4.7237C10.4818 4.65427 10.5 4.57768 10.5001 4.5C10.5001 3.83696 10.2367 3.20107 9.76785 2.73223C9.29901 2.26339 8.66312 2 8.00008 2C7.33704 2 6.70115 2.26339 6.23231 2.73223C5.76347 3.20107 5.50008 3.83696 5.50008 4.5C5.50008 4.63261 5.55276 4.75979 5.64653 4.85355C5.7403 4.94732 5.86747 5 6.00008 5C6.13269 5 6.25987 4.94732 6.35363 4.85355C6.4474 4.75979 6.50008 4.63261 6.50008 4.5C6.50109 4.12339 6.64374 3.76094 6.89968 3.48466C7.15561 3.20837 7.50612 3.03848 7.88155 3.00872C8.25699 2.97896 8.62988 3.09152 8.92615 3.32403C9.22242 3.55655 9.42038 3.892 9.48071 4.26375L7.70883 5.59312L7.69133 5.60625L0.901955 10.7C0.734177 10.8258 0.610207 11.0012 0.54758 11.2014C0.484953 11.4015 0.48684 11.6163 0.552974 11.8153C0.619107 12.0144 0.74614 12.1876 0.916103 12.3104C1.08607 12.4333 1.29036 12.4996 1.50008 12.5H14.5001C14.71 12.5 14.9145 12.434 15.0848 12.3112C15.2551 12.1885 15.3824 12.0153 15.4488 11.8162C15.5151 11.6171 15.5172 11.4022 15.4546 11.2018C15.392 11.0015 15.268 10.8259 15.1001 10.7H15.0982ZM14.5001 11.5H1.50008L8.00008 6.625L14.5001 11.5Z" fill="#1F2124" />
-  </svg>
-);
+import PuzzleTopBar from '@/components/layout/PuzzleTopBar';
 
 interface ClosetTopBarProps {
-  /** 좌측 뒤로가기 노출 여부 */
   showBack?: boolean;
-  /** 바 높이 (Figma: 홈/목록 53, 상세/삭제 50) */
   height?: 50 | 53;
 }
 
-/**
- * 옷장 공통 상단바 — 좌측 뒤로가기 / 가운데 "옷장" / 우측 보유 개수.
- *
- * 개수는 서버(CLOSET-03)가 소스다. 여러 화면이 같이 써도 react-query가 묶어준다.
- */
-const ClosetTopBar = ({ showBack = true, height = 53 }: ClosetTopBarProps) => {
-  const navigate = useNavigate();
-  const { data } = useClosets();
-  const count = data?.items.length ?? 0;
-
-  return (
-    <div
-      className="relative flex shrink-0 items-center justify-center border-b border-[#B2B8BD]"
-      style={{ height }}
-    >
-      {showBack && (
-        <button type="button" onClick={() => navigate(-1)} className="absolute left-5 cursor-pointer" aria-label="뒤로가기">
-          <BackIcon />
-        </button>
-      )}
-      <span className="text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">옷장</span>
-      <span className="absolute right-5 flex items-center gap-1 text-[12px] font-medium leading-[1.65] tracking-[-0.02em] text-[#1F2124]">
-        <CountIcon />
-        {count}개
-      </span>
-    </div>
-  );
-};
+const ClosetTopBar = ({ showBack = true, height = 53 }: ClosetTopBarProps) => (
+  <PuzzleTopBar title="옷장" showBack={showBack} height={height} />
+);
 
 export default ClosetTopBar;

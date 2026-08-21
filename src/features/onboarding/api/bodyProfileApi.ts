@@ -45,16 +45,12 @@ export interface BodyAnalyzeResult {
 /** PROFILE-04 조회 응답 (bodyImage는 명세에서 제거됨 — 체형별 이미지는 프론트 에셋 사용) */
 export interface BodyProfile {
   bodyProfileId: number;
-  userSelectedBodyType: ServerBodyType;
   measurements: BodyMeasurements;
   bodyTypeResult: BodyTypeResult;
   updatedAt: string;
 }
 
-// ── PROFILE-01 온보딩 체형 타입 저장 (POST /api/v1/body-profiles/type) ──
-export const saveBodyType = async (bodyType: ServerBodyType): Promise<void> => {
-  await api.post('/api/v1/body-profiles/type', { bodyType });
-};
+// PROFILE-01(체형 타입 저장)은 3택 선택 플로우 제거로 미사용 — AI 분석 결과 유형을 그대로 쓴다
 
 // ── PROFILE-02 체형 사진 AI 분석 (POST /api/v1/body-profiles/analyze, multipart) ──
 // 명세(2026-08-19): images 배열 3장, 정면/측면/후면 순서 무관
@@ -68,10 +64,11 @@ export const analyzeBody = async (
   form.append('images', sideImage, 'side.jpg');
   form.append('images', backImage, 'back.jpg');
   // FormData면 axios가 boundary 포함 multipart 헤더를 자동 설정하도록 기본 json 헤더 제거
+  // AI 분석은 10초를 넘길 수 있어 이 요청만 타임아웃을 넉넉히 잡는다
   const { data } = await api.post<ApiResponse<BodyAnalyzeResult>>(
     '/api/v1/body-profiles/analyze',
     form,
-    { headers: { 'Content-Type': undefined } },
+    { headers: { 'Content-Type': undefined }, timeout: 60000 },
   );
   return data.result;
 };

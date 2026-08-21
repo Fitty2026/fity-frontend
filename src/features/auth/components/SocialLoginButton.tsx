@@ -9,12 +9,6 @@ const GoogleIcon = () => (
   </svg>
 );
 
-const AppleIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M16.7 12.9c0-2.4 2-3.6 2.1-3.7a4.6 4.6 0 0 0-3.6-2c-1.5-.1-3 .9-3.8.9-.8 0-2-.9-3.3-.8a4.9 4.9 0 0 0-4.1 2.5c-1.8 3-.5 7.5 1.2 10 .8 1.2 1.8 2.5 3.1 2.5 1.3-.1 1.8-.8 3.3-.8s2 .8 3.3.8c1.4 0 2.3-1.2 3.1-2.4a10 10 0 0 0 1.4-2.9 4.4 4.4 0 0 1-2.7-4.1ZM14.2 5.6A4.5 4.5 0 0 0 15.3 2a4.6 4.6 0 0 0-3 1.6 4.3 4.3 0 0 0-1.1 3.4 3.8 3.8 0 0 0 3-1.4Z" />
-  </svg>
-);
-
 const KakaoIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
     <path d="M12 3C6.5 3 2 6.5 2 10.8c0 2.8 1.9 5.2 4.7 6.6l-1.2 4.4c-.1.4.3.7.6.5l5.2-3.4c.2 0 .5.1.7.1 5.5 0 10-3.5 10-7.9S17.5 3 12 3Z" />
@@ -26,11 +20,6 @@ const PROVIDER_CONFIG: Record<string, { label: string; icon: ReactNode; classNam
     label: 'Google로 시작하기',
     icon: <GoogleIcon />,
     className: 'bg-neutral-100 text-black hover:bg-neutral-200',
-  },
-  apple: {
-    label: 'Apple로 시작하기',
-    icon: <AppleIcon />,
-    className: 'bg-black text-white hover:bg-neutral-800',
   },
   kakao: {
     label: 'Kakao로 시작하기',

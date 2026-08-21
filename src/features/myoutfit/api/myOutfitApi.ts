@@ -1,8 +1,10 @@
-import { categoryLabel, getClosets, imageSrc } from '@/features/closet/api/closetApi';
+import { categoryLabel, imageSrc } from '@/features/closet/api/closetApi';
+import { getGenerationJob } from '@/features/codyplay/api/codyPlayApi';
 import api from '@/lib/axios';
 import type { ApiResponse, ClothingCategory, ClothingItem, Outfit } from '@/types';
 
 interface SavedOutfitItemRaw {
+  id?: number;
   item_id?: number;
   itemId?: number;
   name?: string;
@@ -19,6 +21,7 @@ interface SavedOutfitRaw {
   savedOutfitId?: number;
   outfit_id?: number;
   outfitId?: number;
+  outfitResultId?: number;
   id?: number | string;
   title?: string;
   name?: string;
@@ -30,6 +33,8 @@ interface SavedOutfitRaw {
   styleTags?: string[];
   tags?: string[];
   items?: Array<SavedOutfitItemRaw | number>;
+  itemIds?: number[];
+  isLiked?: boolean;
   outfitItems?: Array<{ slot?: string; itemId?: number }>;
   created_at?: string;
   createdAt?: string;
@@ -72,7 +77,12 @@ export interface UpdateMyOutfitRequest {
   title: string;
   memo: string;
   styleTags: string[];
-  itemIds: string[];
+  outfitResultId?: string;
+  itemIds?: string[];
+}
+
+interface RevisionAcceptedRaw {
+  jobId: number;
 }
 
 const withHashTags = (tags: string[]) =>
@@ -80,15 +90,6 @@ const withHashTags = (tags: string[]) =>
     const normalized = String(tag).trim();
     return normalized.startsWith('#') ? normalized : `#${normalized}`;
   });
-
-const getClosetItemMap = async (): Promise<Map<string, ClothingItem>> => {
-  try {
-    const closet = await getClosets();
-    return new Map(closet.items.map((item) => [item.id, item]));
-  } catch {
-    return new Map();
-  }
-};
 
 const toClothingItem = (item: SavedOutfitItemRaw | number): ClothingItem => {
   if (typeof item === 'number') {
@@ -103,7 +104,7 @@ const toClothingItem = (item: SavedOutfitItemRaw | number): ClothingItem => {
   const rawImageUrl = item.image_url ?? item.imageUrl ?? '';
 
   return {
-    id: String(item.item_id ?? item.itemId ?? ''),
+    id: String(item.item_id ?? item.itemId ?? item.id ?? ''),
     name: item.name,
     imageUrl: rawImageUrl ? imageSrc(rawImageUrl) : '',
     category: item.category ? categoryLabel(item.category) : ('기타' as ClothingCategory),
@@ -112,10 +113,7 @@ const toClothingItem = (item: SavedOutfitItemRaw | number): ClothingItem => {
   };
 };
 
-const toOutfit = (
-  outfit: SavedOutfitRaw,
-  closetItems: Map<string, ClothingItem> = new Map(),
-): Outfit => {
+const toOutfit = (outfit: SavedOutfitRaw): Outfit => {
   const id =
     outfit.saved_outfit_id ??
     outfit.savedOutfitId ??
@@ -126,36 +124,33 @@ const toOutfit = (
 
   return {
     id: String(id),
+    outfitResultId: outfit.outfitResultId == null ? undefined : String(outfit.outfitResultId),
+    itemIds: (outfit.itemIds ?? []).map(String),
     imageUrl:
       outfit.image_url || outfit.imageUrl
         ? imageSrc(outfit.image_url ?? outfit.imageUrl ?? '')
         : '',
-    items: (outfit.items ?? []).map((item) => {
-      const mapped = toClothingItem(item);
-      return closetItems.get(mapped.id) ?? mapped;
-    }),
+    items: (outfit.items ?? []).map(toClothingItem),
     styleTags: withHashTags(outfit.tags ?? outfit.style_tags ?? outfit.styleTags ?? []),
     context: outfit.name ?? outfit.context ?? outfit.title ?? '새로운 코디',
     memo: outfit.memo ?? '',
     createdAt: outfit.created_at ?? outfit.createdAt ?? '',
     isSaved: true,
+    isLiked: outfit.isLiked ?? false,
   };
 };
 
 /** SAVED-02 저장한 코디 목록 조회 */
 export const getMyOutfits = async (page = 1, size = 10): Promise<MyOutfitList> => {
-  const [{ data }, closetItems] = await Promise.all([
-    api.get<ApiResponse<SavedOutfitListRaw>>('/api/v1/outfits/saved', {
-      params: { page, size },
-    }),
-    getClosetItemMap(),
-  ]);
+  const { data } = await api.get<ApiResponse<SavedOutfitListRaw>>('/api/v1/outfits/saved', {
+    params: { page, size },
+  });
   // result가 비어 오는 경우(빈 목록·null)를 대비해 옵셔널로 접근한다
   const result: SavedOutfitListRaw = data.result ?? {};
   const rawOutfits = result.items ?? result.saved_outfits ?? result.outfits ?? [];
 
   return {
-    outfits: rawOutfits.map((outfit) => toOutfit(outfit, closetItems)),
+    outfits: rawOutfits.map(toOutfit),
     total:
       result.pagination?.totalCount ??
       result.pagination?.total_count ??
@@ -169,10 +164,7 @@ export const getMyOutfits = async (page = 1, size = 10): Promise<MyOutfitList> =
 
 /** SAVED-06 최근 삭제한 코디 목록 조회 */
 export const getRecentlyDeletedOutfits = async (): Promise<RecentlyDeletedOutfitList> => {
-  const [{ data }, closetItems] = await Promise.all([
-    api.get<ApiResponse<SavedOutfitListRaw>>('/api/v1/outfits/saved/deleted'),
-    getClosetItemMap(),
-  ]);
+  const { data } = await api.get<ApiResponse<SavedOutfitListRaw>>('/api/v1/outfits/saved/deleted');
   // result가 비어 오는 경우(빈 목록·null)를 대비해 옵셔널로 접근한다
   const result: SavedOutfitListRaw = data.result ?? {};
   const rawOutfits = result.items ?? result.saved_outfits ?? result.outfits ?? [];
@@ -185,7 +177,7 @@ export const getRecentlyDeletedOutfits = async (): Promise<RecentlyDeletedOutfit
         : 0;
 
       return {
-        outfit: toOutfit(rawOutfit, closetItems),
+        outfit: toOutfit(rawOutfit),
         deletionDaysRemaining:
           rawOutfit.deletion_days_remaining ??
           rawOutfit.deletionDaysRemaining ??
@@ -203,12 +195,11 @@ export const getRecentlyDeletedOutfits = async (): Promise<RecentlyDeletedOutfit
 
 /** SAVED-03 저장한 코디 상세 조회 */
 export const getMyOutfit = async (savedOutfitId: string): Promise<Outfit> => {
-  const [{ data }, closetItems] = await Promise.all([
-    api.get<ApiResponse<SavedOutfitRaw>>(`/api/v1/outfits/saved/${savedOutfitId}`),
-    getClosetItemMap(),
-  ]);
+  const { data } = await api.get<ApiResponse<SavedOutfitRaw>>(
+    `/api/v1/outfits/saved/${savedOutfitId}`,
+  );
 
-  return toOutfit(data.result, closetItems);
+  return toOutfit(data.result);
 };
 
 /** SAVED-04 저장한 코디 정보 수정 */
@@ -222,16 +213,69 @@ export const updateMyOutfit = async (
       name: body.title,
       memo: body.memo,
       tags: withHashTags(body.styleTags),
+      ...(body.outfitResultId ? { outfitResultId: Number(body.outfitResultId) } : {}),
     },
   );
 
-  const closetItems = await getClosetItemMap();
-  const updatedOutfit = toOutfit(data.result, closetItems);
+  const updatedOutfit = toOutfit(data.result);
 
   return {
     ...updatedOutfit,
     id: updatedOutfit.id || savedOutfitId,
   };
+};
+
+export const setMyOutfitLike = async (savedOutfitId: string, isLiked: boolean): Promise<void> => {
+  const url = `/api/v1/outfits/saved/${savedOutfitId}/likes`;
+
+  if (isLiked) {
+    await api.post(url);
+    return;
+  }
+
+  await api.delete(url);
+};
+
+export const regenerateMyOutfitWithReplacement = async ({
+  original,
+  newItem,
+}: {
+  original: Outfit;
+  newItem: ClothingItem;
+}): Promise<Outfit> => {
+  const replaceItem = original.items.find((item) => item.category === newItem.category);
+  if (!replaceItem) {
+    throw new Error('같은 카테고리의 교체할 아이템을 찾을 수 없어요.');
+  }
+  if (!original.outfitResultId) {
+    throw new Error('원본 코디 결과 ID를 찾을 수 없어요.');
+  }
+
+  const { data } = await api.post<ApiResponse<RevisionAcceptedRaw>>(
+    `/api/v1/outfits/${original.outfitResultId}/revisions`,
+    {
+      replaceItemId: Number(replaceItem.id),
+      newItemId: Number(newItem.id),
+    },
+    { headers: { 'Idempotency-Key': crypto.randomUUID() } },
+  );
+
+  for (;;) {
+    const job = await getGenerationJob(String(data.result.jobId));
+    if (job.status === 'COMPLETED') {
+      if (!job.result) throw new Error('재생성된 코디 결과가 없습니다.');
+      return {
+        ...original,
+        imageUrl: job.result.imageUrl,
+        items: job.result.items,
+        outfitResultId: job.result.id,
+      };
+    }
+    if (job.status === 'FAILED' || job.status === 'EXPIRED') {
+      throw new Error(job.failure?.message ?? '코디 재생성에 실패했습니다.');
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+  }
 };
 
 /** SAVED-05 저장한 코디 삭제 */

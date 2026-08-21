@@ -15,7 +15,6 @@ const BodyResultPage = () => {
   const navigate = useNavigate();
   const nickname = useAuthStore((s) => s.user?.name) ?? '회원';
   const result = useOnboardingStore((s) => s.analysisResult);
-  const bodyType = useOnboardingStore((s) => s.bodyType);
   const bodyPhotoUrls = useOnboardingStore((s) => s.bodyPhotoUrls);
   const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
   const { mutate: saveBodyProfile, isPending, error } = useSaveBodyProfile();
@@ -29,8 +28,11 @@ const BodyResultPage = () => {
   if (!result) return null;
 
   const view = toBodyResultView(result);
+  // 3택 선택 플로우가 없어져 분석 결과 유형(예: STANDARD_STRAIGHT)에서 일러스트를 고른다
+  const analyzedType = result.bodyTypeResult.bodyType.toLowerCase();
   const typeIllustration =
-    BODY_TYPES.find((option) => option.type === bodyType)?.imageSrc ?? BODY_TYPES[0].imageSrc;
+    BODY_TYPES.find((option) => analyzedType.includes(option.type))?.imageSrc ??
+    BODY_TYPES[0].imageSrc;
 
   const handleRetry = () => navigate('/onboarding/body/photo');
 
@@ -59,7 +61,7 @@ const BodyResultPage = () => {
   };
 
   return (
-    <OnboardingLayout progress={1}>
+    <OnboardingLayout progress={0.57}>
       {phase === 'measurements' ? (
         <div className="flex flex-1 flex-col px-4 pb-8 pt-10">
           <h2 className="text-center text-lg font-semibold">분석이 완료되었어요</h2>
@@ -77,12 +79,13 @@ const BodyResultPage = () => {
                 ))}
             </div>
 
-            <div className="h-[360px] w-[170px] shrink-0 overflow-hidden rounded-3xl bg-neutral-200">
+            {/* 사진이 잘리지 않게 전체를 보여주고, 비율 차 여백은 흰색으로 둔다 */}
+            <div className="h-[360px] w-[170px] shrink-0 overflow-hidden rounded-3xl border border-neutral-200 bg-white">
               {bodyPhotoUrls[0] && (
                 <img
                   src={bodyPhotoUrls[0]}
                   alt="분석한 체형 사진"
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain"
                 />
               )}
             </div>
