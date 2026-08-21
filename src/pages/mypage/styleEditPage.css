@@ -1,0 +1,25 @@
+@keyframes style-edit-card-spread {
+  from {
+    opacity: 0.35;
+    transform: translate(var(--style-card-enter-x), var(--style-card-enter-y)) scale(0.78)
+      rotate(0deg);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1) rotate(var(--style-card-rotation));
+  }
+}
+
+.style-edit-card {
+  animation: style-edit-card-spread 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--style-card-delay);
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .style-edit-card {
+    animation: none;
+    transform: rotate(var(--style-card-rotation));
+  }
+}
