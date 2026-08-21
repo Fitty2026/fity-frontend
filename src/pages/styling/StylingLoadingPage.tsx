@@ -41,9 +41,10 @@ const StylingLoadingPage = () => {
   const { data: profile, isLoading: profileLoading } = useMyProfile();
   const styleTagIds = state?.styleTagIds ?? profile?.styleTagIds ?? undefined;
 
-  // 옷장 아이템만 필수 — 나머지는 선택값이라 없으면 빼고 보낸다.
+  // 앞 화면에서 넘어온 입력값이 있는지 — 기준 아이템을 건너뛰면 빈 배열로 오므로 배열 유무로 판단한다.
+  // (state 자체가 없는 경우만 새로고침·재진입으로 보고 진행 중인 job을 이어받는다)
   // 프로필 조회가 끝난 뒤 요청해야 스타일 태그가 빠지지 않는다.
-  const hasInput = !!closetItemIds?.length;
+  const hasInput = Array.isArray(closetItemIds);
   const canRequest = hasInput && !profileLoading;
 
   const { generate, accepted, jobId: newJobId, error: generateError } = useGenerateOutfit();

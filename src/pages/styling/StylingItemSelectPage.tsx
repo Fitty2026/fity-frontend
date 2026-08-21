@@ -37,6 +37,13 @@ const HeartIcon = ({ liked }: { liked: boolean }) => (
   </svg>
 );
 
+/** 건너뛰기 우측 체브론 — 16×16 stroke #B2B8BD (스튜디오 헤더와 동일) */
+const ChevronIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M5.5 3L10.5 8L5.5 13" stroke="#B2B8BD" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 /**
  * 기준 아이템 선택
  * - 헤더(뒤로·보유 개수) + 타이틀 + 검색 + 카테고리/정렬 칩 + 아이템 행(가로 스크롤) + 생성 CTA
@@ -58,6 +65,19 @@ const StylingItemSelectPage = () => {
   const items = useMemo(() => data?.items ?? [], [data]);
   const puzzleBalance = usePuzzleBalance();
   const [shortageOpen, setShortageOpen] = useState(false);
+
+  /** 코디 생성으로 이동 — 잔량이 비용보다 적으면 부족 안내부터 띄운다 */
+  const goLoading = (closetItemIds: number[]) => {
+    // 잔량 조회 전(undefined)에는 막지 않는다 — 부족 여부는 서버 응답을 받은 뒤에만 판단
+    if (puzzleBalance !== undefined && puzzleBalance < GENERATION_COST) {
+      setShortageOpen(true);
+      return;
+    }
+    navigate('/styling/loading', { state: { ...state, closetItemIds } });
+  };
+
+  /** 건너뛰기 — 기준 아이템 없이 코디를 생성한다 */
+  const goWithoutItems = () => goLoading([]);
 
   const toggleItem = (id: string) =>
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]));
@@ -97,10 +117,21 @@ const StylingItemSelectPage = () => {
         <StudioHeader onBack={goBack} count={puzzleBalance} />
 
         <div className="flex-1 min-h-0 overflow-y-auto pb-32">
-          {/* 타이틀 (375×52) */}
-          {/* 헤더↔타이틀 56 */}
+          {/* 건너뛰기 — 헤더 우측은 퍼즐 잔량이 차지해 헤더 아래 별도 행 (헤더↔버튼 13, 버튼 59×26, 우 24) */}
+          <div className="mt-[13px] pr-6 flex justify-end">
+            <button
+              type="button"
+              onClick={goWithoutItems}
+              className="flex h-[26px] items-center gap-1 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#B2B8BD]"
+            >
+              건너뛰기
+              <ChevronIcon />
+            </button>
+          </div>
+
+          {/* 타이틀 (375×52) — 건너뛰기↔타이틀 38 */}
           <ScreenTitle
-            className="mt-14"
+            className="mt-[38px]"
             title="매치하고 싶은 아이템을 골라주세요"
             subtitle="자동으로 어울리는 코디를 생성해요"
           />
@@ -165,16 +196,7 @@ const StylingItemSelectPage = () => {
             label={`${GENERATION_COST} 퍼즐로 코디 생성하기`}
             disabled={selectedIds.length === 0}
             // 선택한 아이템 id를 로딩 화면으로 전달 (OUTFIT-01은 숫자 배열을 받는다)
-            onClick={() => {
-              // 잔량 조회 전(undefined)에는 막지 않는다 — 부족 여부는 서버 응답을 받은 뒤에만 판단
-              if (puzzleBalance !== undefined && puzzleBalance < GENERATION_COST) {
-                setShortageOpen(true);
-                return;
-              }
-              navigate('/styling/loading', {
-                state: { ...state, closetItemIds: selectedIds.map(Number) },
-              });
-            }}
+            onClick={() => goLoading(selectedIds.map(Number))}
           />
         </div>
 
