@@ -24,7 +24,7 @@ const OutfitItem = ({ item, category, index }: OutfitItemProps) => {
           {category}
         </p>
         <h5 className="text-[#1F2124] text-[16px] font-[600] leading-[160%] tracking-[-2%]">
-          {item?.id || '-'}
+          {item?.name || '-'}
         </h5>
       </div>
     </div>

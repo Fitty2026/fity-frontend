@@ -142,7 +142,7 @@ const MyOutfitEditForm = ({ initialOutfit }: { initialOutfit: Outfit }) => {
               key={item.id}
               className="block w-full rounded-[8px] aspect-square object-cover"
               src={item.imageUrl}
-              alt={item.imageUrl}
+              alt={item.name ?? item.category}
             ></img>
           ))}{' '}
         </div>

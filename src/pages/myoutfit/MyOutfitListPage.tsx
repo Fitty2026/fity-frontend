@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import ErrorScreen from '@/components/ui/ErrorScreen';
 import LoadingScreen from '@/components/ui/LoadingScreen';
@@ -9,10 +10,16 @@ import MyOutfitCard from '@/features/myoutfit/components/MyOutfitCard';
 import useMyOutfits from '@/features/myoutfit/hooks/useMyOutfits';
 
 const MyOutfitListPage = () => {
+  const [searchParams] = useSearchParams();
+  const likedOnly = searchParams.get('liked') === 'true';
   const { data, error, isPending, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useMyOutfits();
+    useMyOutfits(likedOnly);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const outfits = useMemo(() => data?.pages.flatMap((page) => page.outfits) ?? [], [data]);
+
+  useEffect(() => {
+    if (likedOnly && hasNextPage && !isFetchingNextPage) void fetchNextPage();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, likedOnly]);
 
   useEffect(() => {
     const target = loadMoreRef.current;
@@ -42,10 +49,16 @@ const MyOutfitListPage = () => {
       );
     }
 
+    if (likedOnly && outfits.length === 0 && (hasNextPage || isFetchingNextPage)) {
+      return <LoadingScreen message="좋아요한 코디를 불러오는 중이에요." />;
+    }
+
     if (outfits.length === 0) {
       return (
         <div className="flex min-h-[60vh] flex-col items-center justify-center px-[24px] text-center">
-          <p className="text-[18px] font-[600] text-[#1F2124]">저장한 코디가 없어요.</p>
+          <p className="text-[18px] font-[600] text-[#1F2124]">
+            {likedOnly ? '좋아요한 코디가 없어요.' : '저장한 코디가 없어요.'}
+          </p>
           <p className="mt-[8px] text-[14px] font-[500] text-[#6F7881]">
             마음에 드는 코디를 저장하면 이곳에서 다시 볼 수 있어요.
           </p>
@@ -56,7 +69,7 @@ const MyOutfitListPage = () => {
     return (
       <div className="mx-[24px] mt-[24px] grid grid-cols-2 gap-[15px] pb-[32px]">
         {outfits.map((outfit) => (
-          <MyOutfitCard key={outfit.id} outfit={outfit} />
+          <MyOutfitCard key={outfit.id} outfit={outfit} animateUnlikeRemoval={likedOnly} />
         ))}
         <div ref={loadMoreRef} className="col-span-2 h-px" aria-hidden="true" />
         {isFetchingNextPage ? (
@@ -74,7 +87,7 @@ const MyOutfitListPage = () => {
       showHeader={false}
       className="flex min-h-0 flex-col overflow-hidden"
     >
-      <PuzzleTopBar title="룩북" />
+      <PuzzleTopBar title={likedOnly ? '좋아요' : '룩북'} />
       <div className="min-h-0 flex-1 overflow-y-auto pb-[110px]">{renderContent()}</div>
       <BottomNav />
     </PageLayout>

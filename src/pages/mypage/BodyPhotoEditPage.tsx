@@ -8,6 +8,7 @@ import mannequinFront from '@/assets/images/body/front.png';
 import mannequinSide from '@/assets/images/body/side.png';
 import MyPageButton from '@/features/mypage/components/MyPageButton';
 import MyPageScaffold from '@/features/mypage/components/MyPageScaffold';
+import { startBodyAnalysis } from '@/features/onboarding/bodyAnalysis';
 import CameraCapture from '@/features/onboarding/components/CameraCapture';
 import PhotoAddSheet from '@/features/onboarding/components/PhotoAddSheet';
 import PhotoSlotGrid from '@/features/onboarding/components/PhotoSlotGrid';
@@ -79,6 +80,14 @@ const BodyPhotoEditPage = () => {
     setSheetTarget(null);
   };
 
+  const handleComplete = () => {
+    const photos = bodyPhotoUrls.filter(Boolean);
+    if (photos.length !== MAX_PHOTOS) return;
+
+    void startBodyAnalysis(photos);
+    navigate('/mypage/profile/body/analysis');
+  };
+
   const handleCapture = (url: string) => {
     applyPhoto(url);
     closeCamera();
@@ -94,9 +103,7 @@ const BodyPhotoEditPage = () => {
             다음
           </MyPageButton>
         ) : phase === 'confirm' ? (
-          <MyPageButton onClick={() => navigate('/mypage/profile/body', { replace: true })}>
-            선택 완료
-          </MyPageButton>
+          <MyPageButton onClick={handleComplete}>선택 완료</MyPageButton>
         ) : undefined
       }
     >
