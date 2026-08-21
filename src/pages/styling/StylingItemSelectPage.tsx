@@ -92,11 +92,11 @@ const StylingItemSelectPage = () => {
   }, [items, search, category]);
 
   return (
-    <div className="min-h-screen bg-neutral-100 flex justify-center">
-      <div className="relative w-full max-w-[430px] h-screen bg-white flex flex-col overflow-hidden">
+    <div className="h-screen overflow-hidden bg-neutral-100 flex justify-center" style={{ height: '100dvh' }}>
+      <div className="relative w-full max-w-[430px] h-full bg-white flex flex-col overflow-hidden">
         <StudioHeader onBack={goBack} count={puzzleBalance} />
 
-        <div className="flex-1 overflow-y-auto pb-32">
+        <div className="flex-1 min-h-0 overflow-y-auto pb-32">
           {/* 타이틀 (375×52) */}
           {/* 헤더↔타이틀 56 */}
           <ScreenTitle
