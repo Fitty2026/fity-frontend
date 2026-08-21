@@ -127,7 +127,7 @@ const MyPage = () => {
               {styleStats.map(({ label, value }) => (
                 <span
                   key={label}
-                  style={{ height: value === 0 ? 0 : `${Math.max((value / maxStyleStat) * 76, 6)}px` }}
+                  style={{ height: value === 0 ? 6 : `${Math.max((value / maxStyleStat) * 76, 6)}px` }}
                   className="w-[6px] rounded-t bg-[#1F2124]"
                 />
               ))}
