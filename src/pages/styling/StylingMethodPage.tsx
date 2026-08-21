@@ -28,11 +28,11 @@ const StylingMethodPage = () => {
   const puzzleBalance = usePuzzleBalance();
 
   return (
-    <div className="min-h-screen bg-neutral-100 flex justify-center">
-      <div className="relative w-full max-w-[430px] min-h-screen bg-[#F8F8FF] flex flex-col overflow-hidden">
+    <div className="h-screen overflow-hidden bg-neutral-100 flex justify-center" style={{ height: '100dvh' }}>
+      <div className="relative w-full max-w-[430px] h-full bg-[#F8F8FF] flex flex-col overflow-hidden">
         <StudioHeader count={puzzleBalance} />
 
-        <div className="relative flex-1 overflow-y-auto pb-[92px]">
+        <div className="relative flex-1 min-h-0 overflow-y-auto pb-[92px]">
           {/* 배경 blob — Figma: 289.26×314.27, top123/left69(아트보드) → 콘텐츠 top~20, rot -11.65°, crop */}
           <img
             src={methodBlob}

@@ -31,9 +31,9 @@ const PageLayout = ({
 }: PageLayoutProps) => {
   return (
     // 바깥 래퍼 - 전체 화면 배경
-    <div className="min-h-screen bg-neutral-50 flex justify-center">
+    <div className="h-screen overflow-hidden bg-neutral-50 flex justify-center" style={{ height: '100dvh' }}>
       {/* 모바일 컨테이너 */}
-      <div id="app-container" className="relative w-full max-w-[430px] min-h-screen bg-white flex flex-col shadow-xl overflow-hidden">
+      <div id="app-container" className="relative w-full max-w-[430px] h-full bg-white flex flex-col shadow-xl overflow-hidden">
         {showHeader && (
           <Header
             title={title}
@@ -46,7 +46,7 @@ const PageLayout = ({
         {/* 메인 콘텐츠 - BottomNav 높이(92px)만큼 패딩 */}
         <main
           className={[
-            'flex-1 overflow-y-auto',
+            'flex-1 min-h-0 overflow-y-auto',
             showBottomNav ? 'pb-[92px]' : '',
             className,
           ]

@@ -19,12 +19,12 @@ const StylingStartPage = () => {
     .slice(0, 2);
 
   return (
-    <div className="min-h-screen bg-neutral-100 flex justify-center">
-      <div className="relative w-full max-w-[430px] min-h-screen bg-white flex flex-col">
+    <div className="h-screen overflow-hidden bg-neutral-100 flex justify-center" style={{ height: '100dvh' }}>
+      <div className="relative w-full max-w-[430px] h-full bg-white flex flex-col">
         <StudioHeader logo count={puzzleBalance} />
 
         {/* 스크롤 콘텐츠 — 좌우 24, 하단 네비(92)만큼 여유 */}
-        <div className="flex-1 overflow-y-auto px-6 pt-5 pb-[92px]">
+        <div className="flex-1 min-h-0 overflow-y-auto px-6 pt-5 pb-[92px]">
           {/* 히어로 카드 — AI 코디 추천 받기 (Figma: 327×236.82, radius8, pad 10/10/16/10, gap10, #312C48, shadow 0 8 16 #000 8%) */}
           <button
             type="button"
