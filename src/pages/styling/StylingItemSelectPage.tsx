@@ -23,6 +23,10 @@ const CHIP_CATEGORIES: Record<string, ClothingCategory[]> = {
 /** 아이템 행 노출 순서 (해당 옷이 있을 때만 행 표시) */
 const ROW_CHIPS = ['상의', '하의', '신발', '악세사리', '기타'];
 
+/** 옷장 카테고리 → 화면 칩. 행(카테고리)마다 하나만 고르게 하려고 쓴다 */
+const chipOf = (category: ClothingCategory) =>
+  ROW_CHIPS.find((chip) => CHIP_CATEGORIES[chip].includes(category));
+
 /** 좋아요 하트 — 16×16, stroke #1F2124. 누르면 채워진다 (옷장 홈과 동일) */
 const HeartIcon = ({ liked }: { liked: boolean }) => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -73,8 +77,17 @@ const StylingItemSelectPage = () => {
    *  빈 배열은 서버가 받아주지 않아 옷장 전체 id를 실어 보낸다 (서버가 그 안에서 조합) */
   const goWithoutItems = () => goLoading(items.map((item) => Number(item.id)));
 
-  const toggleItem = (id: string) =>
-    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]));
+  /** 아이템 선택 — 카테고리(행)당 하나만. 같은 행의 다른 옷을 고르면 앞선 선택을 대체한다 */
+  const toggleItem = (id: string, chip: string | undefined) =>
+    setSelectedIds((prev) => {
+      if (prev.includes(id)) return prev.filter((v) => v !== id);
+      // 같은 행에 이미 고른 옷이 있으면 빼고 새 옷을 넣는다
+      const kept = prev.filter((selectedId) => {
+        const selectedItem = items.find((item) => item.id === selectedId);
+        return !selectedItem || chipOf(selectedItem.category) !== chip;
+      });
+      return [...kept, id];
+    });
 
   const toggleLike = (id: string) =>
     setLikedIds((prev) => {
@@ -159,7 +172,7 @@ const StylingItemSelectPage = () => {
                     <div key={item.id} className="relative shrink-0">
                       <button
                         type="button"
-                        onClick={() => toggleItem(item.id)}
+                        onClick={() => toggleItem(item.id, row.chip)}
                         className="relative block w-[104px] h-[134px] overflow-hidden rounded bg-white"
                       >
                         <img src={item.imageUrl} alt="" className="w-full h-full object-cover" />
