@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageLayout';
 import BottomNav from '@/components/layout/BottomNav';
@@ -131,7 +131,7 @@ const SheetPhotoIcon = () => (
 /**
  * 아이템 추가 시트의 방식 4종.
  * 영수증·구매내역은 /closet/register의 두 갈래로 이어진다.
- * 카메라·앨범은 시안만 반영 — 갈 화면 미정(entry 없음)이라 아직 이동하지 않는다.
+ * 카메라·앨범은 등록 방식 선택 화면과 같은 길 — 촬영/파일 선택을 거쳐 태그 확인으로 간다.
  */
 const ADD_OPTIONS = [
   // 마지막 행만 72 (시안 그대로)
@@ -202,10 +202,28 @@ const ClosetHomePage = () => {
   const filled = items.length > 0;
   const [search, setSearch] = useState('');
   const [showAddSheet, setShowAddSheet] = useState(false);
+  // 앨범에서 고른 옷 사진 — 브라우저 파일 선택으로 사진 접근 권한을 받는다 (등록 방식 선택 화면과 동일)
+  const addFileInput = useRef<HTMLInputElement>(null);
   // 권한 안내는 최초 1회만 거친다
   const permissionSeen = useOnboardingStore((state) => state.closetPermissionSeen);
   // 좋아요 — 저장 API가 없어 화면 안에서만 유지 (TODO: 옷장 API에 좋아요 붙으면 연동)
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+
+  /** 앨범에서 고른 사진을 태그 확인 화면으로 넘긴다 */
+  const handlePickPhotos = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const photos = Array.from(e.target.files ?? []).map((file) => URL.createObjectURL(file));
+    if (photos.length) navigate('/closet/register/tags', { state: { photos } });
+  };
+
+  /** 시트에서 고른 방식으로 보낸다 — 영수증·구매내역은 권한 안내를 거치고, 카메라·앨범은 바로 사진을 받는다 */
+  const handleAddOption = (option: (typeof ADD_OPTIONS)[number]) => {
+    if (option.entry) {
+      navigate(registerStartPath(option.entry, permissionSeen), { state: { entry: option.entry } });
+      return;
+    }
+    if (option.key === 'camera') navigate('/closet/register/photo');
+    else addFileInput.current?.click();
+  };
 
   const toggleLike = (id: string) =>
     setLikedIds((prev) => {
@@ -382,20 +400,21 @@ const ClosetHomePage = () => {
               <h2 className="mb-10 text-center text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#1F2124]">
                 아이템 추가
               </h2>
+              <input
+                ref={addFileInput}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                className="hidden"
+                onChange={handlePickPhotos}
+              />
               {/* 방식 목록 — 행마다 상단 구분선. 영수증·구매내역은 어느 쪽으로 들어왔는지 권한 안내까지 넘긴다 */}
               {ADD_OPTIONS.map((option) => (
                 <button
                   key={option.key}
                   type="button"
                   // 권한 안내를 이미 봤으면 그 화면은 건너뛴다
-                  onClick={
-                    option.entry
-                      ? () =>
-                          navigate(registerStartPath(option.entry, permissionSeen), {
-                            state: { entry: option.entry },
-                          })
-                      : undefined // TODO: 카메라·앨범 진입 화면 정해지면 연결
-                  }
+                  onClick={() => handleAddOption(option)}
                   style={{ height: option.height }}
                   className="flex w-full shrink-0 items-center gap-10 border-t border-[#E6E8EA] pl-6 pr-3.5 text-left cursor-pointer"
                 >
