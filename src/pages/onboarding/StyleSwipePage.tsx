@@ -98,7 +98,7 @@ const StyleSwipePage = () => {
           </div>
 
           {/* 카드 캐러셀 */}
-          <div className="mt-6 flex flex-1 items-center overflow-hidden">
+          <div className="mt-6 flex flex-1 items-center overflow-hidden overscroll-contain">
             {remaining.length === 0 ? (
               <p className="w-full text-center text-sm text-neutral-500">
                 모든 스타일을 모았어요!
@@ -133,6 +133,17 @@ const StyleSwipePage = () => {
                           transition: dragging
                             ? 'none'
                             : `transform ${COLLECT_ANIMATION_MS}ms ease-in, opacity ${COLLECT_ANIMATION_MS}ms ease-in`,
+                          // 카드 위 터치는 브라우저에 넘기지 않는다.
+                          // 안드로이드 크롬은 화면 최상단에서 아래로 끄는 제스처를 당겨서 새로고침으로 처리하는데,
+                          // 이 화면의 수집 동작이 정확히 그 제스처라 카드를 내리려다 새로고침이 걸렸다.
+                          // React가 touchmove를 passive로 붙여 preventDefault가 안 먹으므로 CSS로 막는다.
+                          // iOS는 당겨서 새로고침이 없지만 홈 화면에 추가한 경우엔 생기고, 고무줄 스크롤도 같은 자리에서 걸린다
+                          touchAction: 'none',
+                          overscrollBehavior: 'contain',
+                          // 길게 누를 때 뜨는 이미지 메뉴·텍스트 선택이 드래그를 끊는다 (iOS 사파리)
+                          WebkitTouchCallout: 'none',
+                          WebkitUserSelect: 'none',
+                          userSelect: 'none',
                         }}
                         onTouchStart={(e) => handlePointerDown(e.touches[0].clientX, e.touches[0].clientY)}
                         onTouchMove={(e) => handlePointerMove(e.touches[0].clientX, e.touches[0].clientY)}
