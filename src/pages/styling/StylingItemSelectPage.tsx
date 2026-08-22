@@ -37,13 +37,6 @@ const HeartIcon = ({ liked }: { liked: boolean }) => (
   </svg>
 );
 
-/** 건너뛰기 우측 체브론 — 16×16 stroke #B2B8BD (스튜디오 헤더와 동일) */
-const ChevronIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M5.5 3L10.5 8L5.5 13" stroke="#B2B8BD" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
 /**
  * 기준 아이템 선택
  * - 헤더(뒤로·보유 개수) + 타이틀 + 검색 + 카테고리/정렬 칩 + 아이템 행(가로 스크롤) + 생성 CTA
@@ -76,8 +69,9 @@ const StylingItemSelectPage = () => {
     navigate('/styling/loading', { state: { ...state, closetItemIds } });
   };
 
-  /** 건너뛰기 — 기준 아이템 없이 코디를 생성한다 */
-  const goWithoutItems = () => goLoading([]);
+  /** 건너뛰기 — 기준 아이템을 고르지 않고 날짜·날씨·상황만으로 생성한다.
+   *  빈 배열은 서버가 받아주지 않아 옷장 전체 id를 실어 보낸다 (서버가 그 안에서 조합) */
+  const goWithoutItems = () => goLoading(items.map((item) => Number(item.id)));
 
   const toggleItem = (id: string) =>
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]));
@@ -117,15 +111,15 @@ const StylingItemSelectPage = () => {
         <StudioHeader onBack={goBack} count={puzzleBalance} />
 
         <div className="flex-1 min-h-0 overflow-y-auto pb-32">
-          {/* 건너뛰기 — 헤더 우측은 퍼즐 잔량이 차지해 헤더 아래 별도 행 (헤더↔버튼 13, 버튼 59×26, 우 24) */}
+          {/* 건너뛰기 — 헤더 우측은 퍼즐 잔량이 차지해 헤더 아래 별도 행 (헤더↔버튼 13, 우 24) */}
           <div className="mt-[13px] pr-6 flex justify-end">
+            {/* Figma: 59×26, padding 2/8, border 1 #B2B8BD, radius 32 / Pretendard 400 12px lh165% -2% #959BA7 */}
             <button
               type="button"
               onClick={goWithoutItems}
-              className="flex h-[26px] items-center gap-1 text-[14px] font-medium leading-[1.6] tracking-[-0.02em] text-[#B2B8BD]"
+              className="flex h-[26px] w-[59px] items-center justify-center rounded-[32px] border border-[#B2B8BD] px-2 py-[2px] text-[12px] font-normal leading-[1.65] tracking-[-0.02em] text-[#959BA7]"
             >
               건너뛰기
-              <ChevronIcon />
             </button>
           </div>
 

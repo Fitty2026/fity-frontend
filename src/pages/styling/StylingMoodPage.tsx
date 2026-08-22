@@ -65,7 +65,8 @@ const StylingMoodPage = () => {
           onSkip={() => goItems()}
         />
 
-        <div className="flex-1 min-h-0 overflow-y-auto pt-14">
+        {/* overflow-y만 주면 x축이 auto로 계산돼, 좌우로 걸친 카드 때문에 가로 스크롤바가 생긴다 */}
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pt-14">
           {/* 헤더↔타이틀 56 (날짜 선택과 동일) */}
           <ScreenTitle
             title="코디가 필요한 상황을 선택해주세요"
