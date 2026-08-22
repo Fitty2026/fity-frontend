@@ -1,4 +1,5 @@
 import api from '@/lib/axios';
+import { ApiError } from '@/lib/apiError';
 import type { ApiResponse } from '@/types';
 import type { OutfitJob, OutfitJobAccepted, OutfitJobInput } from '../types';
 
@@ -24,6 +25,11 @@ export const createOutfitJob = async (body: OutfitJobInput): Promise<OutfitJobAc
     '/api/v1/outfits/generation-jobs',
     compact(body),
   );
+  // 본문 없는 응답(204 등)이면 jobId가 없어 폴링이 시작되지 않는다.
+  // 그냥 두면 로딩 화면이 끝없이 돌아서, 실패로 끊어 화면에 안내가 뜨게 한다.
+  if (!data?.result?.jobId) {
+    throw new ApiError('EMPTY_RESPONSE', '코디 생성 요청이 접수되지 않았습니다.');
+  }
   return data.result;
 };
 
