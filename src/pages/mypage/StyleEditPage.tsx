@@ -12,7 +12,7 @@ import { getErrorMessage } from '@/lib/apiError';
 import './styleEditPage.css';
 
 const CARD_ROW_STEP = 208;
-const CARD_CENTER_OFFSET_X = 95.5;
+const CARD_CENTER_OFFSET_X = 80;
 
 const getCardEnterStyle = (index: number, total: number) => {
   const row = Math.floor(index / 2);
@@ -35,6 +35,7 @@ const StyleEditPage = () => {
   const { data: profile } = useMyProfile();
   const { mutate: saveStyles, isPending, error } = useSaveOnboardingStyle();
   const [selectedStyleIds, setSelectedStyleIds] = useState<number[] | null>(null);
+  const [removingStyleId, setRemovingStyleId] = useState<number | null>(null);
   const navigationStyleIds = (location.state as { styleTagIds?: number[] } | null)?.styleTagIds;
   const currentStyleIds = selectedStyleIds ?? navigationStyleIds ?? profile?.styleTagIds ?? [];
   const initialized = selectedStyleIds !== null || navigationStyleIds !== undefined || !!profile;
@@ -42,6 +43,22 @@ const StyleEditPage = () => {
   const selectedStyles = STYLE_TILES.filter((style) => currentStyleIds.includes(style.tagId));
   const emptySlots = Math.max(1, 4 - selectedStyles.length);
   const cardCount = selectedStyles.length + emptySlots;
+
+  const removeStyle = (styleTagId: number) => {
+    setSelectedStyleIds(currentStyleIds.filter((id) => id !== styleTagId));
+    setRemovingStyleId(null);
+  };
+
+  const handleStyleRemove = (styleTagId: number) => {
+    if (removingStyleId !== null) return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      removeStyle(styleTagId);
+      return;
+    }
+
+    setRemovingStyleId(styleTagId);
+  };
 
   const handleSave = () => {
     saveStyles(currentStyleIds, {
@@ -72,17 +89,28 @@ const StyleEditPage = () => {
     >
       <div className="px-6 pt-12">
         <h2 className="text-center text-[20px] font-semibold">스타일을 수정해주세요</h2>
-        <div className="mt-14 grid grid-cols-[repeat(2,136px)] justify-between gap-y-8">
+        <div className="mt-14 grid grid-cols-[repeat(2,136px)] justify-center gap-x-10 gap-y-10">
           {selectedStyles.map((style, index) => (
             <button
               type="button"
               key={style.tagId}
               aria-label={`${style.tag} 스타일 제외`}
-              onClick={() =>
-                setSelectedStyleIds(currentStyleIds.filter((id) => id !== style.tagId))
-              }
+              disabled={removingStyleId !== null}
+              onClick={() => handleStyleRemove(style.tagId)}
+              onAnimationEnd={(event) => {
+                if (
+                  removingStyleId === style.tagId &&
+                  event.animationName === 'style-edit-card-remove'
+                ) {
+                  removeStyle(style.tagId);
+                }
+              }}
               style={getCardEnterStyle(index, cardCount)}
-              className="style-edit-card h-[176px] w-[136px] overflow-hidden rounded-[16px]"
+              className={`style-edit-card h-[176px] w-[136px] overflow-hidden rounded-[16px] ${
+                removingStyleId === style.tagId
+                  ? 'style-edit-card--removing pointer-events-none'
+                  : ''
+              }`}
             >
               <img
                 src={style.imageSrc}
