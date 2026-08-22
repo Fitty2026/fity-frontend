@@ -21,10 +21,21 @@ const compact = (body: OutfitJobInput): OutfitJobInput => ({
  * 진행 중인 job이 있으면 새로 만들지 않고 그 job이 돌아온다 (isExistingJob).
  */
 export const createOutfitJob = async (body: OutfitJobInput): Promise<OutfitJobAccepted> => {
-  const { data } = await api.post<ApiResponse<OutfitJobAccepted>>(
-    '/api/v1/outfits/generation-jobs',
-    compact(body),
-  );
+  const payload = compact(body);
+  // 개발 모드 임시 로그 — 400 원인(어느 필드가 문제인지)을 눈으로 확인하려고 둔다. 원인 확정되면 제거
+  if (import.meta.env.DEV) console.info('[OUTFIT-01] 요청', payload);
+
+  let data: ApiResponse<OutfitJobAccepted>;
+  try {
+    ({ data } = await api.post<ApiResponse<OutfitJobAccepted>>(
+      '/api/v1/outfits/generation-jobs',
+      payload,
+    ));
+    if (import.meta.env.DEV) console.info('[OUTFIT-01] 응답', data?.result);
+  } catch (error) {
+    if (import.meta.env.DEV) console.error('[OUTFIT-01] 실패', error);
+    throw error;
+  }
   // 본문 없는 응답(204 등)이면 jobId가 없어 폴링이 시작되지 않는다.
   // 그냥 두면 로딩 화면이 끝없이 돌아서, 실패로 끊어 화면에 안내가 뜨게 한다.
   if (!data?.result?.jobId) {
